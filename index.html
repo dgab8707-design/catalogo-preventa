@@ -789,7 +789,7 @@
 // ════════════════════════════════════════════════════════
 // CONFIGURACIÓN
 // ════════════════════════════════════════════════════════
-const API_URL = "https://script.google.com/macros/s/AKfycbw6tTnVJ105aSJVURBSrAkwrE89CbRtCgzPf_DCXxU9lquU7j0SNtoCsg8LHlgg3FUncw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbysQ7armcH1H-B3cLp9NkVzdAOyEu5-j0vU9L1IwDeazHNMGCOgjIflrT8b8a9lLJhfeQ/exec";
 
 // Mapa de nombres de color → hex para los dots visuales
 const COLOR_MAP = {
@@ -866,6 +866,7 @@ function renderCatalogo() {
     ).join("") + masColores;
 
     const precioFmt = `₡${Number(estilo.precio).toLocaleString("es-CR")}`;
+    const fotoPortada = colores[0]?.foto_url || "";
 
     card.innerHTML = `
       <div class="producto-img-placeholder">
@@ -899,17 +900,8 @@ function abrirDetalle(estilo) {
   document.getElementById("detalle-precio").textContent = `₡${Number(estilo.precio).toLocaleString("es-CR")}`;
   document.getElementById("cantidad-num").textContent   = "1";
 
-  // Foto
-  const img  = document.getElementById("detalle-img");
-  const ph   = document.getElementById("detalle-placeholder");
-  if (estilo.foto_url && !estilo.foto_url.includes("FOTO_ID_AQUI")) {
-    img.src = estilo.foto_url;
-    img.style.display = "block";
-    ph.style.display  = "none";
-  } else {
-    img.style.display = "none";
-    ph.style.display  = "block";
-  }
+  // Foto — se actualiza al seleccionar color
+  actualizarFotoDetalle(estilo.colores[0]?.foto_url);
 
   // Colores
   renderColores();
@@ -954,8 +946,26 @@ function seleccionarColor(nombreColor) {
     el.classList.toggle("activa", el.textContent.trim() === nombreColor);
   });
 
+  // Actualizar foto según color seleccionado
+  const colorData = detalleActual.colores.find(c => c.color === nombreColor);
+  actualizarFotoDetalle(colorData?.foto_url);
+
   renderTallas();
   actualizarBtnAgregar();
+}
+
+function actualizarFotoDetalle(fotoUrl) {
+  const img = document.getElementById("detalle-img");
+  const ph  = document.getElementById("detalle-placeholder");
+  if (fotoUrl && !fotoUrl.includes("FOTO_ID_AQUI")) {
+    img.src = fotoUrl;
+    img.style.display = "block";
+    ph.style.display  = "none";
+    img.onerror = () => { img.style.display = "none"; ph.style.display = "block"; };
+  } else {
+    img.style.display = "none";
+    ph.style.display  = "block";
+  }
 }
 
 function renderTallas() {
