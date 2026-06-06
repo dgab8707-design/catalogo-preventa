@@ -871,8 +871,8 @@ function renderCatalogo() {
 
     card.innerHTML = `
       <div class="producto-img-placeholder">
-        ${estilo.foto_url && !estilo.foto_url.includes("FOTO_ID_AQUI")
-          ? `<img src="${estilo.foto_url}" alt="${estilo.nombre}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentNode.innerHTML='<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'1\\' style=\\'width:32px;height:32px;color:#C7C4BE\\'><path d=\\'M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z\\'/></svg>'">`
+        ${fotoPortada
+          ? `<img src="${fotoPortada}" alt="${estilo.nombre}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentNode.innerHTML='<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'1\\' style=\\'width:32px;height:32px;color:#C7C4BE\\'><path d=\\'M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z\\'/></svg>'">`
           : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="width:32px;height:32px;color:#C7C4BE"><path d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>`
         }
       </div>
@@ -959,7 +959,7 @@ function seleccionarColor(nombreColor) {
 function actualizarFotoDetalle(fotoUrl) {
   const img = document.getElementById("detalle-img");
   const ph  = document.getElementById("detalle-placeholder");
-  if (fotoUrl && !fotoUrl.includes("FOTO_ID_AQUI")) {
+  if (fotoUrl) {
     img.src = fotoUrl;
     img.style.display = "block";
     ph.style.display  = "none";
