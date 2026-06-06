@@ -789,7 +789,7 @@
 // ════════════════════════════════════════════════════════
 // CONFIGURACIÓN
 // ════════════════════════════════════════════════════════
-const API_URL = "https://script.google.com/macros/s/AKfycbysQ7armcH1H-B3cLp9NkVzdAOyEu5-j0vU9L1IwDeazHNMGCOgjIflrT8b8a9lLJhfeQ/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzVz767AqGJ0cEl1TU9y1m1BPXtvwT2x20eVKEb8D_xty0rtNYRWCsCTm3IrpOqD6lZ2w/exec";
 
 // Mapa de nombres de color → hex para los dots visuales
 const COLOR_MAP = {
@@ -866,7 +866,8 @@ function renderCatalogo() {
     ).join("") + masColores;
 
     const precioFmt = `₡${Number(estilo.precio).toLocaleString("es-CR")}`;
-    const fotoPortada = colores[0]?.foto_url || "";
+    const fotoPortada = estilo.foto_portada || colores[0]?.foto_url || "";
+    // foto_portada viene de columna J del Sheet (foto de campaña del estilo)
 
     card.innerHTML = `
       <div class="producto-img-placeholder">
@@ -900,8 +901,9 @@ function abrirDetalle(estilo) {
   document.getElementById("detalle-precio").textContent = `₡${Number(estilo.precio).toLocaleString("es-CR")}`;
   document.getElementById("cantidad-num").textContent   = "1";
 
-  // Foto — se actualiza al seleccionar color
-  actualizarFotoDetalle(estilo.colores[0]?.foto_url);
+  // Foto — empieza con el primer color, cambia al seleccionar
+  const primerColorData = estilo.colores[0];
+  actualizarFotoDetalle(primerColorData?.foto_url);
 
   // Colores
   renderColores();
