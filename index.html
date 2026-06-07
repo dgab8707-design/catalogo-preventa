@@ -707,8 +707,8 @@
 </header>
 
 <!-- ── Pantalla de autenticación ── -->
-<div id="pantalla-auth" style="display:none;position:fixed;inset:0;background:var(--blanco);z-index:500;overflow-y:auto">
-  <div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px">
+<div id="pantalla-auth" style="display:none;position:fixed;inset:0;background:var(--blanco);z-index:500;overflow-y:auto;display:flex;align-items:center;justify-content:center">
+  <div style="width:100%;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px">
     <h1 style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;margin-bottom:4px;text-align:center">Colección</h1>
     <p style="font-size:13px;color:var(--gris);margin-bottom:28px">Primavera · Preventa</p>
 
@@ -1818,279 +1818,33 @@ function cerrarSesion() {
 // ════════════════════════════════════════════════════════
 
 
-function seleccionarPais(btn) {
-  document.querySelectorAll(".pais-btn").forEach(b => {
-    if (b.closest("#carrito-drawer") || !b.closest("#historial-drawer")) b.classList.remove("activo");
-  });
-  btn.classList.add("activo");
-  const codigo = btn.dataset.codigo;
-  codigoPaisCarrito = codigo;
-  const otroWrap = document.getElementById("pais-otro-wrap");
-  otroWrap.style.display = codigo === "otro" ? "block" : "none";
-  actualizarPreviewWA();
-}
 
-function seleccionarPaisHist(btn) {
-  document.querySelectorAll("#historial-drawer .pais-btn").forEach(b => b.classList.remove("activo"));
-  btn.classList.add("activo");
-  const codigo = btn.dataset.codigo;
-  codigoPaisHist = codigo;
-  const otroWrap = document.getElementById("hist-pais-otro-wrap");
-  otroWrap.style.display = codigo === "otro" ? "block" : "none";
-}
 
-function getCodigoPais(tipo) {
-  if (tipo === "carrito") {
-    if (codigoPaisCarrito === "otro") {
-      return document.getElementById("input-codigo-pais").value.trim();
-    }
-    return codigoPaisCarrito;
-  } else {
-    if (codigoPaisHist === "otro") {
-      return document.getElementById("hist-codigo-pais").value.trim();
-    }
-    return codigoPaisHist;
-  }
-}
 
-function actualizarPreviewWA() {
-  const num = document.getElementById("input-wa").value.trim().replace(/\s|-/g, "");
-  const codigo = getCodigoPais("carrito");
-  const preview = document.getElementById("wa-preview");
-  if (num && codigo) {
-    preview.textContent = `WhatsApp: +${codigo}${num}`;
-  } else {
-    preview.textContent = "";
-  }
-}
 
-function construirWA(tipo) {
-  const inputId = tipo === "carrito" ? "input-wa" : "hist-wa-input";
-  const num = document.getElementById(inputId).value.trim().replace(/\s|-/g, "");
-  const codigo = getCodigoPais(tipo);
-  return `${codigo}${num}`;
-}
 
-// ════════════════════════════════════════════════════════
-// CONFIRMAR PEDIDO
-// ════════════════════════════════════════════════════════
-async function confirmarPedido() {
-  if (enviando || carrito.length === 0) return;
 
-  const nombre = document.getElementById("input-nombre").value.trim();
-  const wa     = construirWA("carrito");
 
-  document.getElementById("input-nombre").classList.remove("error");
-  document.getElementById("input-wa").classList.remove("error");
 
-  let valido = true;
-  if (!nombre) { document.getElementById("input-nombre").classList.add("error"); valido = false; }
-  if (!wa)     { document.getElementById("input-wa").classList.add("error");     valido = false; }
-  if (!valido) { mostrarToast("Por favor completá tu nombre y WhatsApp"); return; }
 
-  enviando = true;
-  const btn = document.getElementById("btn-confirmar");
-  btn.disabled = true;
-  btn.textContent = "Enviando...";
 
-  try {
-    const items = carrito.map(i => ({
-      id_variante: i.id_variante,
-      cantidad:    i.cantidad,
-      color:       i.color,
-      talla:       i.talla
-    }));
 
-    const params = new URLSearchParams({
-      action: "pedido",
-      nombre,
-      wa,
-      items: JSON.stringify(items)
-    });
 
-    const res  = await fetch(`${API_URL}?${params}`);
-    const data = await res.json();
 
-    if (data.ok) {
-      // Guardar datos de la clienta para la próxima vez
-      guardarDatosCliente(nombre, wa, codigoPaisCarrito);
-      document.getElementById("confirm-titulo").textContent = `¡Listo, ${nombre.split(" ")[0]}!`;
-      document.getElementById("confirm-id-texto").textContent = data.id_pedido;
-      document.getElementById("drawer-contenido").style.display = "none";
-      document.getElementById("pantalla-confirm").classList.add("activa");
-      carrito = [];
-      actualizarContadorCarrito();
-    } else {
-      const msgs = data.errores || ["Ocurrió un error. Intentá de nuevo."];
-      mostrarToast(msgs[0]);
-      // Recargar catálogo para reflejar stock actualizado
-      cargarCatalogo();
-    }
-  } catch (err) {
-    mostrarToast("Error de conexión. Intentá de nuevo.");
-  } finally {
-    enviando = false;
-    btn.disabled = false;
-    btn.textContent = "Confirmar pedido";
-  }
-}
 
-function resetPedido() {
-  document.getElementById("drawer-contenido").style.display = "block";
-  document.getElementById("pantalla-confirm").classList.remove("activa");
-  document.getElementById("input-nombre").value = "";
-  document.getElementById("input-wa").value = "";
-  cerrarCarrito();
-  cargarCatalogo();
-}
 
-// ════════════════════════════════════════════════════════
-// HELPERS
-// ════════════════════════════════════════════════════════
-function mostrarToast(msg) {
-  const t = document.getElementById("toast");
-  t.textContent = msg;
-  t.classList.add("visible");
-  setTimeout(() => t.classList.remove("visible"), 3000);
-}
 
-// ════════════════════════════════════════════════════════
-// HISTORIAL
-// ════════════════════════════════════════════════════════
-function abrirHistorial() {
-  document.getElementById("overlay-historial").style.display = "block";
-  document.getElementById("historial-drawer").classList.add("abierto");
-  // Reset estado
-  document.getElementById("hist-buscar").style.display = "block";
-  document.getElementById("hist-cargando").style.display = "none";
-  document.getElementById("hist-resultados").style.display = "none";
-  document.getElementById("hist-vacio").style.display = "none";
-  // Precargar datos guardados
-  cargarDatosGuardados();
-  setTimeout(() => document.getElementById("hist-wa-input").focus(), 300);
-}
 
-function cerrarHistorial() {
-  document.getElementById("overlay-historial").style.display = "none";
-  document.getElementById("historial-drawer").classList.remove("abierto");
-}
 
-async function buscarHistorial() {
-  const wa = construirWA("historial");
-  if (!wa || wa.length < 4) { mostrarToast("Ingresá tu número de WhatsApp"); return; }
-  await buscarHistorialConWA(wa);
-}
 
-async function buscarHistorialConWA(wa) {
 
-  document.getElementById("hist-buscar").style.display = "none";
-  document.getElementById("hist-cargando").style.display = "block";
-  document.getElementById("hist-resultados").style.display = "none";
-  document.getElementById("hist-vacio").style.display = "none";
 
-  try {
-    const res  = await fetch(`${API_URL}?action=historial&wa=${encodeURIComponent(wa)}`);
-    const data = await res.json();
 
-    document.getElementById("hist-cargando").style.display = "none";
 
-    if (!data.ok || !data.pedidos || data.pedidos.length === 0) {
-      document.getElementById("hist-vacio").style.display = "block";
-      return;
-    }
 
-    renderHistorial(data.pedidos, data.total, wa);
-    document.getElementById("hist-resultados").style.display = "block";
 
-  } catch(err) {
-    document.getElementById("hist-cargando").style.display = "none";
-    document.getElementById("hist-buscar").style.display = "block";
-    mostrarToast("Error de conexión. Intentá de nuevo.");
-  }
-}
 
-function renderHistorial(pedidos, total, wa) {
-  const cont = document.getElementById("hist-items");
-  cont.innerHTML = "";
 
-  // Agrupar por ID_pedido
-  const grupos = {};
-  pedidos.forEach(p => {
-    if (!grupos[p.id_pedido]) grupos[p.id_pedido] = [];
-    grupos[p.id_pedido].push(p);
-  });
-
-  Object.entries(grupos).forEach(([idPedido, items]) => {
-    const fecha = items[0].fecha;
-    const seccion = document.createElement("div");
-    seccion.style.cssText = "margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--borde)";
-    seccion.innerHTML = `
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <p style="font-size:11px;font-weight:500;color:var(--gris);text-transform:uppercase;letter-spacing:0.05em">${idPedido}</p>
-        <p style="font-size:11px;color:var(--gris)">${fecha}</p>
-      </div>`;
-
-    items.forEach(item => {
-      const row = document.createElement("div");
-      row.style.cssText = "display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;gap:12px";
-
-      const estadoBg  = item.estado === "entregado" ? "#D8F3DC" : "#FFF3CD";
-      const estadoFg  = item.estado === "entregado" ? "#1B4332" : "#5C3D00";
-      const cancelable = item.estado === "pendiente";
-
-      row.innerHTML = `
-        <div style="flex:1">
-          <p style="font-size:13px;font-weight:500;color:var(--oscuro);margin-bottom:2px">${item.estilo}</p>
-          <p style="font-size:12px;color:var(--gris);margin-bottom:4px">${item.color} · Talla ${item.talla} · x${item.cantidad}</p>
-          <div style="display:flex;align-items:center;gap:8px">
-            <span style="font-size:11px;background:${estadoBg};color:${estadoFg};border-radius:20px;padding:2px 8px">${item.estado}</span>
-            <span style="font-size:13px;color:var(--oscuro)">₡${Number(item.subtotal).toLocaleString("es-CR")}</span>
-          </div>
-        </div>
-        ${cancelable ? `
-        <button onclick="cancelarItem('${item.id_pedido}','${item.id_variante}','${item.estilo} ${item.color} T.${item.talla}','${wa}')"
-          style="font-size:11px;color:#E24B4A;background:none;border:1px solid #E24B4A;border-radius:6px;padding:4px 8px;cursor:pointer;white-space:nowrap;flex-shrink:0">
-          Cancelar
-        </button>` : ''}`;
-
-      seccion.appendChild(row);
-    });
-
-    cont.appendChild(seccion);
-  });
-
-  // Total solo de pendientes
-  const totalPendiente = pedidos
-    .filter(p => p.estado === "pendiente")
-    .reduce((s, p) => s + Number(p.subtotal), 0);
-  document.getElementById("hist-total").textContent = `₡${totalPendiente.toLocaleString("es-CR")}`;
-}
-
-async function cancelarItem(idPedido, idVariante, nombreItem, wa) {
-  if (!confirm(`¿Cancelás ${nombreItem}?`)) return;
-
-  try {
-    const params = new URLSearchParams({
-      action:      "cancelar",
-      id_pedido:   idPedido,
-      id_variante: idVariante,
-      wa
-    });
-    const res  = await fetch(`${API_URL}?${params}`);
-    const data = await res.json();
-
-    if (data.ok) {
-      mostrarToast("Artículo cancelado correctamente");
-      // Recargar historial y catálogo
-      buscarHistorial();
-      cargarCatalogo();
-    } else {
-      mostrarToast(data.error || "No se pudo cancelar. Intentá de nuevo.");
-    }
-  } catch(err) {
-    mostrarToast("Error de conexión.");
-  }
-}
 
 // ════════════════════════════════════════════════════════
 // SESIÓN LOCAL
@@ -2098,26 +1852,11 @@ async function cancelarItem(idPedido, idVariante, nombreItem, wa) {
 
 let codigoPaisBienvenida = "506";
 
-function guardarSesion(nombre, wa, codigoPais) {
-  try {
-    localStorage.setItem(SESSION_KEY, JSON.stringify({ nombre, wa, codigoPais }));
-  } catch(e) {}
-}
 
-function cargarSesion() {
-  try {
-    const raw = localStorage.getItem(SESSION_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch(e) { return null; }
-}
 
-function seleccionarPaisAuth(btn) {
-  document.querySelectorAll("#bienvenida-paises .pais-btn").forEach(b => b.classList.remove("activo"));
-  btn.classList.add("activo");
-  codigoPaisBienvenida = btn.dataset.codigo;
-  document.getElementById("bienvenida-otro-wrap").style.display = codigoPaisBienvenida === "otro" ? "block" : "none";
-  actualizarPreviewBienvenida();
-}
+
+
+
 
 function actualizarPreviewBienvenida() {
   const num = (document.getElementById("bienvenida-wa").value || "").trim().replace(/\s|-/g, "");
@@ -2128,68 +1867,13 @@ function actualizarPreviewBienvenida() {
   preview.textContent = num && codigo ? `WhatsApp: +${codigo}${num}` : "";
 }
 
-function ejecutarAuth() {
-  const nombre = document.getElementById("bienvenida-nombre").value.trim();
-  const numRaw = document.getElementById("bienvenida-wa").value.trim().replace(/\s|-/g, "");
-  const codigo = codigoPaisBienvenida === "otro"
-    ? (document.getElementById("auth-codigo").value || "").trim()
-    : codigoPaisBienvenida;
 
-  if (!nombre) { document.getElementById("bienvenida-nombre").style.borderColor = "var(--rosa)"; return; }
-  if (!numRaw) { document.getElementById("bienvenida-wa").style.borderColor = "var(--rosa)"; return; }
 
-  const wa = `${codigo}${numRaw}`;
-  guardarSesion(nombre, wa, codigo);
-  aplicarSesion();
-  document.getElementById("pantalla-bienvenida").style.display = "none";
-}
 
-function aplicarSesion() {
-  const sesion = cargarSesion();
-  if (!sesion) return;
 
-  // Llenar campos del carrito
-  if (sesion.nombre) document.getElementById("input-nombre").value = sesion.nombre;
 
-  // El WA ya tiene código de país incluido, mostramos solo el número sin código
-  const waCompleto = sesion.wa || "";
-  const codigo = sesion.codigoPais || "506";
-  const numSolo = waCompleto.startsWith(codigo) ? waCompleto.slice(codigo.length) : waCompleto;
 
-  document.getElementById("input-wa").value = numSolo;
-  codigoPaisCarrito = codigo;
-  const btnPais = document.querySelector(`#carrito-drawer .pais-btn[data-codigo="${codigo}"]`);
-  if (btnPais) {
-    document.querySelectorAll("#carrito-drawer .pais-btn").forEach(b => b.classList.remove("activo"));
-    btnPais.classList.add("activo");
-  }
-  actualizarPreviewWA();
-  mostrarSaludoSesion(sesion.nombre);
-}
 
-function mostrarSaludoSesion(nombre) {
-  if (!nombre) return;
-  const saludo = document.getElementById("saludo-sesion");
-  const sub    = document.getElementById("brand-sub");
-  if (saludo) {
-    saludo.textContent = `Hola, ${nombre.split(" ")[0]} 👋 (tocar para salir)`;
-    saludo.style.display = "block";
-  }
-  if (sub) sub.style.display = "none";
-}
-
-function cerrarSesion() {
-  try { localStorage.removeItem(SESSION_KEY); } catch(e) {}
-  document.getElementById("input-nombre").value = "";
-  document.getElementById("input-wa").value = "";
-  document.getElementById("wa-preview").textContent = "";
-  const saludo = document.getElementById("saludo-sesion");
-  const sub    = document.getElementById("brand-sub");
-  if (saludo) saludo.style.display = "none";
-  if (sub)    sub.style.display = "block";
-  // Mostrar pantalla de bienvenida de nuevo
-  document.getElementById("pantalla-bienvenida").style.display = "flex";
-}
 
 // ════════════════════════════════════════════════════════
 // INIT
