@@ -706,36 +706,76 @@
   </div>
 </header>
 
-<!-- ── Pantalla de bienvenida (solo si no hay sesión) ── -->
-<div id="pantalla-bienvenida" style="display:none;position:fixed;inset:0;background:var(--blanco);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px">
-  <h1 style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;margin-bottom:4px;text-align:center">Colección</h1>
-  <p style="font-size:13px;color:var(--gris);margin-bottom:32px">Primavera · Preventa</p>
-  <div style="width:100%;max-width:360px">
-    <p style="font-size:14px;color:var(--oscuro);margin-bottom:16px;text-align:center">Para comenzar, ingresá tus datos</p>
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
-      <input type="text" id="bienvenida-nombre" placeholder="Tu nombre"
-        style="width:100%;box-sizing:border-box;border:1px solid var(--borde);border-radius:10px;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;background:var(--crema)"
-        onfocus="this.style.borderColor='var(--rosa)'" onblur="this.style.borderColor='var(--borde)'">
-      <div style="display:flex;gap:6px;flex-wrap:wrap" id="bienvenida-paises">
-        <button type="button" class="pais-btn activo" data-codigo="506" onclick="seleccionarPaisBienvenida(this)">🇨🇷 Costa Rica</button>
-        <button type="button" class="pais-btn" data-codigo="507" onclick="seleccionarPaisBienvenida(this)">🇵🇦 Panamá</button>
-        <button type="button" class="pais-btn" data-codigo="1" onclick="seleccionarPaisBienvenida(this)">🇺🇸 USA</button>
-        <button type="button" class="pais-btn" data-codigo="otro" onclick="seleccionarPaisBienvenida(this)">Otro</button>
+<!-- ── Pantalla de autenticación ── -->
+<div id="pantalla-auth" style="display:none;position:fixed;inset:0;background:var(--blanco);z-index:500;overflow-y:auto">
+  <div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px">
+    <h1 style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;margin-bottom:4px;text-align:center">Colección</h1>
+    <p style="font-size:13px;color:var(--gris);margin-bottom:28px">Primavera · Preventa</p>
+
+    <!-- Tabs login / registro -->
+    <div style="display:flex;gap:0;border:1px solid var(--borde);border-radius:10px;overflow:hidden;margin-bottom:24px;width:100%;max-width:360px">
+      <button id="tab-login" onclick="mostrarTab('login')"
+        style="flex:1;padding:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;border:none;background:var(--oscuro);color:white;cursor:pointer">
+        Entrar
+      </button>
+      <button id="tab-registro" onclick="mostrarTab('registro')"
+        style="flex:1;padding:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;border:none;background:var(--blanco);color:var(--gris);cursor:pointer">
+        Cuenta nueva
+      </button>
+    </div>
+
+    <!-- Selector de país compartido -->
+    <div style="width:100%;max-width:360px;margin-bottom:12px">
+      <p style="font-size:11px;font-weight:500;color:var(--gris);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">País</p>
+      <div style="display:flex;gap:6px;flex-wrap:wrap" id="auth-paises">
+        <button type="button" class="pais-btn activo" data-codigo="506" onclick="seleccionarPaisAuth(this)">🇨🇷 Costa Rica</button>
+        <button type="button" class="pais-btn" data-codigo="507" onclick="seleccionarPaisAuth(this)">🇵🇦 Panamá</button>
+        <button type="button" class="pais-btn" data-codigo="1" onclick="seleccionarPaisAuth(this)">🇺🇸 USA</button>
+        <button type="button" class="pais-btn" data-codigo="otro" onclick="seleccionarPaisAuth(this)">Otro</button>
       </div>
-      <div id="bienvenida-otro-wrap" style="display:none">
-        <input type="number" id="bienvenida-codigo" placeholder="Código de país (ej: 34)"
-          style="width:100%;box-sizing:border-box;border:1px solid var(--borde);border-radius:10px;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none">
+      <div id="auth-otro-wrap" style="display:none;margin-top:8px">
+        <input type="number" id="auth-codigo" placeholder="Código de país (ej: 34)"
+          style="width:100%;box-sizing:border-box;border:1px solid var(--borde);border-radius:8px;padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none">
       </div>
-      <input type="tel" id="bienvenida-wa" placeholder="Número sin código de país"
+    </div>
+
+    <!-- Campos comunes -->
+    <div style="width:100%;max-width:360px;display:flex;flex-direction:column;gap:10px">
+      <input type="tel" id="auth-wa" placeholder="Número sin código de país"
         style="width:100%;box-sizing:border-box;border:1px solid var(--borde);border-radius:10px;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;background:var(--crema)"
         onfocus="this.style.borderColor='var(--rosa)'" onblur="this.style.borderColor='var(--borde)'"
-        onkeydown="if(event.key==='Enter') iniciarSesionBienvenida()">
-      <p id="bienvenida-preview" style="font-size:11px;color:var(--gris);margin:0;min-height:16px"></p>
+        oninput="actualizarPreviewAuth()">
+
+      <!-- Solo en registro -->
+      <input type="text" id="auth-nombre" placeholder="Tu nombre"
+        style="width:100%;box-sizing:border-box;border:1px solid var(--borde);border-radius:10px;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;background:var(--crema);display:none"
+        onfocus="this.style.borderColor='var(--rosa)'" onblur="this.style.borderColor='var(--borde)'">
+
+      <!-- PIN -->
+      <div style="position:relative">
+        <input type="password" id="auth-pin" placeholder="PIN de 4 dígitos" maxlength="4" inputmode="numeric"
+          style="width:100%;box-sizing:border-box;border:1px solid var(--borde);border-radius:10px;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;background:var(--crema);letter-spacing:0.3em"
+          onfocus="this.style.borderColor='var(--rosa)'" onblur="this.style.borderColor='var(--borde)'"
+          onkeydown="if(event.key==='Enter') ejecutarAuth()">
+        <button type="button" onclick="togglePIN()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--gris);font-size:12px">
+          VER
+        </button>
+      </div>
+
+      <!-- Solo en registro: confirmar PIN -->
+      <input type="password" id="auth-pin2" placeholder="Confirmar PIN" maxlength="4" inputmode="numeric"
+        style="width:100%;box-sizing:border-box;border:1px solid var(--borde);border-radius:10px;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;background:var(--crema);letter-spacing:0.3em;display:none"
+        onfocus="this.style.borderColor='var(--rosa)'" onblur="this.style.borderColor='var(--borde)'"
+        onkeydown="if(event.key==='Enter') ejecutarAuth()">
+
+      <p id="auth-preview" style="font-size:11px;color:var(--gris);margin:0;min-height:16px"></p>
+      <p id="auth-error" style="font-size:13px;color:#E24B4A;margin:0;display:none"></p>
+
+      <button id="auth-btn" onclick="ejecutarAuth()"
+        style="width:100%;padding:14px;background:var(--rosa);color:white;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer">
+        Entrar
+      </button>
     </div>
-    <button onclick="iniciarSesionBienvenida()"
-      style="width:100%;padding:14px;background:var(--rosa);color:white;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer">
-      Entrar al catálogo
-    </button>
   </div>
 </div>
 
@@ -920,7 +960,7 @@
 // ════════════════════════════════════════════════════════
 // CONFIGURACIÓN
 // ════════════════════════════════════════════════════════
-const API_URL = "https://script.google.com/macros/s/AKfycbw3xvHq4OOjV5mSIR-pvJFWHPkpE8HV9aRyLdBBOkwEa30SdrIygB0WWJdjbKFgUOLyGw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycby9udIQJqfZKais7zp6dgVEtDDwvKotfr6dXD7hByUMWoqILjYh-oemns0mE-YnE6Dd-Q/exec";
 
 // Mapa de nombres de color → hex para los dots visuales
 const COLOR_MAP = {
@@ -1580,8 +1620,455 @@ function renderHistorial(pedidos, total, wa) {
 
 async function cancelarItem(idPedido, idVariante, nombreItem, wa) {
   if (!confirm(`¿Cancelás ${nombreItem}?`)) return;
-  // Normalizar WA por si acaso
-  wa = (wa || "").trim().replace(/^\+/, "");
+
+  try {
+    const params = new URLSearchParams({
+      action:      "cancelar",
+      id_pedido:   idPedido,
+      id_variante: idVariante,
+      wa
+    });
+    const res  = await fetch(`${API_URL}?${params}`);
+    const data = await res.json();
+
+    if (data.ok) {
+      mostrarToast("Artículo cancelado correctamente");
+      // Recargar historial y catálogo
+      buscarHistorial();
+      cargarCatalogo();
+    } else {
+      mostrarToast(data.error || "No se pudo cancelar. Intentá de nuevo.");
+    }
+  } catch(err) {
+    mostrarToast("Error de conexión.");
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// SESIÓN LOCAL + AUTH CON PIN
+// ════════════════════════════════════════════════════════
+const SESSION_KEY = "catalogo_cliente_v2";
+let codigoPaisAuth = "506";
+let modoAuth = "login"; // "login" | "registro"
+
+function guardarSesion(nombre, wa, codigoPais) {
+  try { localStorage.setItem(SESSION_KEY, JSON.stringify({ nombre, wa, codigoPais })); } catch(e) {}
+}
+function cargarSesion() {
+  try { const r = localStorage.getItem(SESSION_KEY); return r ? JSON.parse(r) : null; } catch(e) { return null; }
+}
+function borrarSesion() {
+  try { localStorage.removeItem(SESSION_KEY); } catch(e) {}
+}
+
+// ── Auth UI ──
+function mostrarTab(tab) {
+  modoAuth = tab;
+  const esLogin = tab === "login";
+  document.getElementById("tab-login").style.background    = esLogin ? "var(--oscuro)" : "var(--blanco)";
+  document.getElementById("tab-login").style.color         = esLogin ? "white" : "var(--gris)";
+  document.getElementById("tab-registro").style.background = esLogin ? "var(--blanco)" : "var(--oscuro)";
+  document.getElementById("tab-registro").style.color      = esLogin ? "var(--gris)" : "white";
+  document.getElementById("auth-nombre").style.display  = esLogin ? "none" : "block";
+  document.getElementById("auth-pin2").style.display    = esLogin ? "none" : "block";
+  document.getElementById("auth-btn").textContent       = esLogin ? "Entrar" : "Crear cuenta";
+  document.getElementById("auth-error").style.display   = "none";
+  document.getElementById("auth-error").textContent     = "";
+}
+
+function seleccionarPaisAuth(btn) {
+  document.querySelectorAll("#auth-paises .pais-btn").forEach(b => b.classList.remove("activo"));
+  btn.classList.add("activo");
+  codigoPaisAuth = btn.dataset.codigo;
+  document.getElementById("auth-otro-wrap").style.display = codigoPaisAuth === "otro" ? "block" : "none";
+  actualizarPreviewAuth();
+}
+
+function actualizarPreviewAuth() {
+  const num    = (document.getElementById("auth-wa").value || "").trim().replace(/[\s\-]/g, "");
+  const codigo = codigoPaisAuth === "otro"
+    ? (document.getElementById("auth-codigo").value || "").trim()
+    : codigoPaisAuth;
+  const preview = document.getElementById("auth-preview");
+  preview.textContent = num && codigo ? `WhatsApp: +${codigo}${num}` : "";
+}
+
+function togglePIN() {
+  const inp = document.getElementById("auth-pin");
+  inp.type = inp.type === "password" ? "text" : "password";
+}
+
+function mostrarErrorAuth(msg) {
+  const el = document.getElementById("auth-error");
+  el.textContent = msg;
+  el.style.display = "block";
+}
+
+function getWAAuth() {
+  const num    = (document.getElementById("auth-wa").value || "").trim().replace(/[\s\-]/g, "");
+  const codigo = codigoPaisAuth === "otro"
+    ? (document.getElementById("auth-codigo").value || "").trim()
+    : codigoPaisAuth;
+  return { num, codigo, wa: codigo + num };
+}
+
+async function ejecutarAuth() {
+  document.getElementById("auth-error").style.display = "none";
+  const { num, codigo, wa } = getWAAuth();
+  const pin = (document.getElementById("auth-pin").value || "").trim();
+
+  if (!num)  { mostrarErrorAuth("Ingresá tu número de WhatsApp"); return; }
+  if (!pin || pin.length !== 4) { mostrarErrorAuth("El PIN debe ser de 4 dígitos"); return; }
+
+  const btn = document.getElementById("auth-btn");
+  btn.disabled = true;
+  btn.textContent = "Procesando...";
+
+  try {
+    if (modoAuth === "login") {
+      await ejecutarLogin(wa, pin, codigo);
+    } else {
+      await ejecutarRegistro(wa, pin, codigo, num);
+    }
+  } finally {
+    btn.disabled = false;
+    btn.textContent = modoAuth === "login" ? "Entrar" : "Crear cuenta";
+  }
+}
+
+async function ejecutarLogin(wa, pin, codigo) {
+  const params = new URLSearchParams({ action: "login", wa, pin, codigo_pais: codigo });
+  const res  = await fetch(`${API_URL}?${params}`);
+  const data = await res.json();
+
+  if (data.ok) {
+    guardarSesion(data.nombre, wa, codigo);
+    aplicarSesion();
+    document.getElementById("pantalla-auth").style.display = "none";
+  } else {
+    mostrarErrorAuth(data.error || "Número o PIN incorrecto");
+  }
+}
+
+async function ejecutarRegistro(wa, pin, codigo, num) {
+  const nombre = (document.getElementById("auth-nombre").value || "").trim();
+  const pin2   = (document.getElementById("auth-pin2").value   || "").trim();
+
+  if (!nombre)    { mostrarErrorAuth("Ingresá tu nombre"); return; }
+  if (pin !== pin2) { mostrarErrorAuth("Los PINs no coinciden"); return; }
+
+  const params = new URLSearchParams({ action: "registrar", wa, nombre, pin, codigo_pais: codigo });
+  const res  = await fetch(`${API_URL}?${params}`);
+  const data = await res.json();
+
+  if (data.ok) {
+    guardarSesion(nombre, wa, codigo);
+    aplicarSesion();
+    document.getElementById("pantalla-auth").style.display = "none";
+    mostrarToast(`¡Bienvenida, ${nombre.split(" ")[0]}!`);
+  } else {
+    mostrarErrorAuth(data.error || "No se pudo crear la cuenta");
+  }
+}
+
+function aplicarSesion() {
+  const sesion = cargarSesion();
+  if (!sesion) return;
+
+  // Llenar carrito con datos de sesión
+  if (sesion.nombre) document.getElementById("input-nombre").value = sesion.nombre;
+  const numSolo = sesion.wa.startsWith(sesion.codigoPais)
+    ? sesion.wa.slice(sesion.codigoPais.length) : sesion.wa;
+  document.getElementById("input-wa").value = numSolo;
+  codigoPaisCarrito = sesion.codigoPais;
+  const btnPais = document.querySelector(`#carrito-drawer .pais-btn[data-codigo="${sesion.codigoPais}"]`);
+  if (btnPais) {
+    document.querySelectorAll("#carrito-drawer .pais-btn").forEach(b => b.classList.remove("activo"));
+    btnPais.classList.add("activo");
+  }
+  actualizarPreviewWA();
+  mostrarSaludoSesion(sesion.nombre);
+}
+
+function mostrarSaludoSesion(nombre) {
+  if (!nombre) return;
+  const saludo = document.getElementById("saludo-sesion");
+  const sub    = document.getElementById("brand-sub");
+  if (saludo) { saludo.textContent = `Hola, ${nombre.split(" ")[0]} 👋`; saludo.style.display = "block"; }
+  if (sub)    sub.style.display = "none";
+}
+
+function cerrarSesion() {
+  if (!confirm("¿Cerrar sesión?")) return;
+  borrarSesion();
+  document.getElementById("input-nombre").value = "";
+  document.getElementById("input-wa").value = "";
+  document.getElementById("wa-preview").textContent = "";
+  const saludo = document.getElementById("saludo-sesion");
+  const sub    = document.getElementById("brand-sub");
+  if (saludo) saludo.style.display = "none";
+  if (sub)    sub.style.display = "block";
+  document.getElementById("pantalla-auth").style.display = "flex";
+  mostrarTab("login");
+}
+
+// ════════════════════════════════════════════════════════
+// SELECTOR DE PAÍS / WHATSAPP
+
+// ════════════════════════════════════════════════════════
+let codigoPaisCarrito = "506";
+let codigoPaisHist    = "506";
+
+function seleccionarPais(btn) {
+  document.querySelectorAll(".pais-btn").forEach(b => {
+    if (b.closest("#carrito-drawer") || !b.closest("#historial-drawer")) b.classList.remove("activo");
+  });
+  btn.classList.add("activo");
+  const codigo = btn.dataset.codigo;
+  codigoPaisCarrito = codigo;
+  const otroWrap = document.getElementById("pais-otro-wrap");
+  otroWrap.style.display = codigo === "otro" ? "block" : "none";
+  actualizarPreviewWA();
+}
+
+function seleccionarPaisHist(btn) {
+  document.querySelectorAll("#historial-drawer .pais-btn").forEach(b => b.classList.remove("activo"));
+  btn.classList.add("activo");
+  const codigo = btn.dataset.codigo;
+  codigoPaisHist = codigo;
+  const otroWrap = document.getElementById("hist-pais-otro-wrap");
+  otroWrap.style.display = codigo === "otro" ? "block" : "none";
+}
+
+function getCodigoPais(tipo) {
+  if (tipo === "carrito") {
+    if (codigoPaisCarrito === "otro") {
+      return document.getElementById("input-codigo-pais").value.trim();
+    }
+    return codigoPaisCarrito;
+  } else {
+    if (codigoPaisHist === "otro") {
+      return document.getElementById("hist-codigo-pais").value.trim();
+    }
+    return codigoPaisHist;
+  }
+}
+
+function actualizarPreviewWA() {
+  const num = document.getElementById("input-wa").value.trim().replace(/\s|-/g, "");
+  const codigo = getCodigoPais("carrito");
+  const preview = document.getElementById("wa-preview");
+  if (num && codigo) {
+    preview.textContent = `WhatsApp: +${codigo}${num}`;
+  } else {
+    preview.textContent = "";
+  }
+}
+
+function construirWA(tipo) {
+  const inputId = tipo === "carrito" ? "input-wa" : "hist-wa-input";
+  const num = document.getElementById(inputId).value.trim().replace(/\s|-/g, "");
+  const codigo = getCodigoPais(tipo);
+  return `${codigo}${num}`;
+}
+
+// ════════════════════════════════════════════════════════
+// CONFIRMAR PEDIDO
+// ════════════════════════════════════════════════════════
+async function confirmarPedido() {
+  if (enviando || carrito.length === 0) return;
+
+  const nombre = document.getElementById("input-nombre").value.trim();
+  const wa     = construirWA("carrito");
+
+  document.getElementById("input-nombre").classList.remove("error");
+  document.getElementById("input-wa").classList.remove("error");
+
+  let valido = true;
+  if (!nombre) { document.getElementById("input-nombre").classList.add("error"); valido = false; }
+  if (!wa)     { document.getElementById("input-wa").classList.add("error");     valido = false; }
+  if (!valido) { mostrarToast("Por favor completá tu nombre y WhatsApp"); return; }
+
+  enviando = true;
+  const btn = document.getElementById("btn-confirmar");
+  btn.disabled = true;
+  btn.textContent = "Enviando...";
+
+  try {
+    const items = carrito.map(i => ({
+      id_variante: i.id_variante,
+      cantidad:    i.cantidad,
+      color:       i.color,
+      talla:       i.talla
+    }));
+
+    const params = new URLSearchParams({
+      action: "pedido",
+      nombre,
+      wa,
+      items: JSON.stringify(items)
+    });
+
+    const res  = await fetch(`${API_URL}?${params}`);
+    const data = await res.json();
+
+    if (data.ok) {
+      // Guardar datos de la clienta para la próxima vez
+      guardarDatosCliente(nombre, wa, codigoPaisCarrito);
+      document.getElementById("confirm-titulo").textContent = `¡Listo, ${nombre.split(" ")[0]}!`;
+      document.getElementById("confirm-id-texto").textContent = data.id_pedido;
+      document.getElementById("drawer-contenido").style.display = "none";
+      document.getElementById("pantalla-confirm").classList.add("activa");
+      carrito = [];
+      actualizarContadorCarrito();
+    } else {
+      const msgs = data.errores || ["Ocurrió un error. Intentá de nuevo."];
+      mostrarToast(msgs[0]);
+      // Recargar catálogo para reflejar stock actualizado
+      cargarCatalogo();
+    }
+  } catch (err) {
+    mostrarToast("Error de conexión. Intentá de nuevo.");
+  } finally {
+    enviando = false;
+    btn.disabled = false;
+    btn.textContent = "Confirmar pedido";
+  }
+}
+
+function resetPedido() {
+  document.getElementById("drawer-contenido").style.display = "block";
+  document.getElementById("pantalla-confirm").classList.remove("activa");
+  document.getElementById("input-nombre").value = "";
+  document.getElementById("input-wa").value = "";
+  cerrarCarrito();
+  cargarCatalogo();
+}
+
+// ════════════════════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════════════════════
+function mostrarToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("visible");
+  setTimeout(() => t.classList.remove("visible"), 3000);
+}
+
+// ════════════════════════════════════════════════════════
+// HISTORIAL
+// ════════════════════════════════════════════════════════
+function abrirHistorial() {
+  document.getElementById("overlay-historial").style.display = "block";
+  document.getElementById("historial-drawer").classList.add("abierto");
+  // Reset estado
+  document.getElementById("hist-buscar").style.display = "block";
+  document.getElementById("hist-cargando").style.display = "none";
+  document.getElementById("hist-resultados").style.display = "none";
+  document.getElementById("hist-vacio").style.display = "none";
+  // Precargar datos guardados
+  cargarDatosGuardados();
+  setTimeout(() => document.getElementById("hist-wa-input").focus(), 300);
+}
+
+function cerrarHistorial() {
+  document.getElementById("overlay-historial").style.display = "none";
+  document.getElementById("historial-drawer").classList.remove("abierto");
+}
+
+async function buscarHistorial() {
+  const wa = construirWA("historial");
+  if (!wa || wa.length < 4) { mostrarToast("Ingresá tu número de WhatsApp"); return; }
+  await buscarHistorialConWA(wa);
+}
+
+async function buscarHistorialConWA(wa) {
+
+  document.getElementById("hist-buscar").style.display = "none";
+  document.getElementById("hist-cargando").style.display = "block";
+  document.getElementById("hist-resultados").style.display = "none";
+  document.getElementById("hist-vacio").style.display = "none";
+
+  try {
+    const res  = await fetch(`${API_URL}?action=historial&wa=${encodeURIComponent(wa)}`);
+    const data = await res.json();
+
+    document.getElementById("hist-cargando").style.display = "none";
+
+    if (!data.ok || !data.pedidos || data.pedidos.length === 0) {
+      document.getElementById("hist-vacio").style.display = "block";
+      return;
+    }
+
+    renderHistorial(data.pedidos, data.total, wa);
+    document.getElementById("hist-resultados").style.display = "block";
+
+  } catch(err) {
+    document.getElementById("hist-cargando").style.display = "none";
+    document.getElementById("hist-buscar").style.display = "block";
+    mostrarToast("Error de conexión. Intentá de nuevo.");
+  }
+}
+
+function renderHistorial(pedidos, total, wa) {
+  const cont = document.getElementById("hist-items");
+  cont.innerHTML = "";
+
+  // Agrupar por ID_pedido
+  const grupos = {};
+  pedidos.forEach(p => {
+    if (!grupos[p.id_pedido]) grupos[p.id_pedido] = [];
+    grupos[p.id_pedido].push(p);
+  });
+
+  Object.entries(grupos).forEach(([idPedido, items]) => {
+    const fecha = items[0].fecha;
+    const seccion = document.createElement("div");
+    seccion.style.cssText = "margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--borde)";
+    seccion.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <p style="font-size:11px;font-weight:500;color:var(--gris);text-transform:uppercase;letter-spacing:0.05em">${idPedido}</p>
+        <p style="font-size:11px;color:var(--gris)">${fecha}</p>
+      </div>`;
+
+    items.forEach(item => {
+      const row = document.createElement("div");
+      row.style.cssText = "display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;gap:12px";
+
+      const estadoBg  = item.estado === "entregado" ? "#D8F3DC" : "#FFF3CD";
+      const estadoFg  = item.estado === "entregado" ? "#1B4332" : "#5C3D00";
+      const cancelable = item.estado === "pendiente";
+
+      row.innerHTML = `
+        <div style="flex:1">
+          <p style="font-size:13px;font-weight:500;color:var(--oscuro);margin-bottom:2px">${item.estilo}</p>
+          <p style="font-size:12px;color:var(--gris);margin-bottom:4px">${item.color} · Talla ${item.talla} · x${item.cantidad}</p>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:11px;background:${estadoBg};color:${estadoFg};border-radius:20px;padding:2px 8px">${item.estado}</span>
+            <span style="font-size:13px;color:var(--oscuro)">₡${Number(item.subtotal).toLocaleString("es-CR")}</span>
+          </div>
+        </div>
+        ${cancelable ? `
+        <button onclick="cancelarItem('${item.id_pedido}','${item.id_variante}','${item.estilo} ${item.color} T.${item.talla}','${wa}')"
+          style="font-size:11px;color:#E24B4A;background:none;border:1px solid #E24B4A;border-radius:6px;padding:4px 8px;cursor:pointer;white-space:nowrap;flex-shrink:0">
+          Cancelar
+        </button>` : ''}`;
+
+      seccion.appendChild(row);
+    });
+
+    cont.appendChild(seccion);
+  });
+
+  // Total solo de pendientes
+  const totalPendiente = pedidos
+    .filter(p => p.estado === "pendiente")
+    .reduce((s, p) => s + Number(p.subtotal), 0);
+  document.getElementById("hist-total").textContent = `₡${totalPendiente.toLocaleString("es-CR")}`;
+}
+
+async function cancelarItem(idPedido, idVariante, nombreItem, wa) {
+  if (!confirm(`¿Cancelás ${nombreItem}?`)) return;
 
   try {
     const params = new URLSearchParams({
@@ -1625,7 +2112,7 @@ function cargarSesion() {
   } catch(e) { return null; }
 }
 
-function seleccionarPaisBienvenida(btn) {
+function seleccionarPaisAuth(btn) {
   document.querySelectorAll("#bienvenida-paises .pais-btn").forEach(b => b.classList.remove("activo"));
   btn.classList.add("activo");
   codigoPaisBienvenida = btn.dataset.codigo;
@@ -1636,17 +2123,17 @@ function seleccionarPaisBienvenida(btn) {
 function actualizarPreviewBienvenida() {
   const num = (document.getElementById("bienvenida-wa").value || "").trim().replace(/\s|-/g, "");
   const codigo = codigoPaisBienvenida === "otro"
-    ? (document.getElementById("bienvenida-codigo").value || "").trim()
+    ? (document.getElementById("auth-codigo").value || "").trim()
     : codigoPaisBienvenida;
   const preview = document.getElementById("bienvenida-preview");
   preview.textContent = num && codigo ? `WhatsApp: +${codigo}${num}` : "";
 }
 
-function iniciarSesionBienvenida() {
+function ejecutarAuth() {
   const nombre = document.getElementById("bienvenida-nombre").value.trim();
   const numRaw = document.getElementById("bienvenida-wa").value.trim().replace(/\s|-/g, "");
   const codigo = codigoPaisBienvenida === "otro"
-    ? (document.getElementById("bienvenida-codigo").value || "").trim()
+    ? (document.getElementById("auth-codigo").value || "").trim()
     : codigoPaisBienvenida;
 
   if (!nombre) { document.getElementById("bienvenida-nombre").style.borderColor = "var(--rosa)"; return; }
@@ -1709,13 +2196,14 @@ function cerrarSesion() {
 // INIT
 // ════════════════════════════════════════════════════════
 cargarCatalogo();
-// Mostrar bienvenida si no hay sesión, aplicarla si existe
+// Auth al inicio
 const _sesionInicial = cargarSesion();
 if (_sesionInicial) {
-  document.getElementById("pantalla-bienvenida").style.display = "none";
+  document.getElementById("pantalla-auth").style.display = "none";
   aplicarSesion();
 } else {
-  document.getElementById("pantalla-bienvenida").style.display = "flex";
+  document.getElementById("pantalla-auth").style.display = "flex";
+  mostrarTab("login");
 }
 </script>
 </body>
