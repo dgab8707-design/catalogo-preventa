@@ -1684,7 +1684,7 @@ function renderHistorial(pedidos, total, wa) {
   document.getElementById("hist-total").textContent = `₡${totalPendiente.toLocaleString("es-CR")}`;
 }
 
-async function cancelarItem(idPedido, idVariante, nombreItem, wa) {
+async async function cancelarItem(idPedido, idVariante, nombreItem, wa) {
   if (!confirm(`¿Cancelás ${nombreItem}?`)) return;
 
   try {
@@ -1699,9 +1699,12 @@ async function cancelarItem(idPedido, idVariante, nombreItem, wa) {
 
     if (data.ok) {
       mostrarToast("Artículo cancelado correctamente");
-      // Recargar historial y catálogo
-      buscarHistorial();
       cargarCatalogo();
+      // Recargar historial usando la sesión actual
+      const sesion = cargarSesion();
+      if (sesion && sesion.wa) {
+        buscarHistorialConWA(sesion.wa);
+      }
     } else {
       mostrarToast(data.error || "No se pudo cancelar. Intentá de nuevo.");
     }
