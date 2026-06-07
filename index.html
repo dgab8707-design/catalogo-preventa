@@ -666,13 +666,20 @@
       <h1>Colección</h1>
       <p>Primavera · Preventa</p>
     </div>
-    <button class="btn-carrito" onclick="abrirCarrito()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <path d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"/>
-      </svg>
-      Mi pedido
-      <span class="carrito-count" id="carrito-count">0</span>
-    </button>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn-carrito" onclick="abrirHistorial()" style="padding:8px 12px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:16px;height:16px">
+          <path d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/>
+        </svg>
+      </button>
+      <button class="btn-carrito" onclick="abrirCarrito()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"/>
+        </svg>
+        Mi pedido
+        <span class="carrito-count" id="carrito-count">0</span>
+      </button>
+    </div>
   </div>
 </header>
 
@@ -782,6 +789,51 @@
   </div>
 </div>
 
+<!-- ── Historial drawer ── -->
+<div class="overlay" id="overlay-historial" onclick="cerrarHistorial()" style="display:none"></div>
+<div class="carrito-drawer" id="historial-drawer" style="max-height:90vh">
+  <div class="drawer-handle"></div>
+  <div class="drawer-header">
+    <span class="drawer-titulo">Mis pedidos</span>
+    <button class="btn-cerrar-drawer" onclick="cerrarHistorial()">×</button>
+  </div>
+  <div id="historial-contenido" style="flex:1;overflow-y:auto">
+    <!-- Estado: buscar -->
+    <div id="hist-buscar" style="padding:20px">
+      <p style="font-size:13px;color:var(--gris);margin-bottom:12px">Ingresá tu número de WhatsApp para ver tus pedidos de esta quincena.</p>
+      <div style="display:flex;gap:8px">
+        <input type="tel" id="hist-wa-input" placeholder="Ej: 88887777"
+          style="flex:1;border:1px solid var(--borde);border-radius:8px;padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none"
+          onkeydown="if(event.key==='Enter') buscarHistorial()">
+        <button onclick="buscarHistorial()"
+          style="padding:10px 16px;background:var(--oscuro);color:white;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer">
+          Buscar
+        </button>
+      </div>
+    </div>
+    <!-- Estado: cargando -->
+    <div id="hist-cargando" style="display:none;text-align:center;padding:32px 20px">
+      <div class="spinner"></div>
+      <p style="font-size:13px;color:var(--gris)">Buscando tus pedidos...</p>
+    </div>
+    <!-- Estado: resultados -->
+    <div id="hist-resultados" style="display:none;padding:0 20px 20px">
+      <div id="hist-items"></div>
+      <div style="border-top:1px solid var(--borde);padding-top:14px;margin-top:4px">
+        <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:500;margin-bottom:4px">
+          <span>Total acumulado</span>
+          <span id="hist-total" style="font-family:'Cormorant Garamond',serif;font-size:18px"></span>
+        </div>
+        <p style="font-size:11px;color:var(--gris)">Solo incluye artículos pendientes de entrega.</p>
+      </div>
+    </div>
+    <!-- Estado: vacío -->
+    <div id="hist-vacio" style="display:none;text-align:center;padding:32px 20px;color:var(--gris);font-size:14px">
+      No encontramos pedidos para ese número en esta quincena.
+    </div>
+  </div>
+</div>
+
 <!-- ── Toast ── -->
 <div class="toast" id="toast"></div>
 
@@ -789,7 +841,7 @@
 // ════════════════════════════════════════════════════════
 // CONFIGURACIÓN
 // ════════════════════════════════════════════════════════
-const API_URL = "https://script.google.com/macros/s/AKfycbzVz767AqGJ0cEl1TU9y1m1BPXtvwT2x20eVKEb8D_xty0rtNYRWCsCTm3IrpOqD6lZ2w/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyI42n-d8josj8x-cPchLSVaDliw4l_0TGeOxc0uX8cEHaS-AiL9s9fzXJu9aIggiA0Tg/exec";
 
 // Mapa de nombres de color → hex para los dots visuales
 const COLOR_MAP = {
@@ -1211,6 +1263,139 @@ function mostrarToast(msg) {
   t.textContent = msg;
   t.classList.add("visible");
   setTimeout(() => t.classList.remove("visible"), 3000);
+}
+
+// ════════════════════════════════════════════════════════
+// HISTORIAL
+// ════════════════════════════════════════════════════════
+function abrirHistorial() {
+  document.getElementById("overlay-historial").style.display = "block";
+  document.getElementById("historial-drawer").classList.add("abierto");
+  // Reset estado
+  document.getElementById("hist-buscar").style.display = "block";
+  document.getElementById("hist-cargando").style.display = "none";
+  document.getElementById("hist-resultados").style.display = "none";
+  document.getElementById("hist-vacio").style.display = "none";
+  document.getElementById("hist-wa-input").value = "";
+  setTimeout(() => document.getElementById("hist-wa-input").focus(), 300);
+}
+
+function cerrarHistorial() {
+  document.getElementById("overlay-historial").style.display = "none";
+  document.getElementById("historial-drawer").classList.remove("abierto");
+}
+
+async function buscarHistorial() {
+  const wa = document.getElementById("hist-wa-input").value.trim();
+  if (!wa) { mostrarToast("Ingresá tu número de WhatsApp"); return; }
+
+  document.getElementById("hist-buscar").style.display = "none";
+  document.getElementById("hist-cargando").style.display = "block";
+  document.getElementById("hist-resultados").style.display = "none";
+  document.getElementById("hist-vacio").style.display = "none";
+
+  try {
+    const res  = await fetch(`${API_URL}?action=historial&wa=${encodeURIComponent(wa)}`);
+    const data = await res.json();
+
+    document.getElementById("hist-cargando").style.display = "none";
+
+    if (!data.ok || !data.pedidos || data.pedidos.length === 0) {
+      document.getElementById("hist-vacio").style.display = "block";
+      return;
+    }
+
+    renderHistorial(data.pedidos, data.total, wa);
+    document.getElementById("hist-resultados").style.display = "block";
+
+  } catch(err) {
+    document.getElementById("hist-cargando").style.display = "none";
+    document.getElementById("hist-buscar").style.display = "block";
+    mostrarToast("Error de conexión. Intentá de nuevo.");
+  }
+}
+
+function renderHistorial(pedidos, total, wa) {
+  const cont = document.getElementById("hist-items");
+  cont.innerHTML = "";
+
+  // Agrupar por ID_pedido
+  const grupos = {};
+  pedidos.forEach(p => {
+    if (!grupos[p.id_pedido]) grupos[p.id_pedido] = [];
+    grupos[p.id_pedido].push(p);
+  });
+
+  Object.entries(grupos).forEach(([idPedido, items]) => {
+    const fecha = items[0].fecha;
+    const seccion = document.createElement("div");
+    seccion.style.cssText = "margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--borde)";
+    seccion.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <p style="font-size:11px;font-weight:500;color:var(--gris);text-transform:uppercase;letter-spacing:0.05em">${idPedido}</p>
+        <p style="font-size:11px;color:var(--gris)">${fecha}</p>
+      </div>`;
+
+    items.forEach(item => {
+      const row = document.createElement("div");
+      row.style.cssText = "display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;gap:12px";
+
+      const estadoBg  = item.estado === "entregado" ? "#D8F3DC" : "#FFF3CD";
+      const estadoFg  = item.estado === "entregado" ? "#1B4332" : "#5C3D00";
+      const cancelable = item.estado === "pendiente";
+
+      row.innerHTML = `
+        <div style="flex:1">
+          <p style="font-size:13px;font-weight:500;color:var(--oscuro);margin-bottom:2px">${item.estilo}</p>
+          <p style="font-size:12px;color:var(--gris);margin-bottom:4px">${item.color} · Talla ${item.talla} · x${item.cantidad}</p>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:11px;background:${estadoBg};color:${estadoFg};border-radius:20px;padding:2px 8px">${item.estado}</span>
+            <span style="font-size:13px;color:var(--oscuro)">₡${Number(item.subtotal).toLocaleString("es-CR")}</span>
+          </div>
+        </div>
+        ${cancelable ? `
+        <button onclick="cancelarItem('${item.id_pedido}','${item.id_variante}','${item.estilo} ${item.color} T.${item.talla}','${wa}')"
+          style="font-size:11px;color:#E24B4A;background:none;border:1px solid #E24B4A;border-radius:6px;padding:4px 8px;cursor:pointer;white-space:nowrap;flex-shrink:0">
+          Cancelar
+        </button>` : ''}`;
+
+      seccion.appendChild(row);
+    });
+
+    cont.appendChild(seccion);
+  });
+
+  // Total solo de pendientes
+  const totalPendiente = pedidos
+    .filter(p => p.estado === "pendiente")
+    .reduce((s, p) => s + Number(p.subtotal), 0);
+  document.getElementById("hist-total").textContent = `₡${totalPendiente.toLocaleString("es-CR")}`;
+}
+
+async function cancelarItem(idPedido, idVariante, nombreItem, wa) {
+  if (!confirm(`¿Cancelás ${nombreItem}?`)) return;
+
+  try {
+    const params = new URLSearchParams({
+      action:      "cancelar",
+      id_pedido:   idPedido,
+      id_variante: idVariante,
+      wa
+    });
+    const res  = await fetch(`${API_URL}?${params}`);
+    const data = await res.json();
+
+    if (data.ok) {
+      mostrarToast("Artículo cancelado correctamente");
+      // Recargar historial y catálogo
+      buscarHistorial();
+      cargarCatalogo();
+    } else {
+      mostrarToast(data.error || "No se pudo cancelar. Intentá de nuevo.");
+    }
+  } catch(err) {
+    mostrarToast("Error de conexión.");
+  }
 }
 
 // ════════════════════════════════════════════════════════
