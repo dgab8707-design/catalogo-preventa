@@ -1236,7 +1236,7 @@ function actualizarContadorCarrito() {
 function abrirCarrito() {
   document.getElementById("overlay").classList.add("activo");
   document.getElementById("carrito-drawer").classList.add("abierto");
-  cargarDatosGuardados();
+  aplicarSesion();
   renderCarrito();
 }
 
@@ -1464,8 +1464,8 @@ async function confirmarPedido() {
     const data = await res.json();
 
     if (data.ok) {
-      // Guardar datos de la clienta para la próxima vez
-      guardarDatosCliente(nombre, wa, codigoPaisCarrito);
+      // Actualizar sesión con datos del pedido
+      guardarSesion(nombre, wa, codigoPaisCarrito);
       document.getElementById("confirm-titulo").textContent = `¡Listo, ${nombre.split(" ")[0]}!`;
       document.getElementById("confirm-id-texto").textContent = data.id_pedido;
       document.getElementById("drawer-contenido").style.display = "none";
@@ -1880,69 +1880,6 @@ function cerrarSesion() {
   document.getElementById("pantalla-auth").style.display = "flex";
   mostrarTab("login");
 }
-
-// ════════════════════════════════════════════════════════
-// SELECTOR DE PAÍS / WHATSAPP
-
-// ════════════════════════════════════════════════════════
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// ════════════════════════════════════════════════════════
-// SESIÓN LOCAL
-// ════════════════════════════════════════════════════════
-
-let codigoPaisBienvenida = "506";
-
-
-
-
-
-
-
-function actualizarPreviewBienvenida() {
-  const num = (document.getElementById("bienvenida-wa").value || "").trim().replace(/\s|-/g, "");
-  const codigo = codigoPaisBienvenida === "otro"
-    ? (document.getElementById("auth-codigo").value || "").trim()
-    : codigoPaisBienvenida;
-  const preview = document.getElementById("bienvenida-preview");
-  preview.textContent = num && codigo ? `WhatsApp: +${codigo}${num}` : "";
-}
-
-
-
-
-
-
-
-
 
 // ════════════════════════════════════════════════════════
 // INIT
