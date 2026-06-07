@@ -686,7 +686,8 @@
   <div class="header-inner">
     <div class="brand">
       <h1>Colección</h1>
-      <p>Primavera · Preventa</p>
+      <p id="saludo-sesion" style="display:none;color:var(--rosa);font-size:11px;cursor:pointer" onclick="cerrarSesion()" title="Toca para cerrar sesión"></p>
+      <p id="brand-sub" style="font-size:11px;color:var(--gris)">Primavera · Preventa</p>
     </div>
     <div style="display:flex;gap:8px;align-items:center">
       <button class="btn-carrito" onclick="abrirHistorial()" style="padding:8px 12px">
@@ -1162,6 +1163,7 @@ function actualizarContadorCarrito() {
 function abrirCarrito() {
   document.getElementById("overlay").classList.add("activo");
   document.getElementById("carrito-drawer").classList.add("abierto");
+  cargarDatosGuardados();
   renderCarrito();
 }
 
@@ -1227,6 +1229,66 @@ function quitarItem(idx) {
   carrito.splice(idx, 1);
   actualizarContadorCarrito();
   renderCarrito();
+}
+
+// ════════════════════════════════════════════════════════
+// SESIÓN — recordar datos de la clienta
+// ════════════════════════════════════════════════════════
+const STORAGE_KEY = "catalogo_cliente";
+
+function guardarDatosCliente(nombre, wa, codigoPais) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ nombre, wa, codigoPais }));
+  } catch(e) {}
+}
+
+function cargarDatosGuardados() {
+  try {
+    const datos = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+    if (!datos) return;
+
+    // Nombre
+    const inputNombre = document.getElementById("input-nombre");
+    if (inputNombre && !inputNombre.value) inputNombre.value = datos.nombre || "";
+
+    // WhatsApp
+    const inputWA = document.getElementById("input-wa");
+    if (inputWA && !inputWA.value) {
+      // El WA guardado tiene el código incluido — extraer solo el número
+      const codigo = datos.codigoPais || "506";
+      const num = (datos.wa || "").replace(codigo, "");
+      inputWA.value = num;
+    }
+
+    // País
+    if (datos.codigoPais) {
+      const btnPais = document.querySelector(
+        `#carrito-drawer .pais-btn[data-codigo="${datos.codigoPais}"]`
+      );
+      if (btnPais) {
+        document.querySelectorAll("#carrito-drawer .pais-btn").forEach(b => b.classList.remove("activo"));
+        btnPais.classList.add("activo");
+        codigoPaisCarrito = datos.codigoPais;
+      }
+    }
+
+    actualizarPreviewWA();
+
+    // También precargar en historial
+    const histInput = document.getElementById("hist-wa-input");
+    if (histInput && !histInput.value && datos.wa && datos.codigoPais) {
+      const num = (datos.wa || "").replace(datos.codigoPais, "");
+      histInput.value = num;
+      const btnHist = document.querySelector(
+        `#historial-drawer .pais-btn[data-codigo="${datos.codigoPais}"]`
+      );
+      if (btnHist) {
+        document.querySelectorAll("#historial-drawer .pais-btn").forEach(b => b.classList.remove("activo"));
+        btnHist.classList.add("activo");
+        codigoPaisHist = datos.codigoPais;
+      }
+    }
+  } catch(e) {}
 }
 
 // ════════════════════════════════════════════════════════
@@ -1329,6 +1391,8 @@ async function confirmarPedido() {
     const data = await res.json();
 
     if (data.ok) {
+      // Guardar datos de la clienta para la próxima vez
+      guardarDatosCliente(nombre, wa, codigoPaisCarrito);
       document.getElementById("confirm-titulo").textContent = `¡Listo, ${nombre.split(" ")[0]}!`;
       document.getElementById("confirm-id-texto").textContent = data.id_pedido;
       document.getElementById("drawer-contenido").style.display = "none";
@@ -1380,7 +1444,8 @@ function abrirHistorial() {
   document.getElementById("hist-cargando").style.display = "none";
   document.getElementById("hist-resultados").style.display = "none";
   document.getElementById("hist-vacio").style.display = "none";
-  document.getElementById("hist-wa-input").value = "";
+  // Precargar datos guardados
+  cargarDatosGuardados();
   setTimeout(() => document.getElementById("hist-wa-input").focus(), 300);
 }
 
@@ -1503,9 +1568,84 @@ async function cancelarItem(idPedido, idVariante, nombreItem, wa) {
 }
 
 // ════════════════════════════════════════════════════════
+// SESIÓN LOCAL
+// ════════════════════════════════════════════════════════
+const SESSION_KEY = "catalogo_cliente";
+
+function guardarSesion(nombre, wa, codigoPais) {
+  try {
+    localStorage.setItem(SESSION_KEY, JSON.stringify({ nombre, wa, codigoPais }));
+  } catch(e) {}
+}
+
+function cargarSesion() {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch(e) { return null; }
+}
+
+function aplicarSesion() {
+  const sesion = cargarSesion();
+  if (!sesion) return;
+
+  // Llenar campos del carrito
+  if (sesion.nombre) document.getElementById("input-nombre").value = sesion.nombre;
+  if (sesion.wa)     document.getElementById("input-wa").value = sesion.wa;
+
+  // Seleccionar país guardado
+  if (sesion.codigoPais) {
+    const btnPais = document.querySelector(`#carrito-drawer .pais-btn[data-codigo="${sesion.codigoPais}"]`);
+    if (btnPais) {
+      document.querySelectorAll("#carrito-drawer .pais-btn").forEach(b => b.classList.remove("activo"));
+      btnPais.classList.add("activo");
+      codigoPaisCarrito = sesion.codigoPais;
+    }
+  }
+
+  // Prellenar historial también
+  if (sesion.wa) document.getElementById("hist-wa-input").value = sesion.wa;
+  if (sesion.codigoPais) {
+    const btnHist = document.querySelector(`#historial-drawer .pais-btn[data-codigo="${sesion.codigoPais}"]`);
+    if (btnHist) {
+      document.querySelectorAll("#historial-drawer .pais-btn").forEach(b => b.classList.remove("activo"));
+      btnHist.classList.add("activo");
+      codigoPaisHist = sesion.codigoPais;
+    }
+  }
+
+  actualizarPreviewWA();
+  mostrarSaludoSesion(sesion.nombre);
+}
+
+function mostrarSaludoSesion(nombre) {
+  if (!nombre) return;
+  const saludo = document.getElementById("saludo-sesion");
+  const sub    = document.getElementById("brand-sub");
+  if (saludo) {
+    saludo.textContent = `Hola de nuevo, ${nombre.split(" ")[0]} 👋 (tocar para salir)`;
+    saludo.style.display = "block";
+  }
+  if (sub) sub.style.display = "none";
+}
+
+function cerrarSesion() {
+  try { localStorage.removeItem(SESSION_KEY); } catch(e) {}
+  document.getElementById("input-nombre").value = "";
+  document.getElementById("input-wa").value = "";
+  document.getElementById("wa-preview").textContent = "";
+  const saludo = document.getElementById("saludo-sesion");
+  const sub    = document.getElementById("brand-sub");
+  if (saludo) saludo.style.display = "none";
+  if (sub)    sub.style.display = "block";
+  mostrarToast("Sesión cerrada");
+}
+
+// ════════════════════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════════════════════
 cargarCatalogo();
+setTimeout(aplicarSesion, 500);
 </script>
 </body>
 </html>
