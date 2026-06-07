@@ -706,6 +706,39 @@
   </div>
 </header>
 
+<!-- ── Pantalla de bienvenida (solo si no hay sesión) ── -->
+<div id="pantalla-bienvenida" style="display:none;position:fixed;inset:0;background:var(--blanco);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px">
+  <h1 style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;margin-bottom:4px;text-align:center">Colección</h1>
+  <p style="font-size:13px;color:var(--gris);margin-bottom:32px">Primavera · Preventa</p>
+  <div style="width:100%;max-width:360px">
+    <p style="font-size:14px;color:var(--oscuro);margin-bottom:16px;text-align:center">Para comenzar, ingresá tus datos</p>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
+      <input type="text" id="bienvenida-nombre" placeholder="Tu nombre"
+        style="width:100%;box-sizing:border-box;border:1px solid var(--borde);border-radius:10px;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;background:var(--crema)"
+        onfocus="this.style.borderColor='var(--rosa)'" onblur="this.style.borderColor='var(--borde)'">
+      <div style="display:flex;gap:6px;flex-wrap:wrap" id="bienvenida-paises">
+        <button type="button" class="pais-btn activo" data-codigo="506" onclick="seleccionarPaisBienvenida(this)">🇨🇷 Costa Rica</button>
+        <button type="button" class="pais-btn" data-codigo="507" onclick="seleccionarPaisBienvenida(this)">🇵🇦 Panamá</button>
+        <button type="button" class="pais-btn" data-codigo="1" onclick="seleccionarPaisBienvenida(this)">🇺🇸 USA</button>
+        <button type="button" class="pais-btn" data-codigo="otro" onclick="seleccionarPaisBienvenida(this)">Otro</button>
+      </div>
+      <div id="bienvenida-otro-wrap" style="display:none">
+        <input type="number" id="bienvenida-codigo" placeholder="Código de país (ej: 34)"
+          style="width:100%;box-sizing:border-box;border:1px solid var(--borde);border-radius:10px;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none">
+      </div>
+      <input type="tel" id="bienvenida-wa" placeholder="Número sin código de país"
+        style="width:100%;box-sizing:border-box;border:1px solid var(--borde);border-radius:10px;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;background:var(--crema)"
+        onfocus="this.style.borderColor='var(--rosa)'" onblur="this.style.borderColor='var(--borde)'"
+        onkeydown="if(event.key==='Enter') iniciarSesionBienvenida()">
+      <p id="bienvenida-preview" style="font-size:11px;color:var(--gris);margin:0;min-height:16px"></p>
+    </div>
+    <button onclick="iniciarSesionBienvenida()"
+      style="width:100%;padding:14px;background:var(--rosa);color:white;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer">
+      Entrar al catálogo
+    </button>
+  </div>
+</div>
+
 <!-- ── Main ── -->
 <main>
 
@@ -1456,7 +1489,11 @@ function cerrarHistorial() {
 
 async function buscarHistorial() {
   const wa = construirWA("historial");
-  if (!wa) { mostrarToast("Ingresá tu número de WhatsApp"); return; }
+  if (!wa || wa.length < 4) { mostrarToast("Ingresá tu número de WhatsApp"); return; }
+  await buscarHistorialConWA(wa);
+}
+
+async function buscarHistorialConWA(wa) {
 
   document.getElementById("hist-buscar").style.display = "none";
   document.getElementById("hist-cargando").style.display = "block";
@@ -1543,6 +1580,8 @@ function renderHistorial(pedidos, total, wa) {
 
 async function cancelarItem(idPedido, idVariante, nombreItem, wa) {
   if (!confirm(`¿Cancelás ${nombreItem}?`)) return;
+  // Normalizar WA por si acaso
+  wa = (wa || "").trim().replace(/^\+/, "");
 
   try {
     const params = new URLSearchParams({
@@ -1571,6 +1610,7 @@ async function cancelarItem(idPedido, idVariante, nombreItem, wa) {
 // SESIÓN LOCAL
 // ════════════════════════════════════════════════════════
 const SESSION_KEY = "catalogo_cliente";
+let codigoPaisBienvenida = "506";
 
 function guardarSesion(nombre, wa, codigoPais) {
   try {
@@ -1585,35 +1625,58 @@ function cargarSesion() {
   } catch(e) { return null; }
 }
 
+function seleccionarPaisBienvenida(btn) {
+  document.querySelectorAll("#bienvenida-paises .pais-btn").forEach(b => b.classList.remove("activo"));
+  btn.classList.add("activo");
+  codigoPaisBienvenida = btn.dataset.codigo;
+  document.getElementById("bienvenida-otro-wrap").style.display = codigoPaisBienvenida === "otro" ? "block" : "none";
+  actualizarPreviewBienvenida();
+}
+
+function actualizarPreviewBienvenida() {
+  const num = (document.getElementById("bienvenida-wa").value || "").trim().replace(/\s|-/g, "");
+  const codigo = codigoPaisBienvenida === "otro"
+    ? (document.getElementById("bienvenida-codigo").value || "").trim()
+    : codigoPaisBienvenida;
+  const preview = document.getElementById("bienvenida-preview");
+  preview.textContent = num && codigo ? `WhatsApp: +${codigo}${num}` : "";
+}
+
+function iniciarSesionBienvenida() {
+  const nombre = document.getElementById("bienvenida-nombre").value.trim();
+  const numRaw = document.getElementById("bienvenida-wa").value.trim().replace(/\s|-/g, "");
+  const codigo = codigoPaisBienvenida === "otro"
+    ? (document.getElementById("bienvenida-codigo").value || "").trim()
+    : codigoPaisBienvenida;
+
+  if (!nombre) { document.getElementById("bienvenida-nombre").style.borderColor = "var(--rosa)"; return; }
+  if (!numRaw) { document.getElementById("bienvenida-wa").style.borderColor = "var(--rosa)"; return; }
+
+  const wa = `${codigo}${numRaw}`;
+  guardarSesion(nombre, wa, codigo);
+  aplicarSesion();
+  document.getElementById("pantalla-bienvenida").style.display = "none";
+}
+
 function aplicarSesion() {
   const sesion = cargarSesion();
   if (!sesion) return;
 
   // Llenar campos del carrito
   if (sesion.nombre) document.getElementById("input-nombre").value = sesion.nombre;
-  if (sesion.wa)     document.getElementById("input-wa").value = sesion.wa;
 
-  // Seleccionar país guardado
-  if (sesion.codigoPais) {
-    const btnPais = document.querySelector(`#carrito-drawer .pais-btn[data-codigo="${sesion.codigoPais}"]`);
-    if (btnPais) {
-      document.querySelectorAll("#carrito-drawer .pais-btn").forEach(b => b.classList.remove("activo"));
-      btnPais.classList.add("activo");
-      codigoPaisCarrito = sesion.codigoPais;
-    }
+  // El WA ya tiene código de país incluido, mostramos solo el número sin código
+  const waCompleto = sesion.wa || "";
+  const codigo = sesion.codigoPais || "506";
+  const numSolo = waCompleto.startsWith(codigo) ? waCompleto.slice(codigo.length) : waCompleto;
+
+  document.getElementById("input-wa").value = numSolo;
+  codigoPaisCarrito = codigo;
+  const btnPais = document.querySelector(`#carrito-drawer .pais-btn[data-codigo="${codigo}"]`);
+  if (btnPais) {
+    document.querySelectorAll("#carrito-drawer .pais-btn").forEach(b => b.classList.remove("activo"));
+    btnPais.classList.add("activo");
   }
-
-  // Prellenar historial también
-  if (sesion.wa) document.getElementById("hist-wa-input").value = sesion.wa;
-  if (sesion.codigoPais) {
-    const btnHist = document.querySelector(`#historial-drawer .pais-btn[data-codigo="${sesion.codigoPais}"]`);
-    if (btnHist) {
-      document.querySelectorAll("#historial-drawer .pais-btn").forEach(b => b.classList.remove("activo"));
-      btnHist.classList.add("activo");
-      codigoPaisHist = sesion.codigoPais;
-    }
-  }
-
   actualizarPreviewWA();
   mostrarSaludoSesion(sesion.nombre);
 }
@@ -1623,7 +1686,7 @@ function mostrarSaludoSesion(nombre) {
   const saludo = document.getElementById("saludo-sesion");
   const sub    = document.getElementById("brand-sub");
   if (saludo) {
-    saludo.textContent = `Hola de nuevo, ${nombre.split(" ")[0]} 👋 (tocar para salir)`;
+    saludo.textContent = `Hola, ${nombre.split(" ")[0]} 👋 (tocar para salir)`;
     saludo.style.display = "block";
   }
   if (sub) sub.style.display = "none";
@@ -1638,14 +1701,22 @@ function cerrarSesion() {
   const sub    = document.getElementById("brand-sub");
   if (saludo) saludo.style.display = "none";
   if (sub)    sub.style.display = "block";
-  mostrarToast("Sesión cerrada");
+  // Mostrar pantalla de bienvenida de nuevo
+  document.getElementById("pantalla-bienvenida").style.display = "flex";
 }
 
 // ════════════════════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════════════════════
 cargarCatalogo();
-setTimeout(aplicarSesion, 500);
+// Mostrar bienvenida si no hay sesión, aplicarla si existe
+const _sesionInicial = cargarSesion();
+if (_sesionInicial) {
+  document.getElementById("pantalla-bienvenida").style.display = "none";
+  aplicarSesion();
+} else {
+  document.getElementById("pantalla-bienvenida").style.display = "flex";
+}
 </script>
 </body>
 </html>
