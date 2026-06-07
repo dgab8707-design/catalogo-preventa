@@ -1684,7 +1684,7 @@ function renderHistorial(pedidos, total, wa) {
   document.getElementById("hist-total").textContent = `₡${totalPendiente.toLocaleString("es-CR")}`;
 }
 
-async async function cancelarItem(idPedido, idVariante, nombreItem, wa) {
+async function cancelarItem(idPedido, idVariante, nombreItem, wa) {
   if (!confirm(`¿Cancelás ${nombreItem}?`)) return;
 
   try {
