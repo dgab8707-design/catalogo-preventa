@@ -1697,16 +1697,24 @@ async function cancelarItem(idPedido, idVariante, nombreItem, wa, cant) {
 
   mostrarToast("Cancelando...");
 
-  try {
-    const params = new URLSearchParams({
-      action:      "cancelar",
-      id_pedido:   idPedido,
-      id_variante: idVariante,
-      wa:          wa,
-      cant:        String(cant)
-    });
-    const res  = await fetch(`${API_URL}?${params}`);
-    const data = await res.json();
+ try {
+  console.log("Cancelar:", {
+    idPedido,
+    idVariante,
+    wa,
+    cant
+  });
+
+  const params = new URLSearchParams({
+    action:      "cancelar",
+    id_pedido:   idPedido,
+    id_variante: idVariante,
+    wa:          wa,
+    cant:        String(cant)
+  });
+
+  const res  = await fetch(`${API_URL}?${params}`);
+  const data = await res.json();
 
     if (data.ok) {
       mostrarToast("Artículo cancelado correctamente");
