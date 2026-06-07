@@ -1687,12 +1687,18 @@ function renderHistorial(pedidos, total, wa) {
 async function cancelarItem(idPedido, idVariante, nombreItem, wa) {
   if (!confirm(`¿Cancelás ${nombreItem}?`)) return;
 
+  // Usar el WA de la sesión si existe (formato correcto), si no el pasado
+  const sesion = cargarSesion();
+  const waReal = (sesion && sesion.wa) ? sesion.wa : wa;
+
+  mostrarToast("Cancelando...");
+
   try {
     const params = new URLSearchParams({
       action:      "cancelar",
       id_pedido:   idPedido,
       id_variante: idVariante,
-      wa
+      wa:          waReal
     });
     const res  = await fetch(`${API_URL}?${params}`);
     const data = await res.json();
@@ -1700,11 +1706,10 @@ async function cancelarItem(idPedido, idVariante, nombreItem, wa) {
     if (data.ok) {
       mostrarToast("Artículo cancelado correctamente");
       cargarCatalogo();
-      // Recargar historial usando la sesión actual
-      const sesion = cargarSesion();
-      if (sesion && sesion.wa) {
-        buscarHistorialConWA(sesion.wa);
-      }
+      // Esperar a que el Sheet se actualice antes de releer el historial
+      setTimeout(() => {
+        if (waReal) buscarHistorialConWA(waReal);
+      }, 1500);
     } else {
       mostrarToast(data.error || "No se pudo cancelar. Intentá de nuevo.");
     }
