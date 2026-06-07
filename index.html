@@ -960,7 +960,7 @@
 // ════════════════════════════════════════════════════════
 // CONFIGURACIÓN
 // ════════════════════════════════════════════════════════
-const API_URL = "https://script.google.com/macros/s/AKfycbx-dZ1JYV_HxlpnOPhjVrtiOPi2WIdOKEf8LOH29BQrlNfUZUfXnazT3tLW0fS9DgWU5w/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwGKGt3d3aOB65r1s5MVZzHP3cswosqnRkQJOgQrbtMbQMKeeK8jV_2ZSRololD9A_BKQ/exec";
 
 // Mapa de nombres de color → hex para los dots visuales
 const COLOR_MAP = {
@@ -1666,10 +1666,17 @@ function renderHistorial(pedidos, total, wa) {
           </div>
         </div>
         ${cancelable ? `
-        <button onclick="cancelarItem('${item.id_pedido}','${item.id_variante}','${item.estilo} ${item.color} T.${item.talla}','${item.wa || wa}')"
-          style="font-size:11px;color:#E24B4A;background:none;border:1px solid #E24B4A;border-radius:6px;padding:4px 8px;cursor:pointer;white-space:nowrap;flex-shrink:0">
-          Cancelar
-        </button>` : ''}`;
+        <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
+          ${item.cantidad > 1 ? `
+          <button onclick="cancelarItem('${item.id_pedido}','${item.id_variante}','${item.estilo} ${item.color} T.${item.talla}','${item.wa || wa}',1)"
+            style="font-size:11px;color:#854F0B;background:none;border:1px solid #D4A843;border-radius:6px;padding:4px 8px;cursor:pointer;white-space:nowrap">
+            −1 unidad
+          </button>` : ''}
+          <button onclick="cancelarItem('${item.id_pedido}','${item.id_variante}','${item.estilo} ${item.color} T.${item.talla}','${item.wa || wa}',${item.cantidad})"
+            style="font-size:11px;color:#E24B4A;background:none;border:1px solid #E24B4A;border-radius:6px;padding:4px 8px;cursor:pointer;white-space:nowrap">
+            Cancelar${item.cantidad > 1 ? ' todo' : ''}
+          </button>
+        </div>` : ''}`;
 
       seccion.appendChild(row);
     });
@@ -1684,10 +1691,10 @@ function renderHistorial(pedidos, total, wa) {
   document.getElementById("hist-total").textContent = `₡${totalPendiente.toLocaleString("es-CR")}`;
 }
 
-async function cancelarItem(idPedido, idVariante, nombreItem, wa) {
-  if (!confirm(`¿Cancelás ${nombreItem}?`)) return;
+async function cancelarItem(idPedido, idVariante, nombreItem, wa, cant) {
+  const msg = cant === 1 ? `¿Cancelás 1 unidad de ${nombreItem}?` : `¿Cancelás ${nombreItem} (${cant} unidades)?`;
+  if (!confirm(msg)) return;
 
-  // wa viene del pedido mostrado en el historial — ese es el correcto
   mostrarToast("Cancelando...");
 
   try {
@@ -1695,7 +1702,8 @@ async function cancelarItem(idPedido, idVariante, nombreItem, wa) {
       action:      "cancelar",
       id_pedido:   idPedido,
       id_variante: idVariante,
-      wa:          wa
+      wa:          wa,
+      cant:        String(cant)
     });
     const res  = await fetch(`${API_URL}?${params}`);
     const data = await res.json();
