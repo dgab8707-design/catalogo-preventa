@@ -628,6 +628,28 @@
   }
   .btn-nuevo-pedido:hover { border-color: var(--rosa); }
 
+  /* ── Selector de país ── */
+  .pais-selector { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+  .pais-label { font-size: 11px; font-weight: 500; color: var(--gris); text-transform: uppercase; letter-spacing: 0.08em; }
+  .pais-opciones { display: flex; gap: 6px; flex-wrap: wrap; }
+  .pais-btn {
+    display: flex; align-items: center; gap: 5px;
+    padding: 6px 12px; border: 1.5px solid var(--borde); border-radius: 50px;
+    font-size: 13px; cursor: pointer; background: var(--blanco);
+    font-family: 'DM Sans', sans-serif; color: var(--oscuro);
+    transition: border-color 0.15s;
+  }
+  .pais-btn:hover { border-color: #C7C4BE; }
+  .pais-btn.activo { border-color: var(--rosa); background: var(--rosa-l); color: var(--rosa); }
+  .pais-otro { display: none; margin-top: 4px; }
+  .pais-otro input {
+    width: 100%; border: 1px solid var(--borde); border-radius: 8px;
+    padding: 8px 14px; font-family: 'DM Sans', sans-serif; font-size: 13px;
+    outline: none; background: var(--crema);
+  }
+  .pais-otro input:focus { border-color: var(--rosa); background: white; }
+  .wa-preview { font-size: 11px; color: var(--gris); margin-top: 4px; min-height: 16px; }
+
   /* ── Error toast ── */
   .toast {
     position: fixed;
@@ -765,7 +787,20 @@
       </div>
       <div class="id-drawer">
         <input type="text" id="input-nombre" placeholder="Tu nombre" autocomplete="name">
-        <input type="tel"  id="input-wa"     placeholder="WhatsApp (ej: 8888-8888)" autocomplete="tel">
+        <div class="pais-selector">
+          <span class="pais-label">País</span>
+          <div class="pais-opciones">
+            <button type="button" class="pais-btn activo" data-codigo="506" onclick="seleccionarPais(this)">🇨🇷 Costa Rica</button>
+            <button type="button" class="pais-btn" data-codigo="507" onclick="seleccionarPais(this)">🇵🇦 Panamá</button>
+            <button type="button" class="pais-btn" data-codigo="1" onclick="seleccionarPais(this)">🇺🇸 USA</button>
+            <button type="button" class="pais-btn" data-codigo="otro" onclick="seleccionarPais(this)">Otro</button>
+          </div>
+          <div class="pais-otro" id="pais-otro-wrap">
+            <input type="number" id="input-codigo-pais" placeholder="Código de país (ej: 34)" min="1" max="999">
+          </div>
+        </div>
+        <input type="tel" id="input-wa" placeholder="Número sin código de país" autocomplete="tel" oninput="actualizarPreviewWA()">
+        <p class="wa-preview" id="wa-preview"></p>
       </div>
       <button class="btn-confirmar" id="btn-confirmar" onclick="confirmarPedido()">
         Confirmar pedido
@@ -801,8 +836,18 @@
     <!-- Estado: buscar -->
     <div id="hist-buscar" style="padding:20px">
       <p style="font-size:13px;color:var(--gris);margin-bottom:12px">Ingresá tu número de WhatsApp para ver tus pedidos de esta quincena.</p>
+      <div class="pais-opciones" style="margin-bottom:8px">
+        <button type="button" class="pais-btn activo" data-codigo="506" onclick="seleccionarPaisHist(this)">🇨🇷 CR</button>
+        <button type="button" class="pais-btn" data-codigo="507" onclick="seleccionarPaisHist(this)">🇵🇦 PA</button>
+        <button type="button" class="pais-btn" data-codigo="1" onclick="seleccionarPaisHist(this)">🇺🇸 USA</button>
+        <button type="button" class="pais-btn" data-codigo="otro" onclick="seleccionarPaisHist(this)">Otro</button>
+      </div>
+      <div class="pais-otro" id="hist-pais-otro-wrap" style="margin-bottom:8px">
+        <input type="number" id="hist-codigo-pais" placeholder="Código de país (ej: 34)" min="1" max="999"
+          style="width:100%;border:1px solid var(--borde);border-radius:8px;padding:8px 14px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;box-sizing:border-box">
+      </div>
       <div style="display:flex;gap:8px">
-        <input type="tel" id="hist-wa-input" placeholder="Ej: 88887777"
+        <input type="tel" id="hist-wa-input" placeholder="Número sin código de país"
           style="flex:1;border:1px solid var(--borde);border-radius:8px;padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none"
           onkeydown="if(event.key==='Enter') buscarHistorial()">
         <button onclick="buscarHistorial()"
@@ -841,7 +886,7 @@
 // ════════════════════════════════════════════════════════
 // CONFIGURACIÓN
 // ════════════════════════════════════════════════════════
-const API_URL = "https://script.google.com/macros/s/AKfycbw2huv0d5OIRDq2xwzBgkEvGyEhtTJEINAKtQ_yWwWCehI4AuTkZK0ewkRLtwZdQy1wHw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbz2Px7_bxSsprfAfQwz2nBAoHvs2inU0UmcNHxK2hSiHRFz1m4T3wZf3Ks5C6BWDn37jQ/exec";
 
 // Mapa de nombres de color → hex para los dots visuales
 const COLOR_MAP = {
@@ -1185,13 +1230,72 @@ function quitarItem(idx) {
 }
 
 // ════════════════════════════════════════════════════════
+// SELECTOR DE PAÍS / WHATSAPP
+// ════════════════════════════════════════════════════════
+let codigoPaisCarrito = "506";
+let codigoPaisHist    = "506";
+
+function seleccionarPais(btn) {
+  document.querySelectorAll(".pais-btn").forEach(b => {
+    if (b.closest("#carrito-drawer") || !b.closest("#historial-drawer")) b.classList.remove("activo");
+  });
+  btn.classList.add("activo");
+  const codigo = btn.dataset.codigo;
+  codigoPaisCarrito = codigo;
+  const otroWrap = document.getElementById("pais-otro-wrap");
+  otroWrap.style.display = codigo === "otro" ? "block" : "none";
+  actualizarPreviewWA();
+}
+
+function seleccionarPaisHist(btn) {
+  document.querySelectorAll("#historial-drawer .pais-btn").forEach(b => b.classList.remove("activo"));
+  btn.classList.add("activo");
+  const codigo = btn.dataset.codigo;
+  codigoPaisHist = codigo;
+  const otroWrap = document.getElementById("hist-pais-otro-wrap");
+  otroWrap.style.display = codigo === "otro" ? "block" : "none";
+}
+
+function getCodigoPais(tipo) {
+  if (tipo === "carrito") {
+    if (codigoPaisCarrito === "otro") {
+      return document.getElementById("input-codigo-pais").value.trim();
+    }
+    return codigoPaisCarrito;
+  } else {
+    if (codigoPaisHist === "otro") {
+      return document.getElementById("hist-codigo-pais").value.trim();
+    }
+    return codigoPaisHist;
+  }
+}
+
+function actualizarPreviewWA() {
+  const num = document.getElementById("input-wa").value.trim().replace(/\s|-/g, "");
+  const codigo = getCodigoPais("carrito");
+  const preview = document.getElementById("wa-preview");
+  if (num && codigo) {
+    preview.textContent = `WhatsApp: +${codigo}${num}`;
+  } else {
+    preview.textContent = "";
+  }
+}
+
+function construirWA(tipo) {
+  const inputId = tipo === "carrito" ? "input-wa" : "hist-wa-input";
+  const num = document.getElementById(inputId).value.trim().replace(/\s|-/g, "");
+  const codigo = getCodigoPais(tipo);
+  return `${codigo}${num}`;
+}
+
+// ════════════════════════════════════════════════════════
 // CONFIRMAR PEDIDO
 // ════════════════════════════════════════════════════════
 async function confirmarPedido() {
   if (enviando || carrito.length === 0) return;
 
   const nombre = document.getElementById("input-nombre").value.trim();
-  const wa     = document.getElementById("input-wa").value.trim();
+  const wa     = construirWA("carrito");
 
   document.getElementById("input-nombre").classList.remove("error");
   document.getElementById("input-wa").classList.remove("error");
@@ -1286,7 +1390,7 @@ function cerrarHistorial() {
 }
 
 async function buscarHistorial() {
-  const wa = document.getElementById("hist-wa-input").value.trim();
+  const wa = construirWA("historial");
   if (!wa) { mostrarToast("Ingresá tu número de WhatsApp"); return; }
 
   document.getElementById("hist-buscar").style.display = "none";
