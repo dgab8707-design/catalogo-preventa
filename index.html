@@ -1512,14 +1512,80 @@ function mostrarToast(msg) {
 function abrirHistorial() {
   document.getElementById("overlay-historial").style.display = "block";
   document.getElementById("historial-drawer").classList.add("abierto");
-  // Reset estado
-  document.getElementById("hist-buscar").style.display = "block";
-  document.getElementById("hist-cargando").style.display = "none";
+
+  const sesion = cargarSesion();
+  if (sesion && sesion.wa) {
+    // Con sesión: pedir PIN antes de mostrar historial
+    mostrarPinHistorial(sesion);
+  } else {
+    // Sin sesión: mostrar campo de búsqueda
+    document.getElementById("hist-buscar").style.display = "block";
+    document.getElementById("hist-cargando").style.display = "none";
+    document.getElementById("hist-resultados").style.display = "none";
+    document.getElementById("hist-vacio").style.display = "none";
+    document.getElementById("hist-wa-input").value = "";
+  }
+}
+
+function mostrarPinHistorial(sesion) {
+  // Reemplazar el contenido del drawer con pantalla de PIN
+  const cont = document.getElementById("hist-buscar");
+  cont.style.display = "block";
   document.getElementById("hist-resultados").style.display = "none";
   document.getElementById("hist-vacio").style.display = "none";
-  // Precargar datos guardados
-  cargarDatosGuardados();
-  setTimeout(() => document.getElementById("hist-wa-input").focus(), 300);
+  document.getElementById("hist-cargando").style.display = "none";
+  cont.innerHTML = `
+    <p style="font-size:13px;color:var(--gris);margin-bottom:12px">
+      Hola, <strong>${sesion.nombre.split(" ")[0]}</strong>. Ingresá tu PIN para ver tus pedidos.
+    </p>
+    <div style="position:relative;margin-bottom:8px">
+      <input type="password" id="hist-pin-input" placeholder="PIN de 4 dígitos"
+        maxlength="4" inputmode="numeric"
+        style="width:100%;box-sizing:border-box;border:1px solid var(--borde);border-radius:8px;padding:10px 50px 10px 14px;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;letter-spacing:0.3em"
+        onfocus="this.style.borderColor='var(--rosa)'" onblur="this.style.borderColor='var(--borde)'"
+        onkeydown="if(event.key==='Enter') verificarPinHistorial()">
+      <button type="button" onclick="document.getElementById('hist-pin-input').type=document.getElementById('hist-pin-input').type==='password'?'text':'password'"
+        style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--gris);font-size:11px">VER</button>
+    </div>
+    <p id="hist-pin-error" style="font-size:12px;color:#E24B4A;margin:0 0 8px;display:none"></p>
+    <button onclick="verificarPinHistorial()"
+      style="width:100%;padding:10px;background:var(--oscuro);color:white;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer">
+      Ver mis pedidos
+    </button>
+  `;
+  setTimeout(() => {
+    const inp = document.getElementById("hist-pin-input");
+    if (inp) inp.focus();
+  }, 300);
+}
+
+async function verificarPinHistorial() {
+  const sesion = cargarSesion();
+  if (!sesion) return;
+  const pin = (document.getElementById("hist-pin-input")?.value || "").trim();
+  if (!pin || pin.length !== 4) {
+    const err = document.getElementById("hist-pin-error");
+    if (err) { err.textContent = "Ingresá tu PIN de 4 dígitos"; err.style.display = "block"; }
+    return;
+  }
+
+  // Validar PIN contra el script
+  try {
+    const params = new URLSearchParams({ action: "login", wa: sesion.wa, pin, codigo_pais: sesion.codigoPais });
+    const res  = await fetch(`${API_URL}?${params}`);
+    const data = await res.json();
+
+    if (data.ok) {
+      // PIN correcto: cargar historial
+      document.getElementById("hist-buscar").style.display = "none";
+      buscarHistorialConWA(sesion.wa);
+    } else {
+      const err = document.getElementById("hist-pin-error");
+      if (err) { err.textContent = "PIN incorrecto"; err.style.display = "block"; }
+    }
+  } catch(e) {
+    mostrarToast("Error de conexión");
+  }
 }
 
 function cerrarHistorial() {
