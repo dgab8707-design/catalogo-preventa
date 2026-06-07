@@ -881,7 +881,8 @@ function renderCatalogo() {
         <p class="producto-precio">${precioFmt}</p>
         ${agotado
           ? `<span class="badge-agotado">Agotado</span>`
-          : `<div class="color-preview">${dotsHTML}</div>`
+          : `<div class="color-preview">${dotsHTML}</div>
+             ${totalStock <= 5 && totalStock > 0 ? `<p style="font-size:11px;color:#854F0B;margin-top:5px">¡Solo ${totalStock} disponibles!</p>` : ''}`
         }
       </div>`;
     grid.appendChild(card);
@@ -1088,18 +1089,41 @@ function renderCarrito() {
     const div = document.createElement("div");
     div.className = "item-carrito";
     div.innerHTML = `
-      <div class="item-info">
+      <div class="item-info" style="flex:1">
         <p class="item-nombre">${item.estilo}</p>
-        <p class="item-variante">${item.color} · Talla ${item.talla} · x${item.cantidad}</p>
-        <p class="item-precio">₡${subtotal.toLocaleString("es-CR")}</p>
+        <p class="item-variante">${item.color} · Talla ${item.talla}</p>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:6px">
+          <div style="display:flex;align-items:center;border:1px solid var(--borde);border-radius:6px;overflow:hidden">
+            <button onclick="cambiarCantidadCarrito(${idx},-1)" style="width:28px;height:28px;background:none;border:none;font-size:16px;cursor:pointer;color:var(--gris)">−</button>
+            <span style="width:28px;text-align:center;font-size:13px;font-weight:500;border-left:1px solid var(--borde);border-right:1px solid var(--borde);line-height:28px">${item.cantidad}</span>
+            <button onclick="cambiarCantidadCarrito(${idx},1)" style="width:28px;height:28px;background:none;border:none;font-size:16px;cursor:pointer;color:var(--gris)">+</button>
+          </div>
+          <p class="item-precio">₡${subtotal.toLocaleString("es-CR")}</p>
+        </div>
       </div>
-      <button class="btn-quitar" onclick="quitarItem(${idx})" aria-label="Quitar">×</button>`;
+      <button class="btn-quitar" onclick="quitarItem(${idx})" aria-label="Quitar" style="margin-left:8px">×</button>`;
     cont.appendChild(div);
   });
 
   const total = carrito.reduce((s, i) => s + i.precio * i.cantidad, 0);
   document.getElementById("total-monto").textContent = `₡${total.toLocaleString("es-CR")}`;
   document.getElementById("btn-confirmar").disabled = false;
+}
+
+function cambiarCantidadCarrito(idx, delta) {
+  const item = carrito[idx];
+  if (!item) return;
+  const nueva = item.cantidad + delta;
+  if (nueva <= 0) {
+    // Confirmar antes de eliminar
+    if (confirm(`¿Quitás ${item.estilo} ${item.color} talla ${item.talla} del pedido?`)) {
+      quitarItem(idx);
+    }
+    return;
+  }
+  item.cantidad = nueva;
+  actualizarContadorCarrito();
+  renderCarrito();
 }
 
 function quitarItem(idx) {
