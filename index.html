@@ -960,7 +960,7 @@
 // ════════════════════════════════════════════════════════
 // CONFIGURACIÓN
 // ════════════════════════════════════════════════════════
-const API_URL = "https://script.google.com/macros/s/AKfycbynFrcaH3eqdyx3bNhELxEIEz-W75FSj8-bSbENqFgJVQhvoOd0qfvyOzLxb9KFLCFsYQ/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbx-dZ1JYV_HxlpnOPhjVrtiOPi2WIdOKEf8LOH29BQrlNfUZUfXnazT3tLW0fS9DgWU5w/exec";
 
 // Mapa de nombres de color → hex para los dots visuales
 const COLOR_MAP = {
@@ -1666,7 +1666,7 @@ function renderHistorial(pedidos, total, wa) {
           </div>
         </div>
         ${cancelable ? `
-        <button onclick="cancelarItem('${item.id_pedido}','${item.id_variante}','${item.estilo} ${item.color} T.${item.talla}','${wa}')"
+        <button onclick="cancelarItem('${item.id_pedido}','${item.id_variante}','${item.estilo} ${item.color} T.${item.talla}','${item.wa || wa}')"
           style="font-size:11px;color:#E24B4A;background:none;border:1px solid #E24B4A;border-radius:6px;padding:4px 8px;cursor:pointer;white-space:nowrap;flex-shrink:0">
           Cancelar
         </button>` : ''}`;
@@ -1687,10 +1687,7 @@ function renderHistorial(pedidos, total, wa) {
 async function cancelarItem(idPedido, idVariante, nombreItem, wa) {
   if (!confirm(`¿Cancelás ${nombreItem}?`)) return;
 
-  // Usar el WA de la sesión si existe (formato correcto), si no el pasado
-  const sesion = cargarSesion();
-  const waReal = (sesion && sesion.wa) ? sesion.wa : wa;
-
+  // wa viene del pedido mostrado en el historial — ese es el correcto
   mostrarToast("Cancelando...");
 
   try {
@@ -1698,7 +1695,7 @@ async function cancelarItem(idPedido, idVariante, nombreItem, wa) {
       action:      "cancelar",
       id_pedido:   idPedido,
       id_variante: idVariante,
-      wa:          waReal
+      wa:          wa
     });
     const res  = await fetch(`${API_URL}?${params}`);
     const data = await res.json();
@@ -1706,10 +1703,8 @@ async function cancelarItem(idPedido, idVariante, nombreItem, wa) {
     if (data.ok) {
       mostrarToast("Artículo cancelado correctamente");
       cargarCatalogo();
-      // Esperar a que el Sheet se actualice antes de releer el historial
-      setTimeout(() => {
-        if (waReal) buscarHistorialConWA(waReal);
-      }, 1500);
+      // Esperar a que el Sheet se actualice antes de releer
+      setTimeout(() => buscarHistorialConWA(wa), 1500);
     } else {
       mostrarToast(data.error || "No se pudo cancelar. Intentá de nuevo.");
     }
