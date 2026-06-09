@@ -793,7 +793,12 @@ async function buscarHistorialConWA(wa) {
     const data = await (await fetch(`${API_URL}?action=historial&wa=${encodeURIComponent(wa)}`)).json();
     document.getElementById("hist-cargando").style.display = "none";
     if (!data.ok || !data.pedidos || data.pedidos.length === 0) { document.getElementById("hist-vacio").style.display = "block"; return; }
-    renderHistorial(data.pedidos, data.total, wa);
+    renderHistorial(
+  data.pedidos,
+  data.total,
+  wa,
+  data.fecha_limite_cambios
+);
     document.getElementById("hist-resultados").style.display = "block";
     // Aviso congelado
     const aviso = document.getElementById("aviso-congelado");
@@ -843,8 +848,20 @@ function actualizarNotasHistorial() {
     }
   }
 }
-function renderHistorial(pedidos, total, wa) {
+function renderHistorial(pedidos, total, wa, fechaLimite) {
   const cont = document.getElementById("hist-items"); cont.innerHTML = "";
+  if (fechaLimite) {
+  const aviso = document.createElement("div");
+  aviso.style.cssText =
+    "background:#FFF8E7;border:1px solid #E8D28A;border-radius:10px;padding:10px;margin-bottom:16px;font-size:12px;color:#5C3D00";
+
+  aviso.innerHTML = `
+    ⏰ Podés modificar o cancelar artículos hasta:<br>
+    <strong>${new Date(fechaLimite).toLocaleString("es-CR")}</strong>
+  `;
+
+  cont.appendChild(aviso);
+}
   const grupos = {};
   pedidos.forEach(p => { if (!grupos[p.id_pedido]) grupos[p.id_pedido] = []; grupos[p.id_pedido].push(p); });
   Object.entries(grupos).forEach(([idPedido, items]) => {
