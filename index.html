@@ -136,7 +136,7 @@
 <body>
 
 <div class="banner" id="banner-normal">
-  Preventa activa <span>·</span> Pedidos hasta el <span id="banner-fecha-cierre">...</span> <span>·</span> Entrega el viernes
+  Preventa activa <span>·</span> Pedidos hasta el <span id="banner-fecha-cierre">...</span> <span>·</span> Entrega el <span id="banner-dia-entrega">viernes</span>
 </div>
 <div class="banner-congelado" id="banner-congelado">
   ⏳ Últimas horas — Cierre el <span id="banner-fecha-congelado">...</span>. Solo se pueden agregar pedidos nuevos.
@@ -313,6 +313,8 @@
           <span id="hist-total" style="font-family:'Cormorant Garamond',serif;font-size:18px"></span>
         </div>
         <p style="font-size:11px;color:var(--gris)">Solo incluye artículos pendientes de entrega.</p>
+        <p id="hist-nota-entrega" style="font-size:11px;color:var(--gris);margin-top:4px;display:none"></p>
+        <p id="hist-nota-cancelaciones" style="font-size:11px;color:#854F0B;margin-top:4px;display:none"></p>
       </div>
     </div>
     <div id="hist-vacio" style="display:none;text-align:center;padding:32px 20px;color:var(--gris);font-size:14px">No encontramos pedidos para ese número en esta quincena.</div>
@@ -322,7 +324,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbxS7hoQTAKFbAjfYOgEw15cpxsmZbeiEIgfznnNYLFifixH3uPMicU5nql5oRTIXsNQCA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbz_Jhpr7pci8S7FytJ1CP0DdipuaSaeSqIO0e9TuKHh9tTr9PsXKJ5rCzE1o5q2Wy1w9g/exec";
 
 const COLOR_MAP = {
   "rosa":"#F4C0D1","azul":"#B5D4F4","verde":"#C0DD97","menta":"#9FE1CB",
@@ -360,6 +362,11 @@ function aplicarModoQuincena(data) {
     const el2 = document.getElementById("banner-fecha-congelado");
     if (el1) el1.textContent = fechaFmt;
     if (el2) el2.textContent = fechaFmt;
+  }
+  // Día de entrega dinámico
+  if (data.dia_entrega) {
+    const elEntrega = document.getElementById("banner-dia-entrega");
+    if (elEntrega) elEntrega.textContent = data.dia_entrega;
   }
 
   // Si cerrado, deshabilitar botón de confirmar
@@ -831,6 +838,30 @@ function renderHistorial(pedidos, total, wa) {
   });
   const totalPendiente = pedidos.filter(p => p.estado === "pendiente").reduce((s,p) => s + Number(p.subtotal), 0);
   document.getElementById("hist-total").textContent = `₡${totalPendiente.toLocaleString("es-CR")}`;
+
+  // Nota de entrega
+  const notaEntrega = document.getElementById("hist-nota-entrega");
+  if (notaEntrega && window._diaEntrega) {
+    notaEntrega.textContent = `📦 Entrega estimada: ${window._diaEntrega}`;
+    notaEntrega.style.display = "block";
+  }
+
+  // Nota de cierre de cancelaciones
+  const notaCancelaciones = document.getElementById("hist-nota-cancelaciones");
+  if (notaCancelaciones && window._fechaCierre) {
+    const cierre = new Date(window._fechaCierre);
+    const ahora  = new Date();
+    const horas  = Math.round((cierre - ahora) / 3600000);
+    if (horas > 0 && horas <= 72) {
+      notaCancelaciones.textContent = `⚠️ Las cancelaciones cierran en ${horas < 24 ? horas + "h" : Math.round(horas/24) + " días"}.`;
+      notaCancelaciones.style.display = "block";
+    } else if (horas <= 0) {
+      notaCancelaciones.textContent = "🔒 Las cancelaciones están cerradas para esta quincena.";
+      notaCancelaciones.style.display = "block";
+    } else {
+      notaCancelaciones.style.display = "none";
+    }
+  }
 }
 async function cancelarItem(idPedido, idVariante, nombreItem, wa, cant) {
   const msg = cant === 1 ? `¿Cancelás 1 unidad de ${nombreItem}?` : `¿Cancelás ${nombreItem} (${cant} unidades)?`;
