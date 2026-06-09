@@ -136,10 +136,10 @@
 <body>
 
 <div class="banner" id="banner-normal">
-  Preventa activa <span>·</span> Pedidos hasta el domingo <span>·</span> Entrega el viernes
+  Preventa activa <span>·</span> Pedidos hasta el <span id="banner-fecha-cierre">...</span> <span>·</span> Entrega el viernes
 </div>
 <div class="banner-congelado" id="banner-congelado">
-  ⏳ Últimas horas — Solo se pueden agregar pedidos nuevos. No se aceptan cancelaciones.
+  ⏳ Últimas horas — Cierre el <span id="banner-fecha-congelado">...</span>. Solo se pueden agregar pedidos nuevos.
 </div>
 <div class="banner-cerrado" id="banner-cerrado">
   🔒 La preventa está cerrada. Nos vemos en la próxima quincena.
@@ -322,7 +322,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbxL2IEIxm8HmgMDQxXnwHLqjUghxvLR0AaGJfI-tjpEgMAAH4NTOlNxO05GyJQgayKkfw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxS7hoQTAKFbAjfYOgEw15cpxsmZbeiEIgfznnNYLFifixH3uPMicU5nql5oRTIXsNQCA/exec";
 
 const COLOR_MAP = {
   "rosa":"#F4C0D1","azul":"#B5D4F4","verde":"#C0DD97","menta":"#9FE1CB",
@@ -351,7 +351,18 @@ function aplicarModoQuincena(data) {
   document.getElementById("banner-congelado").style.display = data.modo === "congelado" ? "block" : "none";
   document.getElementById("banner-cerrado").style.display   = data.modo === "cerrado"   ? "block" : "none";
 
-  // Si cerrado, deshabilitar botón de carrito
+  // Formatear fecha de cierre para el banner
+  if (data.cierre) {
+    const fechaCierre = new Date(data.cierre);
+    const opciones = { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" };
+    const fechaFmt = fechaCierre.toLocaleDateString("es-CR", opciones);
+    const el1 = document.getElementById("banner-fecha-cierre");
+    const el2 = document.getElementById("banner-fecha-congelado");
+    if (el1) el1.textContent = fechaFmt;
+    if (el2) el2.textContent = fechaFmt;
+  }
+
+  // Si cerrado, deshabilitar botón de confirmar
   const btnConfirmar = document.getElementById("btn-confirmar");
   if (btnConfirmar && data.modo === "cerrado") {
     btnConfirmar.disabled = true;
