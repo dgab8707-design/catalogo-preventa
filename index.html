@@ -812,24 +812,30 @@ function actualizarNotasHistorial() {
   const notaEntrega = document.getElementById("hist-nota-entrega");
   if (notaEntrega) {
     const diaEntrega = window._diaEntrega || "";
-    if (diaEntrega) {
-      notaEntrega.textContent = `📦 Entrega estimada: ${diaEntrega}`;
-      notaEntrega.style.display = "block";
-    }
+    notaEntrega.textContent = diaEntrega ? `📦 Entrega estimada: ${diaEntrega}` : "";
+    notaEntrega.style.display = diaEntrega ? "block" : "none";
   }
-  // Nota de cierre de cancelaciones
+
+  // Nota de cierre de cancelaciones — usa horas_restantes del script
   const notaCancel = document.getElementById("hist-nota-cancelaciones");
   if (notaCancel) {
-    const fechaCierre = window._fechaCierre ? new Date(window._fechaCierre) : null;
-    if (fechaCierre) {
-      const ahora = new Date();
-      const horas = Math.round((fechaCierre - ahora) / 3600000);
-      if (horas <= 0) {
-        notaCancel.textContent = "🔒 Las cancelaciones están cerradas para esta quincena.";
-        notaCancel.style.display = "block";
-      } else if (horas <= 72) {
-        const tiempoTexto = horas < 24 ? `${horas} horas` : `${Math.round(horas/24)} días`;
-        notaCancel.textContent = `⚠️ Podés cancelar por ${tiempoTexto} más (cierre: ${fechaCierre.toLocaleDateString("es-CR", {weekday:"long", day:"numeric", month:"long", hour:"2-digit", minute:"2-digit"})}).`;
+    const horas = window._horasRestantes !== undefined ? window._horasRestantes : null;
+    const modo  = modoQuincena;
+
+    if (modo === "cerrado") {
+      notaCancel.textContent = "🔒 Las cancelaciones están cerradas para esta quincena.";
+      notaCancel.style.display = "block";
+    } else if (modo === "congelado") {
+      notaCancel.textContent = "🔒 Ya no se aceptan cancelaciones — estamos en las últimas horas de la preventa.";
+      notaCancel.style.display = "block";
+    } else if (horas !== null && horas <= 72) {
+      const t = horas < 24 ? `${horas}h` : `${Math.round(horas/24)} días`;
+      notaCancel.textContent = `⚠️ Podés cancelar por ${t} más. Después del cierre ya no será posible.`;
+      notaCancel.style.display = "block";
+    } else {
+      // Más de 72h — mostrar fecha de cierre igual como referencia
+      if (window._fechaCierreTexto) {
+        notaCancel.textContent = `📅 Fecha límite para cancelar: ${window._fechaCierreTexto}`;
         notaCancel.style.display = "block";
       } else {
         notaCancel.style.display = "none";
