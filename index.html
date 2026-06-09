@@ -793,6 +793,9 @@ async function buscarHistorialConWA(wa) {
     const data = await (await fetch(`${API_URL}?action=historial&wa=${encodeURIComponent(wa)}`)).json();
     document.getElementById("hist-cargando").style.display = "none";
     if (!data.ok || !data.pedidos || data.pedidos.length === 0) { document.getElementById("hist-vacio").style.display = "block"; return; }
+
+    console.log("Historial:", data);
+    
     renderHistorial(
   data.pedidos,
   data.total,
