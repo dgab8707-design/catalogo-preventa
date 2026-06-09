@@ -7,7 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-  /* ── Variables ── */
   :root {
     --rosa:    #D4537E;
     --rosa-l:  #FBEAF0;
@@ -18,675 +17,139 @@
     --borde:   #E7E5E0;
     --blanco:  #FFFFFF;
     --radio:   12px;
-    --sombra:  0 2px 16px rgba(0,0,0,0.07);
+    --naranja: #B45309;
+    --naranja-l: #FEF3C7;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--crema);
-    color: var(--oscuro);
-    min-height: 100vh;
-  }
-
-  /* ── Header ── */
-  header {
-    background: var(--blanco);
-    border-bottom: 1px solid var(--borde);
-    padding: 0 20px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  .header-inner {
-    max-width: 480px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 60px;
-  }
-  .brand h1 {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 22px;
-    font-weight: 400;
-    letter-spacing: 0.02em;
-    color: var(--oscuro);
-  }
-  .brand p {
-    font-size: 11px;
-    color: var(--gris);
-    margin-top: 1px;
-  }
-  .btn-carrito {
-    position: relative;
-    background: none;
-    border: 1.5px solid var(--borde);
-    border-radius: 50px;
-    padding: 8px 16px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--oscuro);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: border-color 0.2s, background 0.2s;
-  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--crema); color: var(--oscuro); min-height: 100vh; }
+  header { background: var(--blanco); border-bottom: 1px solid var(--borde); padding: 0 20px; position: sticky; top: 0; z-index: 100; }
+  .header-inner { max-width: 480px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 60px; }
+  .brand h1 { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 400; }
+  .brand p { font-size: 11px; color: var(--gris); margin-top: 1px; }
+  .btn-carrito { position: relative; background: none; border: 1.5px solid var(--borde); border-radius: 50px; padding: 8px 16px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; color: var(--oscuro); cursor: pointer; display: flex; align-items: center; gap: 6px; transition: border-color 0.2s, background 0.2s; }
   .btn-carrito:hover { border-color: var(--rosa); background: var(--rosa-l); }
   .btn-carrito svg { width: 16px; height: 16px; }
-  .carrito-count {
-    background: var(--rosa);
-    color: white;
-    border-radius: 50%;
-    width: 18px;
-    height: 18px;
-    font-size: 10px;
-    font-weight: 500;
-    display: none;
-    align-items: center;
-    justify-content: center;
-  }
+  .carrito-count { background: var(--rosa); color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; font-weight: 500; display: none; align-items: center; justify-content: center; }
   .carrito-count.visible { display: flex; }
-
-  /* ── Banner preventa ── */
-  .banner {
-    background: var(--verde);
-    color: white;
-    text-align: center;
-    padding: 8px 20px;
-    font-size: 12px;
-    letter-spacing: 0.05em;
-  }
+  .banner { background: var(--verde); color: white; text-align: center; padding: 8px 20px; font-size: 12px; letter-spacing: 0.05em; }
   .banner span { opacity: 0.7; margin: 0 8px; }
-
-  /* ── Contenido principal ── */
-  main {
-    max-width: 480px;
-    margin: 0 auto;
-    padding: 20px 16px 120px;
-  }
-
-  /* ── Identificación ── */
-  .id-card {
-    background: var(--blanco);
-    border: 1px solid var(--borde);
-    border-radius: var(--radio);
-    padding: 16px;
-    margin-bottom: 20px;
-  }
-  .id-card h2 {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 16px;
-    font-weight: 400;
-    margin-bottom: 12px;
-    color: var(--gris);
-  }
-  .id-fields { display: flex; flex-direction: column; gap: 8px; }
-  .id-fields input {
-    width: 100%;
-    border: 1px solid var(--borde);
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    color: var(--oscuro);
-    background: var(--crema);
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .id-fields input:focus { border-color: var(--rosa); background: white; }
-  .id-fields input.error { border-color: #E24B4A; }
-
-  /* ── Sección catálogo ── */
-  .seccion-titulo {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 20px;
-    font-weight: 300;
-    color: var(--oscuro);
-    margin-bottom: 14px;
-    letter-spacing: 0.02em;
-  }
-
-  /* ── Grid de productos ── */
-  .catalogo-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
-
-  .producto-card {
-    background: var(--blanco);
-    border: 1px solid var(--borde);
-    border-radius: var(--radio);
-    overflow: hidden;
-    cursor: pointer;
-    transition: transform 0.18s, border-color 0.18s;
-  }
+  .banner-congelado { background: #92400E; color: white; text-align: center; padding: 8px 20px; font-size: 12px; letter-spacing: 0.03em; display: none; }
+  .banner-cerrado { background: #1C1917; color: white; text-align: center; padding: 10px 20px; font-size: 13px; display: none; }
+  main { max-width: 480px; margin: 0 auto; padding: 20px 16px 120px; }
+  .seccion-titulo { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; color: var(--oscuro); margin-bottom: 14px; letter-spacing: 0.02em; }
+  .catalogo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .producto-card { background: var(--blanco); border: 1px solid var(--borde); border-radius: var(--radio); overflow: hidden; cursor: pointer; transition: transform 0.18s, border-color 0.18s; }
   .producto-card:hover { transform: translateY(-2px); border-color: #C7C4BE; }
   .producto-card.agotado { opacity: 0.5; cursor: default; }
   .producto-card.agotado:hover { transform: none; border-color: var(--borde); }
-
-  .producto-img {
-    width: 100%;
-    aspect-ratio: 3/4;
-    object-fit: cover;
-    background: #F0EDE8;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #C7C4BE;
-    font-size: 12px;
-  }
-  .producto-img img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  .producto-img-placeholder {
-    width: 100%;
-    aspect-ratio: 3/4;
-    background: #F0EDE8;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    color: #C7C4BE;
-  }
+  .producto-img-placeholder { width: 100%; aspect-ratio: 3/4; background: #F0EDE8; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: #C7C4BE; }
   .producto-img-placeholder svg { width: 32px; height: 32px; opacity: 0.4; }
-
   .producto-info { padding: 10px 12px 12px; }
-  .producto-nombre {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--oscuro);
-    margin-bottom: 2px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .producto-precio {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 15px;
-    color: var(--gris);
-    margin-bottom: 8px;
-  }
-  .color-preview {
-    display: flex;
-    gap: 4px;
-    align-items: center;
-  }
-  .color-dot {
-    width: 11px;
-    height: 11px;
-    border-radius: 50%;
-    border: 1px solid rgba(0,0,0,0.1);
-  }
-  .mas-colores {
-    font-size: 10px;
-    color: var(--gris);
-    margin-left: 2px;
-  }
-  .badge-agotado {
-    display: inline-block;
-    font-size: 10px;
-    background: #F1EFE8;
-    color: #78716C;
-    border-radius: 20px;
-    padding: 2px 8px;
-  }
-
-  /* ── Loading ── */
-  .loading {
-    text-align: center;
-    padding: 40px 20px;
-    color: var(--gris);
-    font-size: 14px;
-  }
-  .spinner {
-    width: 28px; height: 28px;
-    border: 2px solid var(--borde);
-    border-top-color: var(--rosa);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin: 0 auto 12px;
-  }
+  .producto-nombre { font-size: 13px; font-weight: 500; color: var(--oscuro); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .producto-precio { font-family: 'Cormorant Garamond', serif; font-size: 15px; color: var(--gris); margin-bottom: 8px; }
+  .color-preview { display: flex; gap: 4px; align-items: center; }
+  .color-dot { width: 11px; height: 11px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+  .mas-colores { font-size: 10px; color: var(--gris); margin-left: 2px; }
+  .badge-agotado { display: inline-block; font-size: 10px; background: #F1EFE8; color: #78716C; border-radius: 20px; padding: 2px 8px; }
+  .loading { text-align: center; padding: 40px 20px; color: var(--gris); font-size: 14px; }
+  .spinner { width: 28px; height: 28px; border: 2px solid var(--borde); border-top-color: var(--rosa); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
   @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* ── Vista detalle ── */
-  .vista-detalle {
-    display: none;
-    animation: slideUp 0.22s ease;
-  }
+  .vista-detalle { display: none; animation: slideUp 0.22s ease; }
   .vista-detalle.activa { display: block; }
-  @keyframes slideUp {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  .btn-back {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: none;
-    border: none;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    color: var(--gris);
-    cursor: pointer;
-    padding: 0;
-    margin-bottom: 16px;
-  }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .btn-back { display: flex; align-items: center; gap: 6px; background: none; border: none; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--gris); cursor: pointer; padding: 0; margin-bottom: 16px; }
   .btn-back svg { width: 16px; height: 16px; }
-  .btn-back:hover { color: var(--oscuro); }
-
-  .detalle-img {
-    width: 100%;
-    aspect-ratio: 4/3;
-    object-fit: cover;
-    background: #F0EDE8;
-    border-radius: var(--radio);
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .detalle-img img {
-    width: 100%; height: 100%;
-    object-fit: cover;
-    border-radius: var(--radio);
-  }
-
-  .detalle-nombre {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 24px;
-    font-weight: 400;
-    margin-bottom: 4px;
-  }
-  .detalle-precio {
-    font-size: 16px;
-    color: var(--gris);
-    margin-bottom: 20px;
-  }
-
-  .selector-label {
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--gris);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 8px;
-  }
-  .color-opciones {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-  }
-  .color-opcion {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px 6px 8px;
-    border: 1.5px solid var(--borde);
-    border-radius: 50px;
-    cursor: pointer;
-    font-size: 13px;
-    transition: border-color 0.15s;
-  }
-  .color-opcion:hover { border-color: #C7C4BE; }
+  .detalle-img { width: 100%; aspect-ratio: 4/3; background: #F0EDE8; border-radius: var(--radio); margin-bottom: 16px; display: flex; align-items: center; justify-content: center; }
+  .detalle-img img { width: 100%; height: 100%; object-fit: cover; border-radius: var(--radio); }
+  .detalle-nombre { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 400; margin-bottom: 4px; }
+  .detalle-precio { font-size: 16px; color: var(--gris); margin-bottom: 20px; }
+  .selector-label { font-size: 11px; font-weight: 500; color: var(--gris); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+  .color-opciones { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .color-opcion { display: flex; align-items: center; gap: 6px; padding: 6px 12px 6px 8px; border: 1.5px solid var(--borde); border-radius: 50px; cursor: pointer; font-size: 13px; transition: border-color 0.15s; }
   .color-opcion.activa { border-color: var(--rosa); background: var(--rosa-l); }
-  .color-opcion .dot {
-    width: 16px; height: 16px;
-    border-radius: 50%;
-    border: 1px solid rgba(0,0,0,0.1);
-    flex-shrink: 0;
-  }
-
-  .talla-opciones {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
-  }
-  .talla-opcion {
-    width: 44px; height: 44px;
-    border: 1.5px solid var(--borde);
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: border-color 0.15s, background 0.15s;
-  }
-  .talla-opcion:hover:not(.sin-stock) { border-color: #C7C4BE; }
+  .color-opcion .dot { width: 16px; height: 16px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); flex-shrink: 0; }
+  .talla-opciones { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+  .talla-opcion { width: 44px; height: 44px; border: 1.5px solid var(--borde); border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color 0.15s, background 0.15s; }
   .talla-opcion.activa { border-color: var(--rosa); background: var(--rosa-l); color: var(--rosa); }
-  .talla-opcion.sin-stock {
-    color: #C7C4BE;
-    cursor: default;
-    text-decoration: line-through;
-  }
-  .stock-info {
-    font-size: 12px;
-    color: var(--gris);
-    margin-bottom: 16px;
-  }
+  .talla-opcion.sin-stock { color: #C7C4BE; cursor: default; text-decoration: line-through; }
+  .stock-info { font-size: 12px; color: var(--gris); margin-bottom: 16px; }
   .stock-info.bajo { color: #854F0B; }
-
-  .cantidad-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-  }
+  .cantidad-row { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
   .cantidad-label { font-size: 13px; color: var(--gris); }
-  .cantidad-ctrl {
-    display: flex;
-    align-items: center;
-    gap: 0;
-    border: 1px solid var(--borde);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  .cantidad-btn {
-    width: 36px; height: 36px;
-    background: none;
-    border: none;
-    font-size: 18px;
-    cursor: pointer;
-    color: var(--gris);
-    transition: background 0.15s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+  .cantidad-ctrl { display: flex; align-items: center; border: 1px solid var(--borde); border-radius: 8px; overflow: hidden; }
+  .cantidad-btn { width: 36px; height: 36px; background: none; border: none; font-size: 18px; cursor: pointer; color: var(--gris); display: flex; align-items: center; justify-content: center; }
   .cantidad-btn:hover { background: var(--crema); }
-  .cantidad-num {
-    width: 36px;
-    text-align: center;
-    font-size: 14px;
-    font-weight: 500;
-    border-left: 1px solid var(--borde);
-    border-right: 1px solid var(--borde);
-    line-height: 36px;
-  }
-
-  .btn-agregar {
-    width: 100%;
-    padding: 14px;
-    background: var(--oscuro);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.18s;
-    letter-spacing: 0.02em;
-  }
+  .cantidad-num { width: 36px; text-align: center; font-size: 14px; font-weight: 500; border-left: 1px solid var(--borde); border-right: 1px solid var(--borde); line-height: 36px; }
+  .btn-agregar { width: 100%; padding: 14px; background: var(--oscuro); color: white; border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.18s; }
   .btn-agregar:hover { background: #2C2520; }
-  .btn-agregar:disabled {
-    background: var(--borde);
-    color: var(--gris);
-    cursor: not-allowed;
-  }
-
-  /* ── Carrito drawer ── */
-  .overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.4);
-    z-index: 200;
-  }
+  .btn-agregar:disabled { background: var(--borde); color: var(--gris); cursor: not-allowed; }
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; }
   .overlay.activo { display: block; }
-
-  .carrito-drawer {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    background: white;
-    border-radius: 20px 20px 0 0;
-    padding: 0;
-    z-index: 201;
-    max-height: 85vh;
-    display: flex;
-    flex-direction: column;
-    transform: translateY(100%);
-    transition: transform 0.28s ease;
-  }
+  .carrito-drawer { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-radius: 20px 20px 0 0; z-index: 201; max-height: 85vh; display: flex; flex-direction: column; transform: translateY(100%); transition: transform 0.28s ease; }
   .carrito-drawer.abierto { transform: translateY(0); }
-
-  .drawer-handle {
-    width: 36px; height: 4px;
-    background: var(--borde);
-    border-radius: 2px;
-    margin: 14px auto 0;
-  }
-  .drawer-header {
-    padding: 14px 20px 12px;
-    border-bottom: 1px solid var(--borde);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .drawer-titulo {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 20px;
-    font-weight: 400;
-  }
-  .btn-cerrar-drawer {
-    background: none;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-    color: var(--gris);
-    line-height: 1;
-    padding: 4px;
-  }
-
-  .drawer-items {
-    overflow-y: auto;
-    flex: 1;
-    padding: 12px 20px;
-  }
-
-  .item-carrito {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--borde);
-    gap: 12px;
-  }
+  .drawer-handle { width: 36px; height: 4px; background: var(--borde); border-radius: 2px; margin: 14px auto 0; }
+  .drawer-header { padding: 14px 20px 12px; border-bottom: 1px solid var(--borde); display: flex; justify-content: space-between; align-items: center; }
+  .drawer-titulo { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; }
+  .btn-cerrar-drawer { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--gris); line-height: 1; padding: 4px; }
+  .drawer-items { overflow-y: auto; flex: 1; padding: 12px 20px; }
+  .item-carrito { display: flex; justify-content: space-between; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid var(--borde); gap: 12px; }
   .item-carrito:last-child { border-bottom: none; }
-  .item-info { flex: 1; }
   .item-nombre { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
   .item-variante { font-size: 12px; color: var(--gris); margin-bottom: 4px; }
-  .item-precio { font-size: 13px; color: var(--oscuro); }
-  .btn-quitar {
-    background: none;
-    border: none;
-    color: #C7C4BE;
-    cursor: pointer;
-    font-size: 18px;
-    padding: 0;
-    line-height: 1;
-    flex-shrink: 0;
-  }
+  .btn-quitar { background: none; border: none; color: #C7C4BE; cursor: pointer; font-size: 18px; padding: 0; line-height: 1; flex-shrink: 0; }
   .btn-quitar:hover { color: #E24B4A; }
-
-  .carrito-vacio {
-    text-align: center;
-    padding: 32px 20px;
-    color: var(--gris);
-    font-size: 14px;
-  }
-
-  .drawer-footer {
-    padding: 16px 20px;
-    border-top: 1px solid var(--borde);
-  }
-  .total-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 15px;
-    font-weight: 500;
-    margin-bottom: 14px;
-  }
-  .total-monto {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 20px;
-  }
-
-  /* ── Formulario de identificación en drawer ── */
+  .carrito-vacio { text-align: center; padding: 32px 20px; color: var(--gris); font-size: 14px; }
+  .drawer-footer { padding: 16px 20px; border-top: 1px solid var(--borde); }
+  .total-row { display: flex; justify-content: space-between; font-size: 15px; font-weight: 500; margin-bottom: 14px; }
+  .total-monto { font-family: 'Cormorant Garamond', serif; font-size: 20px; }
   .id-drawer { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
-  .id-drawer input {
-    width: 100%;
-    border: 1px solid var(--borde);
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
+  .id-drawer input { width: 100%; border: 1px solid var(--borde); border-radius: 8px; padding: 10px 14px; font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; transition: border-color 0.2s; }
   .id-drawer input:focus { border-color: var(--rosa); }
   .id-drawer input.error { border-color: #E24B4A; }
-
-  .btn-confirmar {
-    width: 100%;
-    padding: 14px;
-    background: var(--rosa);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.18s;
-  }
+  .btn-confirmar { width: 100%; padding: 14px; background: var(--rosa); color: white; border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.18s; }
   .btn-confirmar:hover { background: #BE4570; }
   .btn-confirmar:disabled { background: var(--borde); color: var(--gris); cursor: not-allowed; }
-
-  /* ── Pantalla de confirmación ── */
-  .pantalla-confirm {
-    display: none;
-    text-align: center;
-    padding: 32px 20px;
-    animation: slideUp 0.22s ease;
-  }
+  .pantalla-confirm { display: none; text-align: center; padding: 32px 20px; animation: slideUp 0.22s ease; }
   .pantalla-confirm.activa { display: block; }
-  .confirm-icono {
-    width: 56px; height: 56px;
-    background: #D8F3DC;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 16px;
-  }
+  .confirm-icono { width: 56px; height: 56px; background: #D8F3DC; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
   .confirm-icono svg { width: 28px; height: 28px; color: #2D6A4F; }
-  .confirm-titulo {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 24px;
-    font-weight: 400;
-    margin-bottom: 6px;
-  }
-  .confirm-sub {
-    font-size: 13px;
-    color: var(--gris);
-    margin-bottom: 20px;
-    line-height: 1.6;
-  }
-  .confirm-id {
-    background: var(--crema);
-    border: 1px solid var(--borde);
-    border-radius: 8px;
-    padding: 12px;
-    font-size: 13px;
-    color: var(--gris);
-    margin-bottom: 20px;
-  }
+  .confirm-titulo { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 400; margin-bottom: 6px; }
+  .confirm-sub { font-size: 13px; color: var(--gris); margin-bottom: 20px; line-height: 1.6; }
+  .confirm-id { background: var(--crema); border: 1px solid var(--borde); border-radius: 8px; padding: 12px; font-size: 13px; color: var(--gris); margin-bottom: 20px; }
   .confirm-id strong { color: var(--oscuro); font-size: 15px; display: block; margin-top: 4px; }
-  .btn-nuevo-pedido {
-    background: none;
-    border: 1.5px solid var(--borde);
-    border-radius: 10px;
-    padding: 12px 24px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    cursor: pointer;
-    color: var(--oscuro);
-    transition: border-color 0.2s;
-  }
-  .btn-nuevo-pedido:hover { border-color: var(--rosa); }
-
-  /* ── Selector de país ── */
+  .btn-nuevo-pedido { background: none; border: 1.5px solid var(--borde); border-radius: 10px; padding: 12px 24px; font-family: 'DM Sans', sans-serif; font-size: 14px; cursor: pointer; color: var(--oscuro); }
   .pais-selector { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
   .pais-label { font-size: 11px; font-weight: 500; color: var(--gris); text-transform: uppercase; letter-spacing: 0.08em; }
   .pais-opciones { display: flex; gap: 6px; flex-wrap: wrap; }
-  .pais-btn {
-    display: flex; align-items: center; gap: 5px;
-    padding: 6px 12px; border: 1.5px solid var(--borde); border-radius: 50px;
-    font-size: 13px; cursor: pointer; background: var(--blanco);
-    font-family: 'DM Sans', sans-serif; color: var(--oscuro);
-    transition: border-color 0.15s;
-  }
+  .pais-btn { display: flex; align-items: center; gap: 5px; padding: 6px 12px; border: 1.5px solid var(--borde); border-radius: 50px; font-size: 13px; cursor: pointer; background: var(--blanco); font-family: 'DM Sans', sans-serif; color: var(--oscuro); transition: border-color 0.15s; }
   .pais-btn:hover { border-color: #C7C4BE; }
   .pais-btn.activo { border-color: var(--rosa); background: var(--rosa-l); color: var(--rosa); }
   .pais-otro { display: none; margin-top: 4px; }
-  .pais-otro input {
-    width: 100%; border: 1px solid var(--borde); border-radius: 8px;
-    padding: 8px 14px; font-family: 'DM Sans', sans-serif; font-size: 13px;
-    outline: none; background: var(--crema);
-  }
-  .pais-otro input:focus { border-color: var(--rosa); background: white; }
+  .pais-otro input { width: 100%; border: 1px solid var(--borde); border-radius: 8px; padding: 8px 14px; font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; background: var(--crema); }
   .wa-preview { font-size: 11px; color: var(--gris); margin-top: 4px; min-height: 16px; }
-
-  /* ── Error toast ── */
-  .toast {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    background: #1C1917;
-    color: white;
-    padding: 10px 20px;
-    border-radius: 50px;
-    font-size: 13px;
-    opacity: 0;
-    transition: opacity 0.2s, transform 0.2s;
-    z-index: 300;
-    white-space: nowrap;
-    max-width: 90vw;
-    text-align: center;
-  }
-  .toast.visible {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px); background: #1C1917; color: white; padding: 10px 20px; border-radius: 50px; font-size: 13px; opacity: 0; transition: opacity 0.2s, transform 0.2s; z-index: 300; white-space: nowrap; max-width: 90vw; text-align: center; }
+  .toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+  /* Aviso de congelamiento en historial */
+  .aviso-congelado { background: var(--naranja-l); border: 1px solid #D97706; border-radius: 8px; padding: 10px 14px; font-size: 12px; color: #92400E; margin-bottom: 12px; display: none; }
 </style>
 </head>
 <body>
 
-<!-- ── Banner ── -->
-<div class="banner">
+<div class="banner" id="banner-normal">
   Preventa activa <span>·</span> Pedidos hasta el domingo <span>·</span> Entrega el viernes
 </div>
+<div class="banner-congelado" id="banner-congelado">
+  ⏳ Últimas horas — Solo se pueden agregar pedidos nuevos. No se aceptan cancelaciones.
+</div>
+<div class="banner-cerrado" id="banner-cerrado">
+  🔒 La preventa está cerrada. Nos vemos en la próxima quincena.
+</div>
 
-<!-- ── Header ── -->
 <header>
   <div class="header-inner">
     <div class="brand">
       <h1>Colección</h1>
-      <p id="saludo-sesion" style="display:none;color:var(--rosa);font-size:11px;cursor:pointer" onclick="cerrarSesion()" title="Toca para cerrar sesión"></p>
+      <p id="saludo-sesion" style="display:none;color:var(--rosa);font-size:11px;cursor:pointer" onclick="cerrarSesion()"></p>
       <p id="brand-sub" style="font-size:11px;color:var(--gris)">Primavera · Preventa</p>
     </div>
     <div style="display:flex;gap:8px;align-items:center">
@@ -706,25 +169,14 @@
   </div>
 </header>
 
-<!-- ── Pantalla de autenticación ── -->
 <div id="pantalla-auth" style="position:fixed;inset:0;background:var(--blanco);z-index:500;overflow-y:auto;align-items:center;justify-content:center;display:none">
   <div style="width:100%;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px">
     <h1 style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;margin-bottom:4px;text-align:center">Colección</h1>
     <p style="font-size:13px;color:var(--gris);margin-bottom:28px">Primavera · Preventa</p>
-
-    <!-- Tabs login / registro -->
     <div style="display:flex;gap:0;border:1px solid var(--borde);border-radius:10px;overflow:hidden;margin-bottom:24px;width:100%;max-width:360px">
-      <button id="tab-login" onclick="mostrarTab('login')"
-        style="flex:1;padding:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;border:none;background:var(--oscuro);color:white;cursor:pointer">
-        Entrar
-      </button>
-      <button id="tab-registro" onclick="mostrarTab('registro')"
-        style="flex:1;padding:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;border:none;background:var(--blanco);color:var(--gris);cursor:pointer">
-        Cuenta nueva
-      </button>
+      <button id="tab-login" onclick="mostrarTab('login')" style="flex:1;padding:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;border:none;background:var(--oscuro);color:white;cursor:pointer">Entrar</button>
+      <button id="tab-registro" onclick="mostrarTab('registro')" style="flex:1;padding:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;border:none;background:var(--blanco);color:var(--gris);cursor:pointer">Cuenta nueva</button>
     </div>
-
-    <!-- Selector de país compartido -->
     <div style="width:100%;max-width:360px;margin-bottom:12px">
       <p style="font-size:11px;font-weight:500;color:var(--gris);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">País</p>
       <div style="display:flex;gap:6px;flex-wrap:wrap" id="auth-paises">
@@ -734,96 +186,49 @@
         <button type="button" class="pais-btn" data-codigo="otro" onclick="seleccionarPaisAuth(this)">Otro</button>
       </div>
       <div id="auth-otro-wrap" style="display:none;margin-top:8px">
-        <input type="number" id="auth-codigo" placeholder="Código de país (ej: 34)"
-          style="width:100%;box-sizing:border-box;border:1px solid var(--borde);border-radius:8px;padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none">
+        <input type="number" id="auth-codigo" placeholder="Código de país (ej: 34)" style="width:100%;box-sizing:border-box;border:1px solid var(--borde);border-radius:8px;padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none">
       </div>
     </div>
-
-    <!-- Campos comunes -->
     <div style="width:100%;max-width:360px;display:flex;flex-direction:column;gap:10px">
-      <input type="tel" id="auth-wa" placeholder="Número sin código de país"
-        style="width:100%;box-sizing:border-box;border:1px solid var(--borde);border-radius:10px;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;background:var(--crema)"
-        onfocus="this.style.borderColor='var(--rosa)'" onblur="this.style.borderColor='var(--borde)'"
-        oninput="actualizarPreviewAuth()">
-
-      <!-- Solo en registro -->
-      <input type="text" id="auth-nombre" placeholder="Tu nombre"
-        style="width:100%;box-sizing:border-box;border:1px solid var(--borde);border-radius:10px;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;background:var(--crema);display:none"
-        onfocus="this.style.borderColor='var(--rosa)'" onblur="this.style.borderColor='var(--borde)'">
-
-      <!-- PIN -->
+      <input type="tel" id="auth-wa" placeholder="Número sin código de país" style="width:100%;box-sizing:border-box;border:1px solid var(--borde);border-radius:10px;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;background:var(--crema)" onfocus="this.style.borderColor='var(--rosa)'" onblur="this.style.borderColor='var(--borde)'" oninput="actualizarPreviewAuth()">
+      <input type="text" id="auth-nombre" placeholder="Tu nombre" style="width:100%;box-sizing:border-box;border:1px solid var(--borde);border-radius:10px;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;background:var(--crema);display:none" onfocus="this.style.borderColor='var(--rosa)'" onblur="this.style.borderColor='var(--borde)'">
       <div style="position:relative">
-        <input type="password" id="auth-pin" placeholder="PIN de 4 dígitos" maxlength="4" inputmode="numeric"
-          style="width:100%;box-sizing:border-box;border:1px solid var(--borde);border-radius:10px;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;background:var(--crema);letter-spacing:0.3em"
-          onfocus="this.style.borderColor='var(--rosa)'" onblur="this.style.borderColor='var(--borde)'"
-          onkeydown="if(event.key==='Enter') ejecutarAuth()">
-        <button type="button" onclick="togglePIN()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--gris);font-size:12px">
-          VER
-        </button>
+        <input type="password" id="auth-pin" placeholder="PIN de 4 dígitos" maxlength="4" inputmode="numeric" style="width:100%;box-sizing:border-box;border:1px solid var(--borde);border-radius:10px;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;background:var(--crema);letter-spacing:0.3em" onfocus="this.style.borderColor='var(--rosa)'" onblur="this.style.borderColor='var(--borde)'" onkeydown="if(event.key==='Enter') ejecutarAuth()">
+        <button type="button" onclick="togglePIN()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--gris);font-size:12px">VER</button>
       </div>
-
-      <!-- Solo en registro: confirmar PIN -->
-      <input type="password" id="auth-pin2" placeholder="Confirmar PIN" maxlength="4" inputmode="numeric"
-        style="width:100%;box-sizing:border-box;border:1px solid var(--borde);border-radius:10px;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;background:var(--crema);letter-spacing:0.3em;display:none"
-        onfocus="this.style.borderColor='var(--rosa)'" onblur="this.style.borderColor='var(--borde)'"
-        onkeydown="if(event.key==='Enter') ejecutarAuth()">
-
+      <input type="password" id="auth-pin2" placeholder="Confirmar PIN" maxlength="4" inputmode="numeric" style="width:100%;box-sizing:border-box;border:1px solid var(--borde);border-radius:10px;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;background:var(--crema);letter-spacing:0.3em;display:none" onfocus="this.style.borderColor='var(--rosa)'" onblur="this.style.borderColor='var(--borde)'" onkeydown="if(event.key==='Enter') ejecutarAuth()">
       <p id="auth-preview" style="font-size:11px;color:var(--gris);margin:0;min-height:16px"></p>
       <p id="auth-error" style="font-size:13px;color:#E24B4A;margin:0;display:none"></p>
-
-      <button id="auth-btn" onclick="ejecutarAuth()"
-        style="width:100%;padding:14px;background:var(--rosa);color:white;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer">
-        Entrar
-      </button>
+      <button id="auth-btn" onclick="ejecutarAuth()" style="width:100%;padding:14px;background:var(--rosa);color:white;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer">Entrar</button>
     </div>
   </div>
 </div>
 
-<!-- ── Main ── -->
 <main>
-
-  <!-- Vista catálogo -->
   <div id="vista-catalogo">
-    <div id="cargando" class="loading">
-      <div class="spinner"></div>
-      Cargando colección...
-    </div>
+    <div id="cargando" class="loading"><div class="spinner"></div>Cargando colección...</div>
     <div id="catalogo-contenido" style="display:none">
       <p class="seccion-titulo">Estilos disponibles</p>
       <div class="catalogo-grid" id="catalogo-grid"></div>
     </div>
-    <div id="catalogo-error" style="display:none;text-align:center;padding:40px 20px;color:var(--gris);font-size:14px">
-      No se pudo cargar el catálogo. Intentá más tarde.
-    </div>
+    <div id="catalogo-error" style="display:none;text-align:center;padding:40px 20px;color:var(--gris);font-size:14px">No se pudo cargar el catálogo.</div>
   </div>
-
-  <!-- Vista detalle -->
   <div class="vista-detalle" id="vista-detalle">
     <button class="btn-back" onclick="volverCatalogo()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M15 19l-7-7 7-7"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 19l-7-7 7-7"/></svg>
       Seguir viendo
     </button>
-
     <div class="detalle-img" id="detalle-img-wrap">
       <img id="detalle-img" src="" alt="" style="display:none" onerror="this.style.display='none'">
-      <svg id="detalle-placeholder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="width:48px;height:48px;color:#C7C4BE">
-        <path d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/>
-      </svg>
+      <svg id="detalle-placeholder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="width:48px;height:48px;color:#C7C4BE"><path d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
     </div>
-
     <h2 class="detalle-nombre" id="detalle-nombre"></h2>
     <p class="detalle-precio" id="detalle-precio"></p>
-
     <p class="selector-label">Color</p>
     <div class="color-opciones" id="detalle-colores"></div>
-
     <p class="selector-label">Talla</p>
     <div class="talla-opciones" id="detalle-tallas"></div>
-
     <p class="stock-info" id="detalle-stock-info"></p>
-
     <div class="cantidad-row">
       <span class="cantidad-label">Cantidad</span>
       <div class="cantidad-ctrl">
@@ -832,33 +237,21 @@
         <button class="cantidad-btn" onclick="cambiarCantidad(1)">+</button>
       </div>
     </div>
-
-    <button class="btn-agregar" id="btn-agregar" onclick="agregarAlCarrito()">
-      Agregar al pedido
-    </button>
+    <button class="btn-agregar" id="btn-agregar" onclick="agregarAlCarrito()">Agregar al pedido</button>
   </div>
-
 </main>
 
-<!-- ── Overlay ── -->
 <div class="overlay" id="overlay" onclick="cerrarCarrito()"></div>
-
-<!-- ── Carrito drawer ── -->
 <div class="carrito-drawer" id="carrito-drawer">
   <div class="drawer-handle"></div>
   <div class="drawer-header">
     <span class="drawer-titulo">Mi pedido</span>
     <button class="btn-cerrar-drawer" onclick="cerrarCarrito()">×</button>
   </div>
-
-  <!-- Items + confirmación comparten el mismo drawer -->
   <div id="drawer-contenido">
     <div class="drawer-items" id="drawer-items"></div>
     <div class="drawer-footer">
-      <div class="total-row">
-        <span>Total</span>
-        <span class="total-monto" id="total-monto">₡0</span>
-      </div>
+      <div class="total-row"><span>Total</span><span class="total-monto" id="total-monto">₡0</span></div>
       <div class="id-drawer">
         <input type="text" id="input-nombre" placeholder="Tu nombre" autocomplete="name">
         <div class="pais-selector">
@@ -869,36 +262,23 @@
             <button type="button" class="pais-btn" data-codigo="1" onclick="seleccionarPais(this)">🇺🇸 USA</button>
             <button type="button" class="pais-btn" data-codigo="otro" onclick="seleccionarPais(this)">Otro</button>
           </div>
-          <div class="pais-otro" id="pais-otro-wrap">
-            <input type="number" id="input-codigo-pais" placeholder="Código de país (ej: 34)" min="1" max="999">
-          </div>
+          <div class="pais-otro" id="pais-otro-wrap"><input type="number" id="input-codigo-pais" placeholder="Código de país" min="1" max="999"></div>
         </div>
         <input type="tel" id="input-wa" placeholder="Número sin código de país" autocomplete="tel" oninput="actualizarPreviewWA()">
         <p class="wa-preview" id="wa-preview"></p>
       </div>
-      <button class="btn-confirmar" id="btn-confirmar" onclick="confirmarPedido()">
-        Confirmar pedido
-      </button>
+      <button class="btn-confirmar" id="btn-confirmar" onclick="confirmarPedido()">Confirmar pedido</button>
     </div>
   </div>
-
   <div class="pantalla-confirm" id="pantalla-confirm">
-    <div class="confirm-icono">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M4.5 12.75l6 6 9-13.5"/>
-      </svg>
-    </div>
+    <div class="confirm-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.5 12.75l6 6 9-13.5"/></svg></div>
     <h3 class="confirm-titulo" id="confirm-titulo">¡Listo!</h3>
-    <p class="confirm-sub">Tu pedido fue registrado. Te avisamos por WhatsApp cuando esté listo para entrega.</p>
-    <div class="confirm-id">
-      Código de pedido
-      <strong id="confirm-id-texto">—</strong>
-    </div>
+    <p class="confirm-sub">Tu pedido fue registrado. Te avisamos por WhatsApp cuando esté listo.</p>
+    <div class="confirm-id">Código de pedido<strong id="confirm-id-texto">—</strong></div>
     <button class="btn-nuevo-pedido" onclick="resetPedido()">Seguir comprando</button>
   </div>
 </div>
 
-<!-- ── Historial drawer ── -->
 <div class="overlay" id="overlay-historial" onclick="cerrarHistorial()" style="display:none"></div>
 <div class="carrito-drawer" id="historial-drawer" style="max-height:90vh">
   <div class="drawer-handle"></div>
@@ -907,9 +287,8 @@
     <button class="btn-cerrar-drawer" onclick="cerrarHistorial()">×</button>
   </div>
   <div id="historial-contenido" style="flex:1;overflow-y:auto">
-    <!-- Estado: buscar -->
     <div id="hist-buscar" style="padding:20px">
-      <p style="font-size:13px;color:var(--gris);margin-bottom:12px">Ingresá tu número de WhatsApp para ver tus pedidos de esta quincena.</p>
+      <p style="font-size:13px;color:var(--gris);margin-bottom:12px">Ingresá tu número de WhatsApp para ver tus pedidos.</p>
       <div class="pais-opciones" style="margin-bottom:8px">
         <button type="button" class="pais-btn activo" data-codigo="506" onclick="seleccionarPaisHist(this)">🇨🇷 CR</button>
         <button type="button" class="pais-btn" data-codigo="507" onclick="seleccionarPaisHist(this)">🇵🇦 PA</button>
@@ -917,26 +296,16 @@
         <button type="button" class="pais-btn" data-codigo="otro" onclick="seleccionarPaisHist(this)">Otro</button>
       </div>
       <div class="pais-otro" id="hist-pais-otro-wrap" style="margin-bottom:8px">
-        <input type="number" id="hist-codigo-pais" placeholder="Código de país (ej: 34)" min="1" max="999"
-          style="width:100%;border:1px solid var(--borde);border-radius:8px;padding:8px 14px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;box-sizing:border-box">
+        <input type="number" id="hist-codigo-pais" placeholder="Código de país" style="width:100%;border:1px solid var(--borde);border-radius:8px;padding:8px 14px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;box-sizing:border-box">
       </div>
       <div style="display:flex;gap:8px">
-        <input type="tel" id="hist-wa-input" placeholder="Número sin código de país"
-          style="flex:1;border:1px solid var(--borde);border-radius:8px;padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none"
-          onkeydown="if(event.key==='Enter') buscarHistorial()">
-        <button onclick="buscarHistorial()"
-          style="padding:10px 16px;background:var(--oscuro);color:white;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer">
-          Buscar
-        </button>
+        <input type="tel" id="hist-wa-input" placeholder="Número sin código de país" style="flex:1;border:1px solid var(--borde);border-radius:8px;padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none" onkeydown="if(event.key==='Enter') buscarHistorial()">
+        <button onclick="buscarHistorial()" style="padding:10px 16px;background:var(--oscuro);color:white;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer">Buscar</button>
       </div>
     </div>
-    <!-- Estado: cargando -->
-    <div id="hist-cargando" style="display:none;text-align:center;padding:32px 20px">
-      <div class="spinner"></div>
-      <p style="font-size:13px;color:var(--gris)">Buscando tus pedidos...</p>
-    </div>
-    <!-- Estado: resultados -->
+    <div id="hist-cargando" style="display:none;text-align:center;padding:32px 20px"><div class="spinner"></div><p style="font-size:13px;color:var(--gris)">Buscando...</p></div>
     <div id="hist-resultados" style="display:none;padding:0 20px 20px">
+      <div class="aviso-congelado" id="aviso-congelado">⏳ Las cancelaciones están cerradas. Solo podés agregar pedidos nuevos.</div>
       <div id="hist-items"></div>
       <div style="border-top:1px solid var(--borde);padding-top:14px;margin-top:4px">
         <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:500;margin-bottom:4px">
@@ -946,67 +315,63 @@
         <p style="font-size:11px;color:var(--gris)">Solo incluye artículos pendientes de entrega.</p>
       </div>
     </div>
-    <!-- Estado: vacío -->
-    <div id="hist-vacio" style="display:none;text-align:center;padding:32px 20px;color:var(--gris);font-size:14px">
-      No encontramos pedidos para ese número en esta quincena.
-    </div>
+    <div id="hist-vacio" style="display:none;text-align:center;padding:32px 20px;color:var(--gris);font-size:14px">No encontramos pedidos para ese número en esta quincena.</div>
   </div>
 </div>
 
-<!-- ── Toast ── -->
 <div class="toast" id="toast"></div>
 
 <script>
-// ════════════════════════════════════════════════════════
-// CONFIGURACIÓN
-// ════════════════════════════════════════════════════════
-const API_URL = "https://script.google.com/macros/s/AKfycbzRqmFEjk6X5g1L7EMbZQ1a9jp7zOZOeNmkC0KNqstAKReeL6_3vCEmMbvrcFSgMIKGoQ/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxL2IEIxm8HmgMDQxXnwHLqjUghxvLR0AaGJfI-tjpEgMAAH4NTOlNxO05GyJQgayKkfw/exec";
 
-// Mapa de nombres de color → hex para los dots visuales
 const COLOR_MAP = {
-  "rosa":    "#F4C0D1",
-  "azul":    "#B5D4F4",
-  "verde":   "#C0DD97",
-  "menta":   "#9FE1CB",
-  "mostaza": "#FAC775",
-  "lavanda": "#CECBF6",
-  "rojo":    "#F09595",
-  "negro":   "#444441",
-  "blanco":  "#F1EFE8",
-  "amarillo":"#FFF3CD",
-  "naranja": "#F5C4B3",
-  "morado":  "#AFA9EC",
+  "rosa":"#F4C0D1","azul":"#B5D4F4","verde":"#C0DD97","menta":"#9FE1CB",
+  "mostaza":"#FAC775","lavanda":"#CECBF6","rojo":"#F09595","negro":"#444441",
+  "blanco":"#F1EFE8","amarillo":"#FFF3CD","naranja":"#F5C4B3","morado":"#AFA9EC",
 };
+function colorHex(nombre) { return COLOR_MAP[nombre.toLowerCase()] || "#D3D1C7"; }
 
-function colorHex(nombre) {
-  return COLOR_MAP[nombre.toLowerCase()] || "#D3D1C7";
+let catalogo = [], carrito = [], detalleActual = null, colorActual = null;
+let tallaActual = null, cantidadActual = 1, enviando = false;
+let modoQuincena = "abierto"; // "abierto" | "congelado" | "cerrado"
+
+// ════════ ESTADO QUINCENA ════════
+async function cargarEstadoQuincena() {
+  try {
+    const res  = await fetch(`${API_URL}?action=estado`);
+    const data = await res.json();
+    if (!data.ok) return;
+    modoQuincena = data.modo;
+    aplicarModoQuincena(data);
+  } catch(e) {}
 }
 
-// ════════════════════════════════════════════════════════
-// ESTADO GLOBAL
-// ════════════════════════════════════════════════════════
-let catalogo     = [];
-let carrito      = [];   // [{id_variante, estilo, color, talla, cantidad, precio}]
-let detalleActual = null; // estilo seleccionado
-let colorActual   = null;
-let tallaActual   = null;
-let cantidadActual = 1;
-let enviando      = false;
+function aplicarModoQuincena(data) {
+  document.getElementById("banner-normal").style.display    = data.modo === "abierto"   ? "block" : "none";
+  document.getElementById("banner-congelado").style.display = data.modo === "congelado" ? "block" : "none";
+  document.getElementById("banner-cerrado").style.display   = data.modo === "cerrado"   ? "block" : "none";
 
-// ════════════════════════════════════════════════════════
-// CARGA DEL CATÁLOGO
-// ════════════════════════════════════════════════════════
+  // Si cerrado, deshabilitar botón de carrito
+  const btnConfirmar = document.getElementById("btn-confirmar");
+  if (btnConfirmar && data.modo === "cerrado") {
+    btnConfirmar.disabled = true;
+    btnConfirmar.textContent = "Preventa cerrada";
+  }
+
+  // Mostrar aviso en historial si congelado o cerrado
+  const aviso = document.getElementById("aviso-congelado");
+  if (aviso) aviso.style.display = (data.modo !== "abierto") ? "block" : "none";
+}
+
+// ════════ CATÁLOGO ════════
 async function cargarCatalogo() {
   try {
-    const url = `${API_URL}?action=catalogo`;
-    const res  = await fetch(url);
+    const res  = await fetch(`${API_URL}?action=catalogo`);
     const data = await res.json();
-
-    if (!data.ok) throw new Error("Error en catálogo");
-
+    if (!data.ok) throw new Error();
     catalogo = data.catalogo;
     renderCatalogo();
-  } catch (err) {
+  } catch(err) {
     document.getElementById("cargando").style.display = "none";
     document.getElementById("catalogo-error").style.display = "block";
   }
@@ -1015,90 +380,53 @@ async function cargarCatalogo() {
 function renderCatalogo() {
   document.getElementById("cargando").style.display = "none";
   document.getElementById("catalogo-contenido").style.display = "block";
-
   const grid = document.getElementById("catalogo-grid");
   grid.innerHTML = "";
-
   catalogo.forEach(estilo => {
-    const colores    = estilo.colores;
-    const totalStock = colores.reduce((s, c) =>
-      s + c.tallas.reduce((ts, t) => ts + t.stock, 0), 0);
-    const agotado    = totalStock === 0;
-
+    const colores = estilo.colores;
+    const totalStock = colores.reduce((s,c) => s + c.tallas.reduce((ts,t) => ts + t.stock, 0), 0);
+    const agotado = totalStock === 0 || modoQuincena === "cerrado";
     const card = document.createElement("div");
     card.className = "producto-card" + (agotado ? " agotado" : "");
     if (!agotado) card.onclick = () => abrirDetalle(estilo);
-
-    // Puntos de color (máx 3 + contador)
     const coloresVisibles = colores.slice(0, 3);
     const masColores = colores.length > 3 ? `<span class="mas-colores">+${colores.length - 3}</span>` : "";
-    const dotsHTML = coloresVisibles.map(c =>
-      `<div class="color-dot" style="background:${colorHex(c.color)}" title="${c.color}"></div>`
-    ).join("") + masColores;
-
+    const dotsHTML = coloresVisibles.map(c => `<div class="color-dot" style="background:${colorHex(c.color)}"></div>`).join("") + masColores;
     const precioFmt = `₡${Number(estilo.precio).toLocaleString("es-CR")}`;
     const fotoPortada = estilo.foto_portada || colores[0]?.foto_url || "";
-    // foto_portada viene de columna J del Sheet (foto de campaña del estilo)
-
     card.innerHTML = `
       <div class="producto-img-placeholder">
-        ${fotoPortada
-          ? `<img src="${fotoPortada}" alt="${estilo.nombre}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentNode.innerHTML='<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'1\\' style=\\'width:32px;height:32px;color:#C7C4BE\\'><path d=\\'M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z\\'/></svg>'">`
-          : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="width:32px;height:32px;color:#C7C4BE"><path d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>`
-        }
+        ${fotoPortada ? `<img src="${fotoPortada}" alt="${estilo.nombre}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentNode.innerHTML='<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'1\\' style=\\'width:32px;height:32px;color:#C7C4BE\\'><path d=\\'M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z\\'/></svg>'">` : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="width:32px;height:32px;color:#C7C4BE"><path d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>`}
       </div>
       <div class="producto-info">
         <p class="producto-nombre">${estilo.nombre}</p>
         <p class="producto-precio">${precioFmt}</p>
-        ${agotado
-          ? `<span class="badge-agotado">Agotado</span>`
-          : `<div class="color-preview">${dotsHTML}</div>
-             ${totalStock <= 5 && totalStock > 0 ? `<p style="font-size:11px;color:#854F0B;margin-top:5px">¡Solo ${totalStock} disponibles!</p>` : ''}`
-        }
+        ${agotado ? `<span class="badge-agotado">${modoQuincena === "cerrado" ? "Cerrado" : "Agotado"}</span>` : `<div class="color-preview">${dotsHTML}</div>${totalStock <= 5 ? `<p style="font-size:11px;color:#854F0B;margin-top:5px">¡Solo ${totalStock} disponibles!</p>` : ""}`}
       </div>`;
     grid.appendChild(card);
   });
 }
 
-// ════════════════════════════════════════════════════════
-// VISTA DETALLE
-// ════════════════════════════════════════════════════════
+// ════════ DETALLE ════════
 function abrirDetalle(estilo) {
-  detalleActual  = estilo;
-  colorActual    = null;
-  tallaActual    = null;
-  cantidadActual = 1;
-
+  detalleActual = estilo; colorActual = null; tallaActual = null; cantidadActual = 1;
   document.getElementById("detalle-nombre").textContent = estilo.nombre;
   document.getElementById("detalle-precio").textContent = `₡${Number(estilo.precio).toLocaleString("es-CR")}`;
-  document.getElementById("cantidad-num").textContent   = "1";
-
-  // Foto — empieza con el primer color, cambia al seleccionar
-  const primerColorData = estilo.colores[0];
-  actualizarFotoDetalle(primerColorData?.foto_url);
-
-  // Colores
+  document.getElementById("cantidad-num").textContent = "1";
+  actualizarFotoDetalle(estilo.colores[0]?.foto_url);
   renderColores();
-
-  // Seleccionar primer color con stock
-  const primerColor = estilo.colores.find(c =>
-    c.tallas.some(t => t.stock > 0)
-  );
+  const primerColor = estilo.colores.find(c => c.tallas.some(t => t.stock > 0));
   if (primerColor) seleccionarColor(primerColor.color);
-
   document.getElementById("vista-catalogo").style.display = "none";
   document.getElementById("vista-detalle").classList.add("activa");
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
-
 function volverCatalogo() {
   document.getElementById("vista-detalle").classList.remove("activa");
   document.getElementById("vista-catalogo").style.display = "block";
 }
-
 function renderColores() {
-  const cont = document.getElementById("detalle-colores");
-  cont.innerHTML = "";
+  const cont = document.getElementById("detalle-colores"); cont.innerHTML = "";
   detalleActual.colores.forEach(c => {
     const tieneStock = c.tallas.some(t => t.stock > 0);
     const div = document.createElement("div");
@@ -1109,416 +437,289 @@ function renderColores() {
     cont.appendChild(div);
   });
 }
-
 function seleccionarColor(nombreColor) {
-  colorActual = nombreColor;
-  tallaActual = null;
+  colorActual = nombreColor; tallaActual = null; cantidadActual = 1;
   document.getElementById("cantidad-num").textContent = "1";
-  cantidadActual = 1;
-
-  document.querySelectorAll(".color-opcion").forEach(el => {
-    el.classList.toggle("activa", el.textContent.trim() === nombreColor);
-  });
-
-  // Actualizar foto según color seleccionado
-  const colorData = detalleActual.colores.find(c => c.color === nombreColor);
-  actualizarFotoDetalle(colorData?.foto_url);
-
-  renderTallas();
-  actualizarBtnAgregar();
+  document.querySelectorAll(".color-opcion").forEach(el => el.classList.toggle("activa", el.textContent.trim() === nombreColor));
+  actualizarFotoDetalle(detalleActual.colores.find(c => c.color === nombreColor)?.foto_url);
+  renderTallas(); actualizarBtnAgregar();
 }
-
 function actualizarFotoDetalle(fotoUrl) {
-  const img = document.getElementById("detalle-img");
-  const ph  = document.getElementById("detalle-placeholder");
-  if (fotoUrl) {
-    img.src = fotoUrl;
-    img.style.display = "block";
-    ph.style.display  = "none";
-    img.onerror = () => { img.style.display = "none"; ph.style.display = "block"; };
-  } else {
-    img.style.display = "none";
-    ph.style.display  = "block";
-  }
+  const img = document.getElementById("detalle-img"), ph = document.getElementById("detalle-placeholder");
+  if (fotoUrl) { img.src = fotoUrl; img.style.display = "block"; ph.style.display = "none"; img.onerror = () => { img.style.display = "none"; ph.style.display = "block"; }; }
+  else { img.style.display = "none"; ph.style.display = "block"; }
 }
-
 function renderTallas() {
-  const cont = document.getElementById("detalle-tallas");
-  cont.innerHTML = "";
-
+  const cont = document.getElementById("detalle-tallas"); cont.innerHTML = "";
   if (!colorActual) return;
   const colorData = detalleActual.colores.find(c => c.color === colorActual);
   if (!colorData) return;
-
   colorData.tallas.forEach(t => {
     const div = document.createElement("div");
-    const sinStock = t.stock === 0;
-    div.className = "talla-opcion" + (sinStock ? " sin-stock" : "");
+    div.className = "talla-opcion" + (t.stock === 0 ? " sin-stock" : "");
     div.textContent = t.talla;
-    if (!sinStock) div.onclick = () => seleccionarTalla(t.talla, t.stock, t.id_variante);
+    if (t.stock > 0) div.onclick = () => seleccionarTalla(t.talla, t.stock, t.id_variante);
     cont.appendChild(div);
   });
-
   actualizarStockInfo();
 }
-
 function seleccionarTalla(talla, stock, idVariante) {
-  tallaActual = { talla, stock, idVariante };
-  cantidadActual = 1;
+  tallaActual = { talla, stock, idVariante }; cantidadActual = 1;
   document.getElementById("cantidad-num").textContent = "1";
-
-  document.querySelectorAll(".talla-opcion").forEach(el => {
-    el.classList.toggle("activa", el.textContent.trim() === talla);
-  });
-
-  actualizarStockInfo();
-  actualizarBtnAgregar();
+  document.querySelectorAll(".talla-opcion").forEach(el => el.classList.toggle("activa", el.textContent.trim() === talla));
+  actualizarStockInfo(); actualizarBtnAgregar();
 }
-
 function actualizarStockInfo() {
   const info = document.getElementById("detalle-stock-info");
   if (!tallaActual) { info.textContent = ""; return; }
-  const s = tallaActual.stock;
-  if (s <= 3) {
-    info.textContent = `¡Solo quedan ${s} unidades!`;
-    info.className = "stock-info bajo";
-  } else {
-    info.textContent = `${s} unidades disponibles`;
-    info.className = "stock-info";
-  }
+  info.textContent = tallaActual.stock <= 3 ? `¡Solo quedan ${tallaActual.stock} unidades!` : `${tallaActual.stock} unidades disponibles`;
+  info.className = "stock-info" + (tallaActual.stock <= 3 ? " bajo" : "");
 }
-
-function actualizarBtnAgregar() {
-  document.getElementById("btn-agregar").disabled = !tallaActual;
-}
-
+function actualizarBtnAgregar() { document.getElementById("btn-agregar").disabled = !tallaActual; }
 function cambiarCantidad(delta) {
   if (!tallaActual) return;
-  const nueva = Math.max(1, Math.min(tallaActual.stock, cantidadActual + delta));
-  cantidadActual = nueva;
-  document.getElementById("cantidad-num").textContent = nueva;
+  cantidadActual = Math.max(1, Math.min(tallaActual.stock, cantidadActual + delta));
+  document.getElementById("cantidad-num").textContent = cantidadActual;
 }
 
-// ════════════════════════════════════════════════════════
-// CARRITO
-// ════════════════════════════════════════════════════════
+// ════════ CARRITO ════════
 function agregarAlCarrito() {
   if (!tallaActual) return;
-
-  // Verificar si ya está en el carrito
   const yaExiste = carrito.find(i => i.id_variante === tallaActual.idVariante);
-  if (yaExiste) {
-    const nuevaCant = Math.min(tallaActual.stock, yaExiste.cantidad + cantidadActual);
-    yaExiste.cantidad = nuevaCant;
-  } else {
-    carrito.push({
-      id_variante: tallaActual.idVariante,
-      estilo:      detalleActual.nombre,
-      color:       colorActual,
-      talla:       tallaActual.talla,
-      cantidad:    cantidadActual,
-      precio:      detalleActual.precio
-    });
-  }
-
+  if (yaExiste) { yaExiste.cantidad = Math.min(tallaActual.stock, yaExiste.cantidad + cantidadActual); }
+  else { carrito.push({ id_variante: tallaActual.idVariante, estilo: detalleActual.nombre, color: colorActual, talla: tallaActual.talla, cantidad: cantidadActual, precio: detalleActual.precio }); }
   actualizarContadorCarrito();
   mostrarToast(`${detalleActual.nombre} agregado al pedido`);
   volverCatalogo();
 }
-
 function actualizarContadorCarrito() {
-  const total = carrito.reduce((s, i) => s + i.cantidad, 0);
+  const total = carrito.reduce((s,i) => s + i.cantidad, 0);
   const count = document.getElementById("carrito-count");
-  count.textContent = total;
-  count.classList.toggle("visible", total > 0);
+  count.textContent = total; count.classList.toggle("visible", total > 0);
 }
-
 function abrirCarrito() {
   document.getElementById("overlay").classList.add("activo");
   document.getElementById("carrito-drawer").classList.add("abierto");
-  aplicarSesion();
-  renderCarrito();
+  aplicarSesion(); renderCarrito();
 }
-
 function cerrarCarrito() {
   document.getElementById("overlay").classList.remove("activo");
   document.getElementById("carrito-drawer").classList.remove("abierto");
 }
-
 function renderCarrito() {
-  const cont = document.getElementById("drawer-items");
-  cont.innerHTML = "";
-
+  const cont = document.getElementById("drawer-items"); cont.innerHTML = "";
   if (carrito.length === 0) {
     cont.innerHTML = `<div class="carrito-vacio">Tu pedido está vacío.<br>Elegí algo del catálogo.</div>`;
     document.getElementById("total-monto").textContent = "₡0";
-    document.getElementById("btn-confirmar").disabled = true;
-    return;
+    document.getElementById("btn-confirmar").disabled = true; return;
   }
-
   carrito.forEach((item, idx) => {
     const subtotal = item.precio * item.cantidad;
-    const div = document.createElement("div");
-    div.className = "item-carrito";
+    const div = document.createElement("div"); div.className = "item-carrito";
+    const puedeEditar = modoQuincena !== "cerrado";
     div.innerHTML = `
-      <div class="item-info" style="flex:1">
+      <div style="flex:1">
         <p class="item-nombre">${item.estilo}</p>
         <p class="item-variante">${item.color} · Talla ${item.talla}</p>
         <div style="display:flex;align-items:center;gap:10px;margin-top:6px">
+          ${puedeEditar ? `
           <div style="display:flex;align-items:center;border:1px solid var(--borde);border-radius:6px;overflow:hidden">
             <button onclick="cambiarCantidadCarrito(${idx},-1)" style="width:28px;height:28px;background:none;border:none;font-size:16px;cursor:pointer;color:var(--gris)">−</button>
             <span style="width:28px;text-align:center;font-size:13px;font-weight:500;border-left:1px solid var(--borde);border-right:1px solid var(--borde);line-height:28px">${item.cantidad}</span>
             <button onclick="cambiarCantidadCarrito(${idx},1)" style="width:28px;height:28px;background:none;border:none;font-size:16px;cursor:pointer;color:var(--gris)">+</button>
-          </div>
-          <p class="item-precio">₡${subtotal.toLocaleString("es-CR")}</p>
+          </div>` : `<span style="font-size:13px;color:var(--gris)">x${item.cantidad}</span>`}
+          <p style="font-size:13px">₡${subtotal.toLocaleString("es-CR")}</p>
         </div>
       </div>
-      <button class="btn-quitar" onclick="quitarItem(${idx})" aria-label="Quitar" style="margin-left:8px">×</button>`;
+      ${puedeEditar ? `<button class="btn-quitar" onclick="quitarItem(${idx})" style="margin-left:8px">×</button>` : ""}`;
     cont.appendChild(div);
   });
-
-  const total = carrito.reduce((s, i) => s + i.precio * i.cantidad, 0);
+  const total = carrito.reduce((s,i) => s + i.precio * i.cantidad, 0);
   document.getElementById("total-monto").textContent = `₡${total.toLocaleString("es-CR")}`;
-  document.getElementById("btn-confirmar").disabled = false;
+  document.getElementById("btn-confirmar").disabled = modoQuincena === "cerrado";
 }
-
 function cambiarCantidadCarrito(idx, delta) {
-  const item = carrito[idx];
-  if (!item) return;
+  const item = carrito[idx]; if (!item) return;
   const nueva = item.cantidad + delta;
-  if (nueva <= 0) {
-    // Confirmar antes de eliminar
-    if (confirm(`¿Quitás ${item.estilo} ${item.color} talla ${item.talla} del pedido?`)) {
-      quitarItem(idx);
-    }
-    return;
-  }
-  item.cantidad = nueva;
-  actualizarContadorCarrito();
-  renderCarrito();
+  if (nueva <= 0) { if (confirm(`¿Quitás ${item.estilo} del pedido?`)) quitarItem(idx); return; }
+  item.cantidad = nueva; actualizarContadorCarrito(); renderCarrito();
 }
+function quitarItem(idx) { carrito.splice(idx, 1); actualizarContadorCarrito(); renderCarrito(); }
 
-function quitarItem(idx) {
-  carrito.splice(idx, 1);
-  actualizarContadorCarrito();
-  renderCarrito();
-}
-
-// ════════════════════════════════════════════════════════
-// SESIÓN — recordar datos de la clienta
-// ════════════════════════════════════════════════════════
+// ════════ SESIÓN ════════
 const STORAGE_KEY = "catalogo_cliente";
+const SESSION_KEY = "catalogo_cliente_v2";
+let codigoPaisAuth = "506", modoAuth = "login";
+let codigoPaisCarrito = "506", codigoPaisHist = "506";
 
-function guardarDatosCliente(nombre, wa, codigoPais) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ nombre, wa, codigoPais }));
-  } catch(e) {}
+function guardarSesion(nombre, wa, codigoPais) { try { localStorage.setItem(SESSION_KEY, JSON.stringify({ nombre, wa, codigoPais })); } catch(e) {} }
+function cargarSesion() { try { const r = localStorage.getItem(SESSION_KEY); return r ? JSON.parse(r) : null; } catch(e) { return null; } }
+function borrarSesion() { try { localStorage.removeItem(SESSION_KEY); } catch(e) {} }
+
+function aplicarSesion() {
+  const sesion = cargarSesion(); if (!sesion) return;
+  if (sesion.nombre) document.getElementById("input-nombre").value = sesion.nombre;
+  const numSolo = sesion.wa.startsWith(sesion.codigoPais) ? sesion.wa.slice(sesion.codigoPais.length) : sesion.wa;
+  document.getElementById("input-wa").value = numSolo;
+  codigoPaisCarrito = sesion.codigoPais;
+  const btnPais = document.querySelector(`#carrito-drawer .pais-btn[data-codigo="${sesion.codigoPais}"]`);
+  if (btnPais) { document.querySelectorAll("#carrito-drawer .pais-btn").forEach(b => b.classList.remove("activo")); btnPais.classList.add("activo"); }
+  actualizarPreviewWA(); mostrarSaludoSesion(sesion.nombre);
+}
+function mostrarSaludoSesion(nombre) {
+  if (!nombre) return;
+  const saludo = document.getElementById("saludo-sesion"), sub = document.getElementById("brand-sub");
+  if (saludo) { saludo.textContent = `Hola, ${nombre.split(" ")[0]} 👋`; saludo.style.display = "block"; }
+  if (sub) sub.style.display = "none";
+}
+function cerrarSesion() {
+  if (!confirm("¿Cerrar sesión?")) return;
+  borrarSesion();
+  document.getElementById("input-nombre").value = "";
+  document.getElementById("input-wa").value = "";
+  document.getElementById("wa-preview").textContent = "";
+  const saludo = document.getElementById("saludo-sesion"), sub = document.getElementById("brand-sub");
+  if (saludo) saludo.style.display = "none"; if (sub) sub.style.display = "block";
+  document.getElementById("pantalla-auth").style.display = "flex"; mostrarTab("login");
 }
 
-function cargarDatosGuardados() {
+// ════════ AUTH ════════
+function mostrarTab(tab) {
+  modoAuth = tab; const esLogin = tab === "login";
+  document.getElementById("tab-login").style.background    = esLogin ? "var(--oscuro)" : "var(--blanco)";
+  document.getElementById("tab-login").style.color         = esLogin ? "white" : "var(--gris)";
+  document.getElementById("tab-registro").style.background = esLogin ? "var(--blanco)" : "var(--oscuro)";
+  document.getElementById("tab-registro").style.color      = esLogin ? "var(--gris)" : "white";
+  document.getElementById("auth-nombre").style.display  = esLogin ? "none" : "block";
+  document.getElementById("auth-pin2").style.display    = esLogin ? "none" : "block";
+  document.getElementById("auth-btn").textContent       = esLogin ? "Entrar" : "Crear cuenta";
+  document.getElementById("auth-error").style.display   = "none";
+}
+function seleccionarPaisAuth(btn) {
+  document.querySelectorAll("#auth-paises .pais-btn").forEach(b => b.classList.remove("activo")); btn.classList.add("activo");
+  codigoPaisAuth = btn.dataset.codigo;
+  document.getElementById("auth-otro-wrap").style.display = codigoPaisAuth === "otro" ? "block" : "none";
+  actualizarPreviewAuth();
+}
+function actualizarPreviewAuth() {
+  const num = (document.getElementById("auth-wa").value || "").trim().replace(/[\s\-]/g, "");
+  const codigo = codigoPaisAuth === "otro" ? (document.getElementById("auth-codigo").value || "").trim() : codigoPaisAuth;
+  document.getElementById("auth-preview").textContent = num && codigo ? `WhatsApp: +${codigo}${num}` : "";
+}
+function togglePIN() { const inp = document.getElementById("auth-pin"); inp.type = inp.type === "password" ? "text" : "password"; }
+function mostrarErrorAuth(msg) { const el = document.getElementById("auth-error"); el.textContent = msg; el.style.display = "block"; }
+function getWAAuth() {
+  const num = (document.getElementById("auth-wa").value || "").trim().replace(/[\s\-]/g, "");
+  const codigo = codigoPaisAuth === "otro" ? (document.getElementById("auth-codigo").value || "").trim() : codigoPaisAuth;
+  return { num, codigo, wa: codigo + num };
+}
+async function ejecutarAuth() {
+  document.getElementById("auth-error").style.display = "none";
+  const { num, codigo, wa } = getWAAuth();
+  const pin = (document.getElementById("auth-pin").value || "").trim();
+  if (!num) { mostrarErrorAuth("Ingresá tu número de WhatsApp"); return; }
+  if (!pin || pin.length !== 4) { mostrarErrorAuth("El PIN debe ser de 4 dígitos"); return; }
+  const btn = document.getElementById("auth-btn"); btn.disabled = true; btn.textContent = "Procesando...";
   try {
-    const datos = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-    if (!datos) return;
-
-    // Nombre
-    const inputNombre = document.getElementById("input-nombre");
-    if (inputNombre && !inputNombre.value) inputNombre.value = datos.nombre || "";
-
-    // WhatsApp
-    const inputWA = document.getElementById("input-wa");
-    if (inputWA && !inputWA.value) {
-      // El WA guardado tiene el código incluido — extraer solo el número
-      const codigo = datos.codigoPais || "506";
-      const num = (datos.wa || "").replace(codigo, "");
-      inputWA.value = num;
-    }
-
-    // País
-    if (datos.codigoPais) {
-      const btnPais = document.querySelector(
-        `#carrito-drawer .pais-btn[data-codigo="${datos.codigoPais}"]`
-      );
-      if (btnPais) {
-        document.querySelectorAll("#carrito-drawer .pais-btn").forEach(b => b.classList.remove("activo"));
-        btnPais.classList.add("activo");
-        codigoPaisCarrito = datos.codigoPais;
-      }
-    }
-
-    actualizarPreviewWA();
-
-    // También precargar en historial
-    const histInput = document.getElementById("hist-wa-input");
-    if (histInput && !histInput.value && datos.wa && datos.codigoPais) {
-      const num = (datos.wa || "").replace(datos.codigoPais, "");
-      histInput.value = num;
-      const btnHist = document.querySelector(
-        `#historial-drawer .pais-btn[data-codigo="${datos.codigoPais}"]`
-      );
-      if (btnHist) {
-        document.querySelectorAll("#historial-drawer .pais-btn").forEach(b => b.classList.remove("activo"));
-        btnHist.classList.add("activo");
-        codigoPaisHist = datos.codigoPais;
-      }
-    }
-  } catch(e) {}
+    if (modoAuth === "login") await ejecutarLogin(wa, pin, codigo);
+    else await ejecutarRegistro(wa, pin, codigo);
+  } finally { btn.disabled = false; btn.textContent = modoAuth === "login" ? "Entrar" : "Crear cuenta"; }
+}
+async function ejecutarLogin(wa, pin, codigo) {
+  const params = new URLSearchParams({ action: "login", wa, pin, codigo_pais: codigo });
+  const data = await (await fetch(`${API_URL}?${params}`)).json();
+  if (data.ok) { guardarSesion(data.nombre, wa, codigo); aplicarSesion(); document.getElementById("pantalla-auth").style.display = "none"; }
+  else mostrarErrorAuth(data.error || "Número o PIN incorrecto");
+}
+async function ejecutarRegistro(wa, pin, codigo) {
+  const nombre = (document.getElementById("auth-nombre").value || "").trim();
+  const pin2   = (document.getElementById("auth-pin2").value   || "").trim();
+  if (!nombre) { mostrarErrorAuth("Ingresá tu nombre"); return; }
+  if (pin !== pin2) { mostrarErrorAuth("Los PINs no coinciden"); return; }
+  const params = new URLSearchParams({ action: "registrar", wa, nombre, pin, codigo_pais: codigo });
+  const data = await (await fetch(`${API_URL}?${params}`)).json();
+  if (data.ok) { guardarSesion(nombre, wa, codigo); aplicarSesion(); document.getElementById("pantalla-auth").style.display = "none"; mostrarToast(`¡Bienvenida, ${nombre.split(" ")[0]}!`); }
+  else mostrarErrorAuth(data.error || "No se pudo crear la cuenta");
 }
 
-// ════════════════════════════════════════════════════════
-// SELECTOR DE PAÍS / WHATSAPP
-// ════════════════════════════════════════════════════════
-let codigoPaisCarrito = "506";
-let codigoPaisHist    = "506";
-
+// ════════ PAÍS / WA ════════
 function seleccionarPais(btn) {
-  document.querySelectorAll(".pais-btn").forEach(b => {
-    if (b.closest("#carrito-drawer") || !b.closest("#historial-drawer")) b.classList.remove("activo");
-  });
-  btn.classList.add("activo");
-  const codigo = btn.dataset.codigo;
-  codigoPaisCarrito = codigo;
-  const otroWrap = document.getElementById("pais-otro-wrap");
-  otroWrap.style.display = codigo === "otro" ? "block" : "none";
+  document.querySelectorAll(".pais-btn").forEach(b => { if (b.closest("#carrito-drawer") || !b.closest("#historial-drawer")) b.classList.remove("activo"); });
+  btn.classList.add("activo"); codigoPaisCarrito = btn.dataset.codigo;
+  document.getElementById("pais-otro-wrap").style.display = codigoPaisCarrito === "otro" ? "block" : "none";
   actualizarPreviewWA();
 }
-
 function seleccionarPaisHist(btn) {
-  document.querySelectorAll("#historial-drawer .pais-btn").forEach(b => b.classList.remove("activo"));
-  btn.classList.add("activo");
-  const codigo = btn.dataset.codigo;
-  codigoPaisHist = codigo;
-  const otroWrap = document.getElementById("hist-pais-otro-wrap");
-  otroWrap.style.display = codigo === "otro" ? "block" : "none";
+  document.querySelectorAll("#historial-drawer .pais-btn").forEach(b => b.classList.remove("activo")); btn.classList.add("activo");
+  codigoPaisHist = btn.dataset.codigo;
+  document.getElementById("hist-pais-otro-wrap").style.display = codigoPaisHist === "otro" ? "block" : "none";
 }
-
 function getCodigoPais(tipo) {
-  if (tipo === "carrito") {
-    if (codigoPaisCarrito === "otro") {
-      return document.getElementById("input-codigo-pais").value.trim();
-    }
-    return codigoPaisCarrito;
-  } else {
-    if (codigoPaisHist === "otro") {
-      return document.getElementById("hist-codigo-pais").value.trim();
-    }
-    return codigoPaisHist;
-  }
+  if (tipo === "carrito") return codigoPaisCarrito === "otro" ? document.getElementById("input-codigo-pais").value.trim() : codigoPaisCarrito;
+  return codigoPaisHist === "otro" ? document.getElementById("hist-codigo-pais").value.trim() : codigoPaisHist;
 }
-
 function actualizarPreviewWA() {
   const num = document.getElementById("input-wa").value.trim().replace(/\s|-/g, "");
   const codigo = getCodigoPais("carrito");
-  const preview = document.getElementById("wa-preview");
-  if (num && codigo) {
-    preview.textContent = `WhatsApp: +${codigo}${num}`;
-  } else {
-    preview.textContent = "";
-  }
+  document.getElementById("wa-preview").textContent = num && codigo ? `WhatsApp: +${codigo}${num}` : "";
 }
-
 function construirWA(tipo) {
   const inputId = tipo === "carrito" ? "input-wa" : "hist-wa-input";
-  const num = document.getElementById(inputId).value.trim().replace(/\s|-/g, "");
-  const codigo = getCodigoPais(tipo);
-  return `${codigo}${num}`;
+  return `${getCodigoPais(tipo)}${document.getElementById(inputId).value.trim().replace(/\s|-/g, "")}`;
 }
 
-// ════════════════════════════════════════════════════════
-// CONFIRMAR PEDIDO
-// ════════════════════════════════════════════════════════
+// ════════ CONFIRMAR PEDIDO ════════
 async function confirmarPedido() {
-  if (enviando || carrito.length === 0) return;
-
+  if (enviando || carrito.length === 0 || modoQuincena === "cerrado") return;
   const nombre = document.getElementById("input-nombre").value.trim();
   const wa     = construirWA("carrito");
-
   document.getElementById("input-nombre").classList.remove("error");
   document.getElementById("input-wa").classList.remove("error");
-
   let valido = true;
   if (!nombre) { document.getElementById("input-nombre").classList.add("error"); valido = false; }
   if (!wa)     { document.getElementById("input-wa").classList.add("error");     valido = false; }
   if (!valido) { mostrarToast("Por favor completá tu nombre y WhatsApp"); return; }
-
   enviando = true;
-  const btn = document.getElementById("btn-confirmar");
-  btn.disabled = true;
-  btn.textContent = "Enviando...";
-
+  const btn = document.getElementById("btn-confirmar"); btn.disabled = true; btn.textContent = "Enviando...";
   try {
-    const items = carrito.map(i => ({
-      id_variante: i.id_variante,
-      cantidad:    i.cantidad,
-      color:       i.color,
-      talla:       i.talla
-    }));
-
-    const params = new URLSearchParams({
-      action: "pedido",
-      nombre,
-      wa,
-      items: JSON.stringify(items)
-    });
-
-    const res  = await fetch(`${API_URL}?${params}`);
-    const data = await res.json();
-
+    const items = carrito.map(i => ({ id_variante: i.id_variante, cantidad: i.cantidad, color: i.color, talla: i.talla }));
+    const params = new URLSearchParams({ action: "pedido", nombre, wa, items: JSON.stringify(items) });
+    const data = await (await fetch(`${API_URL}?${params}`)).json();
     if (data.ok) {
-      // Actualizar sesión con datos del pedido
       guardarSesion(nombre, wa, codigoPaisCarrito);
       document.getElementById("confirm-titulo").textContent = `¡Listo, ${nombre.split(" ")[0]}!`;
       document.getElementById("confirm-id-texto").textContent = data.id_pedido;
       document.getElementById("drawer-contenido").style.display = "none";
       document.getElementById("pantalla-confirm").classList.add("activa");
-      carrito = [];
-      actualizarContadorCarrito();
+      carrito = []; actualizarContadorCarrito();
     } else {
-      const msgs = data.errores || ["Ocurrió un error. Intentá de nuevo."];
-      mostrarToast(msgs[0]);
-      // Recargar catálogo para reflejar stock actualizado
+      mostrarToast((data.errores || ["Error. Intentá de nuevo."])[0]);
       cargarCatalogo();
     }
-  } catch (err) {
-    mostrarToast("Error de conexión. Intentá de nuevo.");
-  } finally {
-    enviando = false;
-    btn.disabled = false;
-    btn.textContent = "Confirmar pedido";
-  }
+  } catch(err) { mostrarToast("Error de conexión. Intentá de nuevo."); }
+  finally { enviando = false; btn.disabled = false; btn.textContent = "Confirmar pedido"; }
 }
-
 function resetPedido() {
   document.getElementById("drawer-contenido").style.display = "block";
   document.getElementById("pantalla-confirm").classList.remove("activa");
   document.getElementById("input-nombre").value = "";
   document.getElementById("input-wa").value = "";
-  cerrarCarrito();
-  cargarCatalogo();
+  cerrarCarrito(); cargarCatalogo();
 }
 
-// ════════════════════════════════════════════════════════
-// HELPERS
-// ════════════════════════════════════════════════════════
+// ════════ HELPERS ════════
 function mostrarToast(msg) {
-  const t = document.getElementById("toast");
-  t.textContent = msg;
-  t.classList.add("visible");
+  const t = document.getElementById("toast"); t.textContent = msg; t.classList.add("visible");
   setTimeout(() => t.classList.remove("visible"), 3000);
 }
 
-// ════════════════════════════════════════════════════════
-// HISTORIAL
-// ════════════════════════════════════════════════════════
+// ════════ HISTORIAL ════════
 function abrirHistorial() {
   document.getElementById("overlay-historial").style.display = "block";
   document.getElementById("historial-drawer").classList.add("abierto");
-
   const sesion = cargarSesion();
-  if (sesion && sesion.wa) {
-    // Con sesión: pedir PIN antes de mostrar historial
-    mostrarPinHistorial(sesion);
-  } else {
-    // Sin sesión: mostrar campo de búsqueda
+  if (sesion && sesion.wa) mostrarPinHistorial(sesion);
+  else {
     document.getElementById("hist-buscar").style.display = "block";
     document.getElementById("hist-cargando").style.display = "none";
     document.getElementById("hist-resultados").style.display = "none";
@@ -1526,21 +727,15 @@ function abrirHistorial() {
     document.getElementById("hist-wa-input").value = "";
   }
 }
-
 function mostrarPinHistorial(sesion) {
-  // Reemplazar el contenido del drawer con pantalla de PIN
-  const cont = document.getElementById("hist-buscar");
-  cont.style.display = "block";
+  const cont = document.getElementById("hist-buscar"); cont.style.display = "block";
   document.getElementById("hist-resultados").style.display = "none";
   document.getElementById("hist-vacio").style.display = "none";
   document.getElementById("hist-cargando").style.display = "none";
   cont.innerHTML = `
-    <p style="font-size:13px;color:var(--gris);margin-bottom:12px">
-      Hola, <strong>${sesion.nombre.split(" ")[0]}</strong>. Ingresá tu PIN para ver tus pedidos.
-    </p>
+    <p style="font-size:13px;color:var(--gris);margin-bottom:12px">Hola, <strong>${sesion.nombre.split(" ")[0]}</strong>. Ingresá tu PIN para ver tus pedidos.</p>
     <div style="position:relative;margin-bottom:8px">
-      <input type="password" id="hist-pin-input" placeholder="PIN de 4 dígitos"
-        maxlength="4" inputmode="numeric"
+      <input type="password" id="hist-pin-input" placeholder="PIN de 4 dígitos" maxlength="4" inputmode="numeric"
         style="width:100%;box-sizing:border-box;border:1px solid var(--borde);border-radius:8px;padding:10px 50px 10px 14px;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;letter-spacing:0.3em"
         onfocus="this.style.borderColor='var(--rosa)'" onblur="this.style.borderColor='var(--borde)'"
         onkeydown="if(event.key==='Enter') verificarPinHistorial()">
@@ -1548,114 +743,63 @@ function mostrarPinHistorial(sesion) {
         style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--gris);font-size:11px">VER</button>
     </div>
     <p id="hist-pin-error" style="font-size:12px;color:#E24B4A;margin:0 0 8px;display:none"></p>
-    <button onclick="verificarPinHistorial()"
-      style="width:100%;padding:10px;background:var(--oscuro);color:white;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer">
-      Ver mis pedidos
-    </button>
-  `;
-  setTimeout(() => {
-    const inp = document.getElementById("hist-pin-input");
-    if (inp) inp.focus();
-  }, 300);
+    <button onclick="verificarPinHistorial()" style="width:100%;padding:10px;background:var(--oscuro);color:white;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer">Ver mis pedidos</button>`;
+  setTimeout(() => { const inp = document.getElementById("hist-pin-input"); if (inp) inp.focus(); }, 300);
 }
-
 async function verificarPinHistorial() {
-  const sesion = cargarSesion();
-  if (!sesion) return;
+  const sesion = cargarSesion(); if (!sesion) return;
   const pin = (document.getElementById("hist-pin-input")?.value || "").trim();
-  if (!pin || pin.length !== 4) {
-    const err = document.getElementById("hist-pin-error");
-    if (err) { err.textContent = "Ingresá tu PIN de 4 dígitos"; err.style.display = "block"; }
-    return;
-  }
-
-  // Validar PIN contra el script
+  if (!pin || pin.length !== 4) { const err = document.getElementById("hist-pin-error"); if (err) { err.textContent = "Ingresá tu PIN de 4 dígitos"; err.style.display = "block"; } return; }
   try {
     const params = new URLSearchParams({ action: "login", wa: sesion.wa, pin, codigo_pais: sesion.codigoPais });
-    const res  = await fetch(`${API_URL}?${params}`);
-    const data = await res.json();
-
-    if (data.ok) {
-      // PIN correcto: cargar historial
-      document.getElementById("hist-buscar").style.display = "none";
-      buscarHistorialConWA(sesion.wa);
-    } else {
-      const err = document.getElementById("hist-pin-error");
-      if (err) { err.textContent = "PIN incorrecto"; err.style.display = "block"; }
-    }
-  } catch(e) {
-    mostrarToast("Error de conexión");
-  }
+    const data = await (await fetch(`${API_URL}?${params}`)).json();
+    if (data.ok) { document.getElementById("hist-buscar").style.display = "none"; buscarHistorialConWA(sesion.wa); }
+    else { const err = document.getElementById("hist-pin-error"); if (err) { err.textContent = "PIN incorrecto"; err.style.display = "block"; } }
+  } catch(e) { mostrarToast("Error de conexión"); }
 }
-
 function cerrarHistorial() {
   document.getElementById("overlay-historial").style.display = "none";
   document.getElementById("historial-drawer").classList.remove("abierto");
 }
-
 async function buscarHistorial() {
   const wa = construirWA("historial");
   if (!wa || wa.length < 4) { mostrarToast("Ingresá tu número de WhatsApp"); return; }
   await buscarHistorialConWA(wa);
 }
-
 async function buscarHistorialConWA(wa) {
-
   document.getElementById("hist-buscar").style.display = "none";
   document.getElementById("hist-cargando").style.display = "block";
   document.getElementById("hist-resultados").style.display = "none";
   document.getElementById("hist-vacio").style.display = "none";
-
   try {
-    const res  = await fetch(`${API_URL}?action=historial&wa=${encodeURIComponent(wa)}`);
-    const data = await res.json();
-
+    const data = await (await fetch(`${API_URL}?action=historial&wa=${encodeURIComponent(wa)}`)).json();
     document.getElementById("hist-cargando").style.display = "none";
-
-    if (!data.ok || !data.pedidos || data.pedidos.length === 0) {
-      document.getElementById("hist-vacio").style.display = "block";
-      return;
-    }
-
+    if (!data.ok || !data.pedidos || data.pedidos.length === 0) { document.getElementById("hist-vacio").style.display = "block"; return; }
     renderHistorial(data.pedidos, data.total, wa);
     document.getElementById("hist-resultados").style.display = "block";
-
+    // Mostrar aviso si congelado
+    const aviso = document.getElementById("aviso-congelado");
+    if (aviso) aviso.style.display = modoQuincena !== "abierto" ? "block" : "none";
   } catch(err) {
     document.getElementById("hist-cargando").style.display = "none";
     document.getElementById("hist-buscar").style.display = "block";
-    mostrarToast("Error de conexión. Intentá de nuevo.");
+    mostrarToast("Error de conexión.");
   }
 }
-
 function renderHistorial(pedidos, total, wa) {
-  const cont = document.getElementById("hist-items");
-  cont.innerHTML = "";
-
-  // Agrupar por ID_pedido
+  const cont = document.getElementById("hist-items"); cont.innerHTML = "";
   const grupos = {};
-  pedidos.forEach(p => {
-    if (!grupos[p.id_pedido]) grupos[p.id_pedido] = [];
-    grupos[p.id_pedido].push(p);
-  });
-
+  pedidos.forEach(p => { if (!grupos[p.id_pedido]) grupos[p.id_pedido] = []; grupos[p.id_pedido].push(p); });
   Object.entries(grupos).forEach(([idPedido, items]) => {
-    const fecha = items[0].fecha;
     const seccion = document.createElement("div");
     seccion.style.cssText = "margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--borde)";
-    seccion.innerHTML = `
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <p style="font-size:11px;font-weight:500;color:var(--gris);text-transform:uppercase;letter-spacing:0.05em">${idPedido}</p>
-        <p style="font-size:11px;color:var(--gris)">${fecha}</p>
-      </div>`;
-
+    seccion.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><p style="font-size:11px;font-weight:500;color:var(--gris);text-transform:uppercase;letter-spacing:0.05em">${idPedido}</p><p style="font-size:11px;color:var(--gris)">${items[0].fecha}</p></div>`;
     items.forEach(item => {
       const row = document.createElement("div");
       row.style.cssText = "display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;gap:12px";
-
-      const estadoBg  = item.estado === "entregado" ? "#D8F3DC" : "#FFF3CD";
-      const estadoFg  = item.estado === "entregado" ? "#1B4332" : "#5C3D00";
-      const cancelable = item.estado === "pendiente";
-
+      const estadoBg = item.estado === "entregado" ? "#D8F3DC" : "#FFF3CD";
+      const estadoFg = item.estado === "entregado" ? "#1B4332" : "#5C3D00";
+      const cancelable = item.estado === "pendiente" && modoQuincena === "abierto";
       row.innerHTML = `
         <div style="flex:1">
           <p style="font-size:13px;font-weight:500;color:var(--oscuro);margin-bottom:2px">${item.estilo}</p>
@@ -1667,249 +811,34 @@ function renderHistorial(pedidos, total, wa) {
         </div>
         ${cancelable ? `
         <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
-          ${item.cantidad > 1 ? `
-          <button onclick="cancelarItem('${item.id_pedido}','${item.id_variante}','${item.estilo} ${item.color} T.${item.talla}','${item.wa || wa}',1)"
-            style="font-size:11px;color:#854F0B;background:none;border:1px solid #D4A843;border-radius:6px;padding:4px 8px;cursor:pointer;white-space:nowrap">
-            −1 unidad
-          </button>` : ''}
-          <button onclick="cancelarItem('${item.id_pedido}','${item.id_variante}','${item.estilo} ${item.color} T.${item.talla}','${item.wa || wa}',${item.cantidad})"
-            style="font-size:11px;color:#E24B4A;background:none;border:1px solid #E24B4A;border-radius:6px;padding:4px 8px;cursor:pointer;white-space:nowrap">
-            Cancelar${item.cantidad > 1 ? ' todo' : ''}
-          </button>
-        </div>` : ''}`;
-
+          ${item.cantidad > 1 ? `<button onclick="cancelarItem('${item.id_pedido}','${item.id_variante}','${item.estilo} ${item.color} T.${item.talla}','${item.wa || wa}',1)" style="font-size:11px;color:#854F0B;background:none;border:1px solid #D4A843;border-radius:6px;padding:4px 8px;cursor:pointer;white-space:nowrap">−1 unidad</button>` : ""}
+          <button onclick="cancelarItem('${item.id_pedido}','${item.id_variante}','${item.estilo} ${item.color} T.${item.talla}','${item.wa || wa}',${item.cantidad})" style="font-size:11px;color:#E24B4A;background:none;border:1px solid #E24B4A;border-radius:6px;padding:4px 8px;cursor:pointer;white-space:nowrap">Cancelar${item.cantidad > 1 ? " todo" : ""}</button>
+        </div>` : ""}`;
       seccion.appendChild(row);
     });
-
     cont.appendChild(seccion);
   });
-
-  // Total solo de pendientes
-  const totalPendiente = pedidos
-    .filter(p => p.estado === "pendiente")
-    .reduce((s, p) => s + Number(p.subtotal), 0);
+  const totalPendiente = pedidos.filter(p => p.estado === "pendiente").reduce((s,p) => s + Number(p.subtotal), 0);
   document.getElementById("hist-total").textContent = `₡${totalPendiente.toLocaleString("es-CR")}`;
 }
-
 async function cancelarItem(idPedido, idVariante, nombreItem, wa, cant) {
   const msg = cant === 1 ? `¿Cancelás 1 unidad de ${nombreItem}?` : `¿Cancelás ${nombreItem} (${cant} unidades)?`;
   if (!confirm(msg)) return;
-
   mostrarToast("Cancelando...");
-
- try {
-  console.log("Cancelar:", {
-    idPedido,
-    idVariante,
-    wa,
-    cant
-  });
-
-  const params = new URLSearchParams({
-    action:      "cancelar",
-    id_pedido:   idPedido,
-    id_variante: idVariante,
-    wa:          wa,
-    cant:        String(cant)
-  });
-
-  const res  = await fetch(`${API_URL}?${params}`);
-  const data = await res.json();
-
-    if (data.ok) {
-      mostrarToast("Artículo cancelado correctamente");
-      cargarCatalogo();
-      // Esperar a que el Sheet se actualice antes de releer
-      setTimeout(() => buscarHistorialConWA(wa), 1500);
-    } else {
-      mostrarToast(data.error || "No se pudo cancelar. Intentá de nuevo.");
-    }
-  } catch(err) {
-    mostrarToast("Error de conexión.");
-  }
-}
-
-// ════════════════════════════════════════════════════════
-// SESIÓN LOCAL + AUTH CON PIN
-// ════════════════════════════════════════════════════════
-const SESSION_KEY = "catalogo_cliente_v2";
-let codigoPaisAuth = "506";
-let modoAuth = "login"; // "login" | "registro"
-
-function guardarSesion(nombre, wa, codigoPais) {
-  try { localStorage.setItem(SESSION_KEY, JSON.stringify({ nombre, wa, codigoPais })); } catch(e) {}
-}
-function cargarSesion() {
-  try { const r = localStorage.getItem(SESSION_KEY); return r ? JSON.parse(r) : null; } catch(e) { return null; }
-}
-function borrarSesion() {
-  try { localStorage.removeItem(SESSION_KEY); } catch(e) {}
-}
-
-// ── Auth UI ──
-function mostrarTab(tab) {
-  modoAuth = tab;
-  const esLogin = tab === "login";
-  document.getElementById("tab-login").style.background    = esLogin ? "var(--oscuro)" : "var(--blanco)";
-  document.getElementById("tab-login").style.color         = esLogin ? "white" : "var(--gris)";
-  document.getElementById("tab-registro").style.background = esLogin ? "var(--blanco)" : "var(--oscuro)";
-  document.getElementById("tab-registro").style.color      = esLogin ? "var(--gris)" : "white";
-  document.getElementById("auth-nombre").style.display  = esLogin ? "none" : "block";
-  document.getElementById("auth-pin2").style.display    = esLogin ? "none" : "block";
-  document.getElementById("auth-btn").textContent       = esLogin ? "Entrar" : "Crear cuenta";
-  document.getElementById("auth-error").style.display   = "none";
-  document.getElementById("auth-error").textContent     = "";
-}
-
-function seleccionarPaisAuth(btn) {
-  document.querySelectorAll("#auth-paises .pais-btn").forEach(b => b.classList.remove("activo"));
-  btn.classList.add("activo");
-  codigoPaisAuth = btn.dataset.codigo;
-  document.getElementById("auth-otro-wrap").style.display = codigoPaisAuth === "otro" ? "block" : "none";
-  actualizarPreviewAuth();
-}
-
-function actualizarPreviewAuth() {
-  const num    = (document.getElementById("auth-wa").value || "").trim().replace(/[\s\-]/g, "");
-  const codigo = codigoPaisAuth === "otro"
-    ? (document.getElementById("auth-codigo").value || "").trim()
-    : codigoPaisAuth;
-  const preview = document.getElementById("auth-preview");
-  preview.textContent = num && codigo ? `WhatsApp: +${codigo}${num}` : "";
-}
-
-function togglePIN() {
-  const inp = document.getElementById("auth-pin");
-  inp.type = inp.type === "password" ? "text" : "password";
-}
-
-function mostrarErrorAuth(msg) {
-  const el = document.getElementById("auth-error");
-  el.textContent = msg;
-  el.style.display = "block";
-}
-
-function getWAAuth() {
-  const num    = (document.getElementById("auth-wa").value || "").trim().replace(/[\s\-]/g, "");
-  const codigo = codigoPaisAuth === "otro"
-    ? (document.getElementById("auth-codigo").value || "").trim()
-    : codigoPaisAuth;
-  return { num, codigo, wa: codigo + num };
-}
-
-async function ejecutarAuth() {
-  document.getElementById("auth-error").style.display = "none";
-  const { num, codigo, wa } = getWAAuth();
-  const pin = (document.getElementById("auth-pin").value || "").trim();
-
-  if (!num)  { mostrarErrorAuth("Ingresá tu número de WhatsApp"); return; }
-  if (!pin || pin.length !== 4) { mostrarErrorAuth("El PIN debe ser de 4 dígitos"); return; }
-
-  const btn = document.getElementById("auth-btn");
-  btn.disabled = true;
-  btn.textContent = "Procesando...";
-
   try {
-    if (modoAuth === "login") {
-      await ejecutarLogin(wa, pin, codigo);
-    } else {
-      await ejecutarRegistro(wa, pin, codigo, num);
-    }
-  } finally {
-    btn.disabled = false;
-    btn.textContent = modoAuth === "login" ? "Entrar" : "Crear cuenta";
-  }
+    const params = new URLSearchParams({ action: "cancelar", id_pedido: idPedido, id_variante: idVariante, wa, cant: String(cant) });
+    const data = await (await fetch(`${API_URL}?${params}`)).json();
+    if (data.ok) { mostrarToast("Artículo cancelado correctamente"); cargarCatalogo(); setTimeout(() => buscarHistorialConWA(wa), 1500); }
+    else mostrarToast(data.error || "No se pudo cancelar.");
+  } catch(err) { mostrarToast("Error de conexión."); }
 }
 
-async function ejecutarLogin(wa, pin, codigo) {
-  const params = new URLSearchParams({ action: "login", wa, pin, codigo_pais: codigo });
-  const res  = await fetch(`${API_URL}?${params}`);
-  const data = await res.json();
-
-  if (data.ok) {
-    guardarSesion(data.nombre, wa, codigo);
-    aplicarSesion();
-    document.getElementById("pantalla-auth").style.display = "none";
-  } else {
-    mostrarErrorAuth(data.error || "Número o PIN incorrecto");
-  }
-}
-
-async function ejecutarRegistro(wa, pin, codigo, num) {
-  const nombre = (document.getElementById("auth-nombre").value || "").trim();
-  const pin2   = (document.getElementById("auth-pin2").value   || "").trim();
-
-  if (!nombre)    { mostrarErrorAuth("Ingresá tu nombre"); return; }
-  if (pin !== pin2) { mostrarErrorAuth("Los PINs no coinciden"); return; }
-
-  const params = new URLSearchParams({ action: "registrar", wa, nombre, pin, codigo_pais: codigo });
-  const res  = await fetch(`${API_URL}?${params}`);
-  const data = await res.json();
-
-  if (data.ok) {
-    guardarSesion(nombre, wa, codigo);
-    aplicarSesion();
-    document.getElementById("pantalla-auth").style.display = "none";
-    mostrarToast(`¡Bienvenida, ${nombre.split(" ")[0]}!`);
-  } else {
-    mostrarErrorAuth(data.error || "No se pudo crear la cuenta");
-  }
-}
-
-function aplicarSesion() {
-  const sesion = cargarSesion();
-  if (!sesion) return;
-
-  // Llenar carrito con datos de sesión
-  if (sesion.nombre) document.getElementById("input-nombre").value = sesion.nombre;
-  const numSolo = sesion.wa.startsWith(sesion.codigoPais)
-    ? sesion.wa.slice(sesion.codigoPais.length) : sesion.wa;
-  document.getElementById("input-wa").value = numSolo;
-  codigoPaisCarrito = sesion.codigoPais;
-  const btnPais = document.querySelector(`#carrito-drawer .pais-btn[data-codigo="${sesion.codigoPais}"]`);
-  if (btnPais) {
-    document.querySelectorAll("#carrito-drawer .pais-btn").forEach(b => b.classList.remove("activo"));
-    btnPais.classList.add("activo");
-  }
-  actualizarPreviewWA();
-  mostrarSaludoSesion(sesion.nombre);
-}
-
-function mostrarSaludoSesion(nombre) {
-  if (!nombre) return;
-  const saludo = document.getElementById("saludo-sesion");
-  const sub    = document.getElementById("brand-sub");
-  if (saludo) { saludo.textContent = `Hola, ${nombre.split(" ")[0]} 👋`; saludo.style.display = "block"; }
-  if (sub)    sub.style.display = "none";
-}
-
-function cerrarSesion() {
-  if (!confirm("¿Cerrar sesión?")) return;
-  borrarSesion();
-  document.getElementById("input-nombre").value = "";
-  document.getElementById("input-wa").value = "";
-  document.getElementById("wa-preview").textContent = "";
-  const saludo = document.getElementById("saludo-sesion");
-  const sub    = document.getElementById("brand-sub");
-  if (saludo) saludo.style.display = "none";
-  if (sub)    sub.style.display = "block";
-  document.getElementById("pantalla-auth").style.display = "flex";
-  mostrarTab("login");
-}
-
-// ════════════════════════════════════════════════════════
-// INIT
-// ════════════════════════════════════════════════════════
+// ════════ INIT ════════
+cargarEstadoQuincena();
 cargarCatalogo();
-// Auth al inicio
 const _sesionInicial = cargarSesion();
-if (_sesionInicial) {
-  document.getElementById("pantalla-auth").style.display = "none";
-  aplicarSesion();
-} else {
-  document.getElementById("pantalla-auth").style.display = "flex";
-  mostrarTab("login");
-}
+if (_sesionInicial) { document.getElementById("pantalla-auth").style.display = "none"; aplicarSesion(); }
+else { document.getElementById("pantalla-auth").style.display = "flex"; mostrarTab("login"); }
 </script>
 </body>
 </html>
