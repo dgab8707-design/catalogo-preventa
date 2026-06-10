@@ -129,7 +129,6 @@
   .wa-preview { font-size: 11px; color: var(--gris); margin-top: 4px; min-height: 16px; }
   .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px); background: #1C1917; color: white; padding: 10px 20px; border-radius: 50px; font-size: 13px; opacity: 0; transition: opacity 0.2s, transform 0.2s; z-index: 300; white-space: nowrap; max-width: 90vw; text-align: center; }
   .toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
-  /* Aviso de congelamiento en historial */
   .aviso-congelado { background: var(--naranja-l); border: 1px solid #D97706; border-radius: 8px; padding: 10px 14px; font-size: 12px; color: #92400E; margin-bottom: 12px; display: none; }
 </style>
 </head>
@@ -244,10 +243,7 @@
 <div class="overlay" id="overlay" onclick="cerrarCarrito()"></div>
 <div class="carrito-drawer" id="carrito-drawer">
   <div class="drawer-handle"></div>
-  <div class="drawer-header">
-    <span class="drawer-titulo">Mi pedido</span>
-    <button class="btn-cerrar-drawer" onclick="cerrarCarrito()">×</button>
-  </div>
+  <div class="drawer-header"><span class="drawer-titulo">Mi pedido</span><button class="btn-cerrar-drawer" onclick="cerrarCarrito()">×</button></div>
   <div id="drawer-contenido">
     <div class="drawer-items" id="drawer-items"></div>
     <div class="drawer-footer">
@@ -282,10 +278,7 @@
 <div class="overlay" id="overlay-historial" onclick="cerrarHistorial()" style="display:none"></div>
 <div class="carrito-drawer" id="historial-drawer" style="max-height:90vh">
   <div class="drawer-handle"></div>
-  <div class="drawer-header">
-    <span class="drawer-titulo">Mis pedidos</span>
-    <button class="btn-cerrar-drawer" onclick="cerrarHistorial()">×</button>
-  </div>
+  <div class="drawer-header"><span class="drawer-titulo">Mis pedidos</span><button class="btn-cerrar-drawer" onclick="cerrarHistorial()">×</button></div>
   <div id="historial-contenido" style="flex:1;overflow-y:auto">
     <div id="hist-buscar" style="padding:20px">
       <p style="font-size:13px;color:var(--gris);margin-bottom:12px">Ingresá tu número de WhatsApp para ver tus pedidos.</p>
@@ -324,7 +317,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbxTMDYtMEZ8J1ql1K9YYCU3moHG07rzE-DXt_f3dRJUyVO1CuMcZKSnG0OkqphXoVZ32Q/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxltKgrHSGoRktR9q8kG9B4b0FmnJfoHFiSHM_I7d2cwtXIquW-JN_dNOYDUCi6PlY5Eg/exec";
 
 const COLOR_MAP = {
   "rosa":"#F4C0D1","azul":"#B5D4F4","verde":"#C0DD97","menta":"#9FE1CB",
@@ -335,15 +328,16 @@ function colorHex(nombre) { return COLOR_MAP[nombre.toLowerCase()] || "#D3D1C7";
 
 let catalogo = [], carrito = [], detalleActual = null, colorActual = null;
 let tallaActual = null, cantidadActual = 1, enviando = false;
-let modoQuincena = "abierto"; // "abierto" | "congelado" | "cerrado"
+let modoQuincena = "abierto";
 
-// ════════ ESTADO QUINCENA ════════
 async function cargarEstadoQuincena() {
   try {
-    const res  = await fetch(`${API_URL}?action=estado`);
+    const res = await fetch(`${API_URL}?action=estado`);
     const data = await res.json();
     if (!data.ok) return;
     modoQuincena = data.modo;
+    if (data.dia_entrega) window._diaEntrega = data.dia_entrega;
+    if (data.horas_restantes !== undefined) window._horasRestantes = data.horas_restantes;
     aplicarModoQuincena(data);
   } catch(e) {}
 }
@@ -352,39 +346,28 @@ function aplicarModoQuincena(data) {
   document.getElementById("banner-normal").style.display    = data.modo === "abierto"   ? "block" : "none";
   document.getElementById("banner-congelado").style.display = data.modo === "congelado" ? "block" : "none";
   document.getElementById("banner-cerrado").style.display   = data.modo === "cerrado"   ? "block" : "none";
-
-  // Formatear fecha de cierre para el banner
   if (data.cierre) {
     const fechaCierre = new Date(data.cierre);
-    const opciones = { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" };
+    const opciones = { weekday:"long", day:"numeric", month:"long", hour:"2-digit", minute:"2-digit" };
     const fechaFmt = fechaCierre.toLocaleDateString("es-CR", opciones);
     const el1 = document.getElementById("banner-fecha-cierre");
     const el2 = document.getElementById("banner-fecha-congelado");
     if (el1) el1.textContent = fechaFmt;
     if (el2) el2.textContent = fechaFmt;
   }
-  // Día de entrega dinámico
   if (data.dia_entrega) {
     const elEntrega = document.getElementById("banner-dia-entrega");
     if (elEntrega) elEntrega.textContent = data.dia_entrega;
   }
-
-  // Si cerrado, deshabilitar botón de confirmar
   const btnConfirmar = document.getElementById("btn-confirmar");
-  if (btnConfirmar && data.modo === "cerrado") {
-    btnConfirmar.disabled = true;
-    btnConfirmar.textContent = "Preventa cerrada";
-  }
-
-  // Mostrar aviso en historial si congelado o cerrado
+  if (btnConfirmar && data.modo === "cerrado") { btnConfirmar.disabled = true; btnConfirmar.textContent = "Preventa cerrada"; }
   const aviso = document.getElementById("aviso-congelado");
   if (aviso) aviso.style.display = (data.modo !== "abierto") ? "block" : "none";
 }
 
-// ════════ CATÁLOGO ════════
 async function cargarCatalogo() {
   try {
-    const res  = await fetch(`${API_URL}?action=catalogo`);
+    const res = await fetch(`${API_URL}?action=catalogo`);
     const data = await res.json();
     if (!data.ok) throw new Error();
     catalogo = data.catalogo;
@@ -425,7 +408,6 @@ function renderCatalogo() {
   });
 }
 
-// ════════ DETALLE ════════
 function abrirDetalle(estilo) {
   detalleActual = estilo; colorActual = null; tallaActual = null; cantidadActual = 1;
   document.getElementById("detalle-nombre").textContent = estilo.nombre;
@@ -439,10 +421,7 @@ function abrirDetalle(estilo) {
   document.getElementById("vista-detalle").classList.add("activa");
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
-function volverCatalogo() {
-  document.getElementById("vista-detalle").classList.remove("activa");
-  document.getElementById("vista-catalogo").style.display = "block";
-}
+function volverCatalogo() { document.getElementById("vista-detalle").classList.remove("activa"); document.getElementById("vista-catalogo").style.display = "block"; }
 function renderColores() {
   const cont = document.getElementById("detalle-colores"); cont.innerHTML = "";
   detalleActual.colores.forEach(c => {
@@ -500,7 +479,6 @@ function cambiarCantidad(delta) {
   document.getElementById("cantidad-num").textContent = cantidadActual;
 }
 
-// ════════ CARRITO ════════
 function agregarAlCarrito() {
   if (!tallaActual) return;
   const yaExiste = carrito.find(i => i.id_variante === tallaActual.idVariante);
@@ -564,8 +542,6 @@ function cambiarCantidadCarrito(idx, delta) {
 }
 function quitarItem(idx) { carrito.splice(idx, 1); actualizarContadorCarrito(); renderCarrito(); }
 
-// ════════ SESIÓN ════════
-const STORAGE_KEY = "catalogo_cliente";
 const SESSION_KEY = "catalogo_cliente_v2";
 let codigoPaisAuth = "506", modoAuth = "login";
 let codigoPaisCarrito = "506", codigoPaisHist = "506";
@@ -601,7 +577,6 @@ function cerrarSesion() {
   document.getElementById("pantalla-auth").style.display = "flex"; mostrarTab("login");
 }
 
-// ════════ AUTH ════════
 function mostrarTab(tab) {
   modoAuth = tab; const esLogin = tab === "login";
   document.getElementById("tab-login").style.background    = esLogin ? "var(--oscuro)" : "var(--blanco)";
@@ -660,7 +635,6 @@ async function ejecutarRegistro(wa, pin, codigo) {
   else mostrarErrorAuth(data.error || "No se pudo crear la cuenta");
 }
 
-// ════════ PAÍS / WA ════════
 function seleccionarPais(btn) {
   document.querySelectorAll(".pais-btn").forEach(b => { if (b.closest("#carrito-drawer") || !b.closest("#historial-drawer")) b.classList.remove("activo"); });
   btn.classList.add("activo"); codigoPaisCarrito = btn.dataset.codigo;
@@ -686,7 +660,6 @@ function construirWA(tipo) {
   return `${getCodigoPais(tipo)}${document.getElementById(inputId).value.trim().replace(/\s|-/g, "")}`;
 }
 
-// ════════ CONFIRMAR PEDIDO ════════
 async function confirmarPedido() {
   if (enviando || carrito.length === 0 || modoQuincena === "cerrado") return;
   const nombre = document.getElementById("input-nombre").value.trim();
@@ -725,13 +698,11 @@ function resetPedido() {
   cerrarCarrito(); cargarCatalogo();
 }
 
-// ════════ HELPERS ════════
 function mostrarToast(msg) {
   const t = document.getElementById("toast"); t.textContent = msg; t.classList.add("visible");
   setTimeout(() => t.classList.remove("visible"), 3000);
 }
 
-// ════════ HISTORIAL ════════
 function abrirHistorial() {
   document.getElementById("overlay-historial").style.display = "block";
   document.getElementById("historial-drawer").classList.add("abierto");
@@ -793,20 +764,10 @@ async function buscarHistorialConWA(wa) {
     const data = await (await fetch(`${API_URL}?action=historial&wa=${encodeURIComponent(wa)}`)).json();
     document.getElementById("hist-cargando").style.display = "none";
     if (!data.ok || !data.pedidos || data.pedidos.length === 0) { document.getElementById("hist-vacio").style.display = "block"; return; }
-
-    console.log("Historial:", data);
-    
-    renderHistorial(
-  data.pedidos,
-  data.total,
-  wa,
-  data.fecha_limite_cambios
-);
+    renderHistorial(data.pedidos, data.total, wa, data.fecha_limite_cambios);
     document.getElementById("hist-resultados").style.display = "block";
-    // Aviso congelado
     const aviso = document.getElementById("aviso-congelado");
     if (aviso) aviso.style.display = modoQuincena !== "abierto" ? "block" : "none";
-    // Notas de entrega y cancelaciones usando datos ya disponibles
     actualizarNotasHistorial();
   } catch(err) {
     document.getElementById("hist-cargando").style.display = "none";
@@ -816,55 +777,39 @@ async function buscarHistorialConWA(wa) {
 }
 
 function actualizarNotasHistorial() {
-  // Nota de entrega
   const notaEntrega = document.getElementById("hist-nota-entrega");
   if (notaEntrega) {
     const diaEntrega = window._diaEntrega || "";
     notaEntrega.textContent = diaEntrega ? `📦 Entrega estimada: ${diaEntrega}` : "";
     notaEntrega.style.display = diaEntrega ? "block" : "none";
   }
-
-  // Nota de cierre de cancelaciones — usa horas_restantes del script
   const notaCancel = document.getElementById("hist-nota-cancelaciones");
   if (notaCancel) {
     const horas = window._horasRestantes !== undefined ? window._horasRestantes : null;
-    const modo  = modoQuincena;
-
-    if (modo === "cerrado") {
+    if (modoQuincena === "cerrado") {
       notaCancel.textContent = "🔒 Las cancelaciones están cerradas para esta quincena.";
       notaCancel.style.display = "block";
-    } else if (modo === "congelado") {
+    } else if (modoQuincena === "congelado") {
       notaCancel.textContent = "🔒 Ya no se aceptan cancelaciones — estamos en las últimas horas de la preventa.";
       notaCancel.style.display = "block";
     } else if (horas !== null && horas <= 72) {
       const t = horas < 24 ? `${horas}h` : `${Math.round(horas/24)} días`;
-      notaCancel.textContent = `⚠️ Podés cancelar por ${t} más. Después del cierre ya no será posible.`;
+      notaCancel.textContent = `⚠️ Podés cancelar por ${t} más.`;
       notaCancel.style.display = "block";
     } else {
-      // Más de 72h — mostrar fecha de cierre igual como referencia
-      if (window._fechaCierreTexto) {
-        notaCancel.textContent = `📅 Fecha límite para cancelar: ${window._fechaCierreTexto}`;
-        notaCancel.style.display = "block";
-      } else {
-        notaCancel.style.display = "none";
-      }
+      notaCancel.style.display = "none";
     }
   }
 }
+
 function renderHistorial(pedidos, total, wa, fechaLimite) {
   const cont = document.getElementById("hist-items"); cont.innerHTML = "";
   if (fechaLimite) {
-  const aviso = document.createElement("div");
-  aviso.style.cssText =
-    "background:#FFF8E7;border:1px solid #E8D28A;border-radius:10px;padding:10px;margin-bottom:16px;font-size:12px;color:#5C3D00";
-
-  aviso.innerHTML = `
-    ⏰ Podés modificar o cancelar artículos hasta:<br>
-    <strong>${new Date(fechaLimite).toLocaleString("es-CR")}</strong>
-  `;
-
-  cont.appendChild(aviso);
-}
+    const aviso = document.createElement("div");
+    aviso.style.cssText = "background:#FFF8E7;border:1px solid #E8D28A;border-radius:10px;padding:10px;margin-bottom:16px;font-size:12px;color:#5C3D00";
+    aviso.innerHTML = `⏰ Podés modificar o cancelar artículos hasta:<br><strong>${new Date(fechaLimite).toLocaleString("es-CR")}</strong>`;
+    cont.appendChild(aviso);
+  }
   const grupos = {};
   pedidos.forEach(p => { if (!grupos[p.id_pedido]) grupos[p.id_pedido] = []; grupos[p.id_pedido].push(p); });
   Object.entries(grupos).forEach(([idPedido, items]) => {
@@ -897,8 +842,8 @@ function renderHistorial(pedidos, total, wa, fechaLimite) {
   });
   const totalPendiente = pedidos.filter(p => p.estado === "pendiente").reduce((s,p) => s + Number(p.subtotal), 0);
   document.getElementById("hist-total").textContent = `₡${totalPendiente.toLocaleString("es-CR")}`;
-
 }
+
 async function cancelarItem(idPedido, idVariante, nombreItem, wa, cant) {
   const msg = cant === 1 ? `¿Cancelás 1 unidad de ${nombreItem}?` : `¿Cancelás ${nombreItem} (${cant} unidades)?`;
   if (!confirm(msg)) return;
@@ -911,7 +856,6 @@ async function cancelarItem(idPedido, idVariante, nombreItem, wa, cant) {
   } catch(err) { mostrarToast("Error de conexión."); }
 }
 
-// ════════ INIT ════════
 cargarEstadoQuincena();
 cargarCatalogo();
 const _sesionInicial = cargarSesion();
