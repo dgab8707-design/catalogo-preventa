@@ -869,8 +869,7 @@ async function cancelarItem(idPedido, idVariante, nombreItem, wa, cant) {
 }
 
 cargarEstadoQuincena();
-cargarColores();
-cargarCatalogo();
+cargarColores().then(() => cargarCatalogo());
 const _sesionInicial = cargarSesion();
 if (_sesionInicial) { document.getElementById("pantalla-auth").style.display = "none"; aplicarSesion(); }
 else { document.getElementById("pantalla-auth").style.display = "flex"; mostrarTab("login"); }
