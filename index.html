@@ -85,13 +85,17 @@
   .btn-agregar:disabled { background: var(--borde); color: var(--gris); cursor: not-allowed; }
   .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; }
   .overlay.activo { display: block; }
-  .carrito-drawer { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-radius: 20px 20px 0 0; z-index: 201; max-height: 85vh; display: flex; flex-direction: column; transform: translateY(100%); transition: transform 0.28s ease; }
+
+  /* ── DRAWER FIX: scroll en items, footer siempre visible ── */
+  .carrito-drawer { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-radius: 20px 20px 0 0; z-index: 201; max-height: 92vh; display: flex; flex-direction: column; transform: translateY(100%); transition: transform 0.28s ease; }
   .carrito-drawer.abierto { transform: translateY(0); }
-  .drawer-handle { width: 36px; height: 4px; background: var(--borde); border-radius: 2px; margin: 14px auto 0; }
-  .drawer-header { padding: 14px 20px 12px; border-bottom: 1px solid var(--borde); display: flex; justify-content: space-between; align-items: center; }
+  .drawer-handle { width: 36px; height: 4px; background: var(--borde); border-radius: 2px; margin: 14px auto 0; flex-shrink: 0; }
+  .drawer-header { padding: 14px 20px 12px; border-bottom: 1px solid var(--borde); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+  .drawer-items { overflow-y: auto; flex: 1; padding: 12px 20px; min-height: 0; }
+  .drawer-footer { padding: 16px 20px; border-top: 1px solid var(--borde); flex-shrink: 0; }
+
   .drawer-titulo { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; }
   .btn-cerrar-drawer { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--gris); line-height: 1; padding: 4px; }
-  .drawer-items { overflow-y: auto; flex: 1; padding: 12px 20px; }
   .item-carrito { display: flex; justify-content: space-between; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid var(--borde); gap: 12px; }
   .item-carrito:last-child { border-bottom: none; }
   .item-nombre { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
@@ -99,7 +103,6 @@
   .btn-quitar { background: none; border: none; color: #C7C4BE; cursor: pointer; font-size: 18px; padding: 0; line-height: 1; flex-shrink: 0; }
   .btn-quitar:hover { color: #E24B4A; }
   .carrito-vacio { text-align: center; padding: 32px 20px; color: var(--gris); font-size: 14px; }
-  .drawer-footer { padding: 16px 20px; border-top: 1px solid var(--borde); }
   .total-row { display: flex; justify-content: space-between; font-size: 15px; font-weight: 500; margin-bottom: 14px; }
   .total-monto { font-family: 'Cormorant Garamond', serif; font-size: 20px; }
   .id-drawer { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
@@ -244,7 +247,7 @@
 <div class="carrito-drawer" id="carrito-drawer">
   <div class="drawer-handle"></div>
   <div class="drawer-header"><span class="drawer-titulo">Mi pedido</span><button class="btn-cerrar-drawer" onclick="cerrarCarrito()">×</button></div>
-  <div id="drawer-contenido">
+  <div id="drawer-contenido" style="display:flex;flex-direction:column;flex:1;min-height:0">
     <div class="drawer-items" id="drawer-items"></div>
     <div class="drawer-footer">
       <div class="total-row"><span>Total</span><span class="total-monto" id="total-monto">₡0</span></div>
@@ -276,10 +279,10 @@
 </div>
 
 <div class="overlay" id="overlay-historial" onclick="cerrarHistorial()" style="display:none"></div>
-<div class="carrito-drawer" id="historial-drawer" style="max-height:90vh">
+<div class="carrito-drawer" id="historial-drawer" style="max-height:92vh">
   <div class="drawer-handle"></div>
   <div class="drawer-header"><span class="drawer-titulo">Mis pedidos</span><button class="btn-cerrar-drawer" onclick="cerrarHistorial()">×</button></div>
-  <div id="historial-contenido" style="flex:1;overflow-y:auto">
+  <div id="historial-contenido" style="flex:1;overflow-y:auto;min-height:0">
     <div id="hist-buscar" style="padding:20px">
       <p style="font-size:13px;color:var(--gris);margin-bottom:12px">Ingresá tu número de WhatsApp para ver tus pedidos.</p>
       <div class="pais-opciones" style="margin-bottom:8px">
@@ -317,7 +320,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbw5BpfyCIAVrlVP7cxU8B85FCjWDToooHppAipUMlNMUeykka49jjLVrc8SyBmAOIktDg/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxqGIMeuoMG2av5VkoanGkXS2uL28-OqFMu5dxDTuWkgHsBIBDbjjcANRESYzcChM9-/exec";
 
 let COLOR_MAP = {
   "rosa":"#F4C0D1","azul":"#B5D4F4","verde":"#C0DD97","menta":"#9FE1CB",
@@ -330,9 +333,7 @@ async function cargarColores() {
   try {
     const res  = await fetch(`${API_URL}?action=colores`);
     const data = await res.json();
-    if (data.ok && data.colores) {
-      COLOR_MAP = { ...COLOR_MAP, ...data.colores };
-    }
+    if (data.ok && data.colores) COLOR_MAP = { ...COLOR_MAP, ...data.colores };
   } catch(e) {}
 }
 
@@ -432,12 +433,7 @@ function abrirDetalle(estilo) {
   history.pushState({ vista: "detalle" }, "");
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
-
-function volverCatalogo() {
-  document.getElementById("vista-detalle").classList.remove("activa");
-  document.getElementById("vista-catalogo").style.display = "block";
-}
-
+function volverCatalogo() { document.getElementById("vista-detalle").classList.remove("activa"); document.getElementById("vista-catalogo").style.display = "block"; }
 function renderColores() {
   const cont = document.getElementById("detalle-colores"); cont.innerHTML = "";
   detalleActual.colores.forEach(c => {
@@ -707,7 +703,7 @@ async function confirmarPedido() {
   finally { enviando = false; btn.disabled = false; btn.textContent = "Confirmar pedido"; }
 }
 function resetPedido() {
-  document.getElementById("drawer-contenido").style.display = "block";
+  document.getElementById("drawer-contenido").style.display = "flex";
   document.getElementById("pantalla-confirm").classList.remove("activa");
   document.getElementById("input-nombre").value = "";
   document.getElementById("input-wa").value = "";
@@ -872,15 +868,12 @@ async function cancelarItem(idPedido, idVariante, nombreItem, wa, cant) {
   } catch(err) { mostrarToast("Error de conexión."); }
 }
 
-// ── INICIO: esperar estado + colores antes de renderizar el catálogo ──
+// ── INICIO ──
 Promise.all([cargarEstadoQuincena(), cargarColores()]).then(() => cargarCatalogo());
-
-// ── SESIÓN ──
 const _sesionInicial = cargarSesion();
 if (_sesionInicial) { document.getElementById("pantalla-auth").style.display = "none"; aplicarSesion(); }
 else { document.getElementById("pantalla-auth").style.display = "flex"; mostrarTab("login"); }
 
-// ── BOTÓN ATRÁS DEL NAVEGADOR / DISPOSITIVO ──
 window.addEventListener("popstate", () => {
   if (document.getElementById("vista-detalle").classList.contains("activa")) {
     volverCatalogo();
