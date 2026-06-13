@@ -430,6 +430,7 @@ function abrirDetalle(estilo) {
   if (primerColor) seleccionarColor(primerColor.color);
   document.getElementById("vista-catalogo").style.display = "none";
   document.getElementById("vista-detalle").classList.add("activa");
+  history.pushState({ vista: "detalle" }, "");
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 function volverCatalogo() { document.getElementById("vista-detalle").classList.remove("activa"); document.getElementById("vista-catalogo").style.display = "block"; }
@@ -873,6 +874,11 @@ cargarCatalogo();
 const _sesionInicial = cargarSesion();
 if (_sesionInicial) { document.getElementById("pantalla-auth").style.display = "none"; aplicarSesion(); }
 else { document.getElementById("pantalla-auth").style.display = "flex"; mostrarTab("login"); }
+window.addEventListener("popstate", () => {
+  if (document.getElementById("vista-detalle").classList.contains("activa")) {
+    volverCatalogo();
+  }
+});
 </script>
 </body>
 </html>
