@@ -326,7 +326,6 @@ let COLOR_MAP = {
 };
 function colorHex(nombre) { return COLOR_MAP[nombre.toLowerCase()] || "#D3D1C7"; }
 
-// Cargar colores desde el Sheet (sobreescribe el mapa base)
 async function cargarColores() {
   try {
     const res  = await fetch(`${API_URL}?action=colores`);
@@ -433,7 +432,12 @@ function abrirDetalle(estilo) {
   history.pushState({ vista: "detalle" }, "");
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
-function volverCatalogo() { document.getElementById("vista-detalle").classList.remove("activa"); document.getElementById("vista-catalogo").style.display = "block"; }
+
+function volverCatalogo() {
+  document.getElementById("vista-detalle").classList.remove("activa");
+  document.getElementById("vista-catalogo").style.display = "block";
+}
+
 function renderColores() {
   const cont = document.getElementById("detalle-colores"); cont.innerHTML = "";
   detalleActual.colores.forEach(c => {
@@ -868,11 +872,15 @@ async function cancelarItem(idPedido, idVariante, nombreItem, wa, cant) {
   } catch(err) { mostrarToast("Error de conexión."); }
 }
 
-cargarEstadoQuincena();
-cargarColores().then(() => cargarCatalogo());
+// ── INICIO: esperar estado + colores antes de renderizar el catálogo ──
+Promise.all([cargarEstadoQuincena(), cargarColores()]).then(() => cargarCatalogo());
+
+// ── SESIÓN ──
 const _sesionInicial = cargarSesion();
 if (_sesionInicial) { document.getElementById("pantalla-auth").style.display = "none"; aplicarSesion(); }
 else { document.getElementById("pantalla-auth").style.display = "flex"; mostrarTab("login"); }
+
+// ── BOTÓN ATRÁS DEL NAVEGADOR / DISPOSITIVO ──
 window.addEventListener("popstate", () => {
   if (document.getElementById("vista-detalle").classList.contains("activa")) {
     volverCatalogo();
