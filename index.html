@@ -59,7 +59,7 @@
   @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
   .btn-back { display: flex; align-items: center; gap: 6px; background: none; border: none; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--gris); cursor: pointer; padding: 0; margin-bottom: 16px; }
   .btn-back svg { width: 16px; height: 16px; }
-  .detalle-img { width: 100%; aspect-ratio: 3/4; background: #F0EDE8; border-radius: var(--radio); margin-bottom: 16px; display: flex; align-items: center; justify-content: center; }
+  .detalle-img { width: 100%; aspect-ratio: 4/3; background: #F0EDE8; border-radius: var(--radio); margin-bottom: 16px; display: flex; align-items: center; justify-content: center; }
   .detalle-img img { width: 100%; height: 100%; object-fit: cover; border-radius: var(--radio); }
   .detalle-nombre { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 400; margin-bottom: 4px; }
   .detalle-precio { font-size: 16px; color: var(--gris); margin-bottom: 20px; }
@@ -317,14 +317,25 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbyFLIN4XrSSVusB4IPazGNFnTBCQuLIjfgD6eDrBJSFHJE---99fg-9dgSmR7BzfxVDxA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxGjF5Cti0FU1DAZ6DWzgFiyXLQzDleoE2pV9iG19_cQq166cuEbFSw0t3TNHNay9SrwQ/exec";
 
-const COLOR_MAP = {
-  "rosa":"#F4C0D1","fucsia":"#F15BB5","azul":"#B5D4F4","verde":"#C0DD97","menta":"#9FE1CB",
-  "mostaza":"#FAC775","vino":"#640D14","rojo":"#F09595","negro":"#444441",
-  "blanco":"#F1EFE8","amarillo":"#FFF3CD","naranja":"#F5C4B3","lila":"#CDB4DB",
+let COLOR_MAP = {
+  "rosa":"#F4C0D1","azul":"#B5D4F4","verde":"#C0DD97","menta":"#9FE1CB",
+  "mostaza":"#FAC775","lavanda":"#CECBF6","rojo":"#F09595","negro":"#444441",
+  "blanco":"#F1EFE8","amarillo":"#FFF3CD","naranja":"#F5C4B3","morado":"#AFA9EC",
 };
 function colorHex(nombre) { return COLOR_MAP[nombre.toLowerCase()] || "#D3D1C7"; }
+
+// Cargar colores desde el Sheet (sobreescribe el mapa base)
+async function cargarColores() {
+  try {
+    const res  = await fetch(`${API_URL}?action=colores`);
+    const data = await res.json();
+    if (data.ok && data.colores) {
+      COLOR_MAP = { ...COLOR_MAP, ...data.colores };
+    }
+  } catch(e) {}
+}
 
 let catalogo = [], carrito = [], detalleActual = null, colorActual = null;
 let tallaActual = null, cantidadActual = 1, enviando = false;
@@ -857,6 +868,7 @@ async function cancelarItem(idPedido, idVariante, nombreItem, wa, cant) {
 }
 
 cargarEstadoQuincena();
+cargarColores();
 cargarCatalogo();
 const _sesionInicial = cargarSesion();
 if (_sesionInicial) { document.getElementById("pantalla-auth").style.display = "none"; aplicarSesion(); }
