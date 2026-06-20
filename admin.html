@@ -93,7 +93,7 @@
   .filtros-bar input[type="text"] { flex: 1; min-width: 180px; }
 
   /* Toggle switch */
-  .toggle { position: relative; width: 38px; height: 22px; flex-shrink: 0; }
+  .toggle { position: relative; display: inline-block; width: 38px; height: 22px; flex-shrink: 0; }
   .toggle input { opacity: 0; width: 0; height: 0; }
   .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: var(--borde); border-radius: 22px; transition: background 0.2s; }
   .toggle-slider:before { content: ""; position: absolute; height: 16px; width: 16px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: transform 0.2s; }
@@ -157,7 +157,7 @@
         </div>
         <div class="stat-card">
           <p class="stat-label">Total en ventas</p>
-          <p class="stat-valor" id="stat-ventas">₡0</p>
+          <p class="stat-valor" id="stat-ventas">$0</p>
         </div>
         <div class="stat-card">
           <p class="stat-label">Clientes activos</p>
@@ -171,7 +171,7 @@
   <!-- ═══════════ VISTA: INVENTARIO ═══════════ -->
   <div class="vista" id="vista-inventario">
     <p class="seccion-titulo">Inventario</p>
-    <p class="seccion-sub">Reabastecé stock, activá o desactivá variantes y actualizá fotos.</p>
+    <p class="seccion-sub">Reabastecé stock, activá o desactivá variantes y actualizá fotos. En "Ajustar stock" usá números positivos para entradas (ej. <strong>+10</strong> al recibir mercadería) y negativos para salidas (ej. <strong>-2</strong> por una venta en tienda física u otra vía).</p>
     <div class="filtros-bar">
       <input type="text" id="inv-buscar" class="form-input" placeholder="Buscar por estilo, marca o color..." oninput="filtrarInventario()">
       <button class="btn btn-borde btn-sm" onclick="cargarInventario()">↻ Recargar</button>
@@ -188,7 +188,7 @@
             <th>Precio</th>
             <th>Stock</th>
             <th>Activo</th>
-            <th>Reabastecer</th>
+            <th>Ajustar stock</th>
             <th>Fotos</th>
           </tr>
         </thead>
@@ -222,7 +222,7 @@
       <div class="form-row">
         <div class="form-grupo">
           <label class="form-label">Color</label>
-          <input type="text" id="f-color" class="form-input" list="lista-colores" placeholder="Ej. Azul-escolar">
+          <input type="text" id="f-color" class="form-input" list="lista-colores" placeholder="Ej. Azul-escolar" oninput="verificarColorNuevo()">
           <datalist id="lista-colores"></datalist>
         </div>
         <div class="form-grupo">
@@ -232,10 +232,19 @@
         </div>
       </div>
 
+      <div class="form-grupo" id="f-hex-wrap" style="display:none">
+        <label class="form-label">Color para el catálogo (nuevo)</label>
+        <div style="display:flex;gap:10px;align-items:center">
+          <input type="color" id="f-color-hex-picker" value="#D3D1C7" onchange="document.getElementById('f-color-hex').value=this.value" style="width:44px;height:38px;border:1px solid var(--borde);border-radius:8px;padding:2px;cursor:pointer">
+          <input type="text" id="f-color-hex" class="form-input" placeholder="#D3D1C7" style="flex:1" oninput="document.getElementById('f-color-hex-picker').value=this.value">
+        </div>
+        <p class="datalist-hint">Este color no existe todavía — elegí el tono que se va a mostrar como punto de color en el catálogo.</p>
+      </div>
+
       <div class="form-row">
         <div class="form-grupo">
-          <label class="form-label">Precio (₡)</label>
-          <input type="number" id="f-precio" class="form-input" placeholder="0" min="0">
+          <label class="form-label">Precio ($)</label>
+          <input type="number" id="f-precio" class="form-input" placeholder="0.00" min="0" step="0.01">
         </div>
         <div class="form-grupo">
           <label class="form-label">Stock inicial</label>
@@ -325,7 +334,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbzvuRqgwHuvSupfgFZYlpKvYZAopCch3-N6fB6_cSFJNRZi0KvWDXbYscwzW91G4e976w/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbx_QYvFvdWbS0DUT_ZMgh3WnOrnPnfkvsbYNC6QAVWqVVF0PAzGDB8dV5op17kx8KGIXQ/exec";
 
 // ════════════════════════════════════════════════════════
 // NAVEGACIÓN DE TABS
@@ -347,7 +356,7 @@ function mostrarToast(msg, esError) {
   setTimeout(() => t.classList.remove("visible"), 3500);
 }
 
-function formatoColones(n) { return `₡${Number(n || 0).toLocaleString("es-CR")}`; }
+function formatoDolares(n) { return `$${Number(n || 0).toLocaleString("en-US")}`; }
 
 // ════════════════════════════════════════════════════════
 // RESUMEN
@@ -360,7 +369,7 @@ async function cargarResumen() {
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || "Error");
     document.getElementById("stat-items").textContent = data.total_items_pedidos;
-    document.getElementById("stat-ventas").textContent = formatoColones(data.total_ventas);
+    document.getElementById("stat-ventas").textContent = formatoDolares(data.total_ventas);
     document.getElementById("stat-clientes").textContent = data.clientes_activos;
     document.getElementById("resumen-cargando").style.display = "none";
     document.getElementById("resumen-contenido").style.display = "block";
@@ -424,7 +433,7 @@ function renderInventario(items) {
       <td>${item.marca || "—"}</td>
       <td>${item.color}</td>
       <td>${item.talla}</td>
-      <td>${formatoColones(item.precio)}</td>
+      <td>${formatoDolares(item.precio)}</td>
       <td><span class="stock-num ${stockClass}">${stock}</span></td>
       <td>
         <label class="toggle">
@@ -434,8 +443,8 @@ function renderInventario(items) {
       </td>
       <td>
         <div class="fila-acciones">
-          <input type="number" class="input-mini" id="reab-${item.id_variante}" placeholder="+0" min="1">
-          <button class="btn btn-borde btn-sm" onclick="reabastecer('${item.id_variante}')">Sumar</button>
+          <input type="number" class="input-mini" id="ajuste-${item.id_variante}" placeholder="±0">
+          <button class="btn btn-borde btn-sm" onclick="ajustarStock('${item.id_variante}')">Aplicar</button>
         </div>
       </td>
       <td>
@@ -464,12 +473,12 @@ async function toggleActivo(idVariante, checkbox) {
   }
 }
 
-async function reabastecer(idVariante) {
-  const input = document.getElementById(`reab-${idVariante}`);
+async function ajustarStock(idVariante) {
+  const input = document.getElementById(`ajuste-${idVariante}`);
   const cantidad = Number(input.value);
-  if (!cantidad || cantidad <= 0) { mostrarToast("Ingresá una cantidad válida", true); return; }
+  if (!cantidad || cantidad === 0) { mostrarToast("Ingresá una cantidad distinta de cero (ej. +10 o -2)", true); return; }
   try {
-    const params = new URLSearchParams({ action: "admin_reabastecer", id_variante: idVariante, cantidad: String(cantidad) });
+    const params = new URLSearchParams({ action: "admin_ajustar_stock", id_variante: idVariante, cantidad: String(cantidad) });
     const data = await (await fetch(`${API_URL}?${params}`)).json();
     if (!data.ok) throw new Error(data.error || "Error");
     mostrarToast(data.mensaje);
@@ -478,7 +487,7 @@ async function reabastecer(idVariante) {
     if (item) item.stock_disponible = data.stock_nuevo;
     filtrarInventario();
   } catch (err) {
-    mostrarToast(err.message || "No se pudo reabastecer", true);
+    mostrarToast(err.message || "No se pudo ajustar el stock", true);
   }
 }
 
@@ -511,11 +520,14 @@ async function actualizarFotos(idVariante, fotoColorUrl, fotoPortadaUrl) {
 // ════════════════════════════════════════════════════════
 // AGREGAR PRODUCTO
 // ════════════════════════════════════════════════════════
+let opcionesCache = { Estilo: [], Marca: [], Color: [], Talla: [] };
+
 async function cargarOpciones() {
   try {
     const res = await fetch(`${API_URL}?action=admin_opciones`);
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || "Error");
+    opcionesCache = data.opciones;
     llenarDatalist("lista-estilos", data.opciones.Estilo);
     llenarDatalist("lista-marcas",  data.opciones.Marca);
     llenarDatalist("lista-colores", data.opciones.Color);
@@ -523,6 +535,17 @@ async function cargarOpciones() {
   } catch (err) {
     mostrarToast("No se pudieron cargar las opciones existentes", true);
   }
+}
+
+// Muestra el selector de hex solo si el color escrito no existe
+// todavía en la lista de colores conocidos (comparación insensible
+// a mayúsculas/minúsculas).
+function verificarColorNuevo() {
+  const valor = document.getElementById("f-color").value.trim().toLowerCase();
+  const wrap  = document.getElementById("f-hex-wrap");
+  if (!valor) { wrap.style.display = "none"; return; }
+  const existe = (opcionesCache.Color || []).some(c => c.toLowerCase() === valor);
+  wrap.style.display = existe ? "none" : "block";
 }
 
 function llenarDatalist(id, valores) {
@@ -552,9 +575,15 @@ async function agregarProducto() {
   const stock  = document.getElementById("f-stock").value.trim();
   const fotoColor   = document.getElementById("f-foto-color").value.trim();
   const fotoPortada = document.getElementById("f-foto-portada").value.trim();
+  const colorHexVisible = document.getElementById("f-hex-wrap").style.display !== "none";
+  const colorHex = colorHexVisible ? document.getElementById("f-color-hex").value.trim() : "";
 
   if (!estilo || !marca || !color || !talla) { mostrarErrorForm("Completá estilo, marca, color y talla."); return; }
   if (!precio || Number(precio) <= 0) { mostrarErrorForm("Ingresá un precio válido."); return; }
+  if (colorHexVisible && colorHex && !/^#[0-9A-Fa-f]{6}$/.test(colorHex)) {
+    mostrarErrorForm("El código de color debe tener el formato #RRGGBB.");
+    return;
+  }
 
   const btn = document.getElementById("f-btn-agregar");
   btn.disabled = true; btn.textContent = "Agregando...";
@@ -565,6 +594,7 @@ async function agregarProducto() {
       precio, stock: stock || "0",
       foto_color_url: fotoColor,
       foto_portada_url: fotoPortada,
+      color_hex: colorHex,
     });
     const data = await (await fetch(`${API_URL}?${params}`)).json();
     if (!data.ok) throw new Error(data.error || "No se pudo agregar el producto");
@@ -575,6 +605,8 @@ async function agregarProducto() {
     document.getElementById("f-stock").value = "";
     document.getElementById("f-foto-color").value = "";
     document.getElementById("f-foto-portada").value = "";
+    document.getElementById("f-color-hex").value = "";
+    document.getElementById("f-hex-wrap").style.display = "none";
     cargarOpciones();
   } catch (err) {
     mostrarErrorForm(err.message || "No se pudo agregar el producto");
@@ -674,7 +706,7 @@ async function cargarEstadoTrigger() {
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || "Error");
     if (data.activo) {
-      const fechaFmt = data.fecha ? new Date(data.fecha).toLocaleString("es-CR") : "fecha desconocida";
+      const fechaFmt = data.fecha ? new Date(data.fecha).toLocaleString("en-US") : "fecha desconocida";
       aviso.textContent = `⏰ Reset automático activo — programado para ${fechaFmt}`;
       aviso.className = "aviso-box visible aviso-activo";
       document.getElementById("btn-cancelar-trigger").style.display = "inline-block";
@@ -693,7 +725,7 @@ async function programarTrigger() {
   const fechaHora = document.getElementById("cfg-fecha-trigger").value;
   if (!fechaHora) { mostrarToast("Seleccioná una fecha y hora", true); return; }
 
-  const confirmado = confirm(`¿Programar el reset automático para ${new Date(fechaHora).toLocaleString("es-CR")}?`);
+  const confirmado = confirm(`¿Programar el reset automático para ${new Date(fechaHora).toLocaleString("en-US")}?`);
   if (!confirmado) return;
 
   const btn = document.getElementById("btn-programar-trigger");
