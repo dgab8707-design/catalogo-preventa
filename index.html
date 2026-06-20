@@ -64,6 +64,9 @@
   .detalle-nombre { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 400; margin-bottom: 4px; }
   .detalle-precio { font-size: 16px; color: var(--gris); margin-bottom: 20px; }
   .selector-label { font-size: 11px; font-weight: 500; color: var(--gris); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+  .marca-opciones { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .marca-opcion { padding: 7px 16px; border: 1.5px solid var(--borde); border-radius: 50px; cursor: pointer; font-size: 13px; font-weight: 500; transition: border-color 0.15s, background 0.15s; }
+  .marca-opcion.activa { border-color: var(--rosa); background: var(--rosa-l); color: var(--rosa); }
   .color-opciones { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
   .color-opcion { display: flex; align-items: center; gap: 6px; padding: 6px 12px 6px 8px; border: 1.5px solid var(--borde); border-radius: 50px; cursor: pointer; font-size: 13px; transition: border-color 0.15s; }
   .color-opcion.activa { border-color: var(--rosa); background: var(--rosa-l); }
@@ -86,7 +89,6 @@
   .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; }
   .overlay.activo { display: block; }
 
-  /* ── DRAWER FIX: scroll en items, footer siempre visible ── */
   .carrito-drawer { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-radius: 20px 20px 0 0; z-index: 201; max-height: 92vh; display: flex; flex-direction: column; transform: translateY(100%); transition: transform 0.28s ease; }
   .carrito-drawer.abierto { transform: translateY(0); }
   .drawer-handle { width: 36px; height: 4px; background: var(--borde); border-radius: 2px; margin: 14px auto 0; flex-shrink: 0; }
@@ -226,6 +228,8 @@
     </div>
     <h2 class="detalle-nombre" id="detalle-nombre"></h2>
     <p class="detalle-precio" id="detalle-precio"></p>
+    <p class="selector-label" id="label-marca" style="display:none">Marca</p>
+    <div class="marca-opciones" id="detalle-marcas"></div>
     <p class="selector-label">Color</p>
     <div class="color-opciones" id="detalle-colores"></div>
     <p class="selector-label">Talla</p>
@@ -320,7 +324,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbxkeDHFoDS_otoQt86-_8Kj550rfipKs5u0aRhdc_bU6JOmlagYzxo_1l7EyW1MdC6kXA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxJrHye4SfyOMBvHWq6T5c4GVOAcJ3sFMkiOIe-GNLkj9bBsX7tY3fPIUfGEDG9K0vkAg/exec";
 
 let COLOR_MAP = {
   "rosa":"#F4C0D1","azul":"#B5D4F4","verde":"#C0DD97","menta":"#9FE1CB",
@@ -337,8 +341,9 @@ async function cargarColores() {
   } catch(e) {}
 }
 
-let catalogo = [], carrito = [], detalleActual = null, colorActual = null;
-let tallaActual = null, cantidadActual = 1, enviando = false;
+let catalogo = [], carrito = [], detalleActual = null;
+let marcaActual = null, colorActual = null, tallaActual = null;
+let cantidadActual = 1, enviando = false;
 let modoQuincena = "abierto";
 
 async function cargarEstadoQuincena() {
@@ -389,23 +394,41 @@ async function cargarCatalogo() {
   }
 }
 
+// Suma de stock recorriendo marcas → colores → tallas
+function stockTotalEstilo(estilo) {
+  return estilo.marcas.reduce((sM, m) =>
+    sM + m.colores.reduce((sC, c) =>
+      sC + c.tallas.reduce((sT, t) => sT + t.stock, 0), 0), 0);
+}
+// Primer color con stock disponible, recorriendo todas las marcas
+function primerColorConStock(estilo) {
+  for (const m of estilo.marcas) {
+    const c = m.colores.find(c => c.tallas.some(t => t.stock > 0));
+    if (c) return c;
+  }
+  return estilo.marcas[0]?.colores[0];
+}
+
 function renderCatalogo() {
   document.getElementById("cargando").style.display = "none";
   document.getElementById("catalogo-contenido").style.display = "block";
   const grid = document.getElementById("catalogo-grid");
   grid.innerHTML = "";
   catalogo.forEach(estilo => {
-    const colores = estilo.colores;
-    const totalStock = colores.reduce((s,c) => s + c.tallas.reduce((ts,t) => ts + t.stock, 0), 0);
+    const totalStock = stockTotalEstilo(estilo);
     const agotado = totalStock === 0 || modoQuincena === "cerrado";
     const card = document.createElement("div");
     card.className = "producto-card" + (agotado ? " agotado" : "");
     if (!agotado) card.onclick = () => abrirDetalle(estilo);
-    const coloresVisibles = colores.slice(0, 3);
-    const masColores = colores.length > 3 ? `<span class="mas-colores">+${colores.length - 3}</span>` : "";
+
+    // Dots de colores: tomamos los colores de la primera marca como preview
+    const coloresPreview = estilo.marcas[0]?.colores || [];
+    const coloresVisibles = coloresPreview.slice(0, 3);
+    const masColores = coloresPreview.length > 3 ? `<span class="mas-colores">+${coloresPreview.length - 3}</span>` : "";
     const dotsHTML = coloresVisibles.map(c => `<div class="color-dot" style="background:${colorHex(c.color)}"></div>`).join("") + masColores;
+
     const precioFmt = `₡${Number(estilo.precio).toLocaleString("es-CR")}`;
-    const fotoPortada = estilo.foto_portada || colores[0]?.foto_url || "";
+    const fotoPortada = estilo.foto_portada || coloresPreview[0]?.foto_url || "";
     card.innerHTML = `
       <div class="producto-img-placeholder">
         ${fotoPortada ? `<img src="${fotoPortada}" alt="${estilo.nombre}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentNode.innerHTML='<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'1\\' style=\\'width:32px;height:32px;color:#C7C4BE\\'><path d=\\'M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z\\'/></svg>'">` : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="width:32px;height:32px;color:#C7C4BE"><path d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>`}
@@ -420,23 +443,69 @@ function renderCatalogo() {
 }
 
 function abrirDetalle(estilo) {
-  detalleActual = estilo; colorActual = null; tallaActual = null; cantidadActual = 1;
+  detalleActual = estilo; marcaActual = null; colorActual = null; tallaActual = null; cantidadActual = 1;
   document.getElementById("detalle-nombre").textContent = estilo.nombre;
   document.getElementById("detalle-precio").textContent = `₡${Number(estilo.precio).toLocaleString("es-CR")}`;
   document.getElementById("cantidad-num").textContent = "1";
-  actualizarFotoDetalle(estilo.colores[0]?.foto_url);
-  renderColores();
-  const primerColor = estilo.colores.find(c => c.tallas.some(t => t.stock > 0));
-  if (primerColor) seleccionarColor(primerColor.color);
+
+  // Mostrar selector de marca solo si hay más de una marca disponible
+  const labelMarca = document.getElementById("label-marca");
+  const contMarcas = document.getElementById("detalle-marcas");
+  if (estilo.marcas.length > 1) {
+    labelMarca.style.display = "block";
+  } else {
+    labelMarca.style.display = "none";
+  }
+  renderMarcas();
+
+  // Elegir marca inicial: la primera que tenga stock en algún color/talla
+  const primeraMarcaConStock = estilo.marcas.find(m =>
+    m.colores.some(c => c.tallas.some(t => t.stock > 0))
+  ) || estilo.marcas[0];
+  if (primeraMarcaConStock) seleccionarMarca(primeraMarcaConStock.marca);
+
   document.getElementById("vista-catalogo").style.display = "none";
   document.getElementById("vista-detalle").classList.add("activa");
   history.pushState({ vista: "detalle" }, "");
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
-function volverCatalogo() { document.getElementById("vista-detalle").classList.remove("activa"); document.getElementById("vista-catalogo").style.display = "block"; }
+
+function volverCatalogo() {
+  document.getElementById("vista-detalle").classList.remove("activa");
+  document.getElementById("vista-catalogo").style.display = "block";
+}
+
+function renderMarcas() {
+  const cont = document.getElementById("detalle-marcas"); cont.innerHTML = "";
+  detalleActual.marcas.forEach(m => {
+    const tieneStock = m.colores.some(c => c.tallas.some(t => t.stock > 0));
+    const div = document.createElement("div");
+    div.className = "marca-opcion";
+    div.style.opacity = tieneStock ? "1" : "0.4";
+    div.textContent = m.marca;
+    if (tieneStock) div.onclick = () => seleccionarMarca(m.marca);
+    cont.appendChild(div);
+  });
+}
+
+function seleccionarMarca(nombreMarca) {
+  marcaActual = nombreMarca; colorActual = null; tallaActual = null; cantidadActual = 1;
+  document.getElementById("cantidad-num").textContent = "1";
+  document.querySelectorAll(".marca-opcion").forEach(el => el.classList.toggle("activa", el.textContent.trim() === nombreMarca));
+
+  const marcaData = detalleActual.marcas.find(m => m.marca === nombreMarca);
+  actualizarFotoDetalle(marcaData?.colores[0]?.foto_url);
+  renderColores();
+  const primerColor = marcaData?.colores.find(c => c.tallas.some(t => t.stock > 0));
+  if (primerColor) seleccionarColor(primerColor.color);
+  else { document.getElementById("detalle-tallas").innerHTML = ""; actualizarBtnAgregar(); }
+}
+
 function renderColores() {
   const cont = document.getElementById("detalle-colores"); cont.innerHTML = "";
-  detalleActual.colores.forEach(c => {
+  const marcaData = detalleActual.marcas.find(m => m.marca === marcaActual);
+  if (!marcaData) return;
+  marcaData.colores.forEach(c => {
     const tieneStock = c.tallas.some(t => t.stock > 0);
     const div = document.createElement("div");
     div.className = "color-opcion" + (tieneStock ? "" : " sin-stock");
@@ -446,22 +515,28 @@ function renderColores() {
     cont.appendChild(div);
   });
 }
+
 function seleccionarColor(nombreColor) {
   colorActual = nombreColor; tallaActual = null; cantidadActual = 1;
   document.getElementById("cantidad-num").textContent = "1";
   document.querySelectorAll(".color-opcion").forEach(el => el.classList.toggle("activa", el.textContent.trim() === nombreColor));
-  actualizarFotoDetalle(detalleActual.colores.find(c => c.color === nombreColor)?.foto_url);
+  const marcaData = detalleActual.marcas.find(m => m.marca === marcaActual);
+  const colorData = marcaData?.colores.find(c => c.color === nombreColor);
+  actualizarFotoDetalle(colorData?.foto_url);
   renderTallas(); actualizarBtnAgregar();
 }
+
 function actualizarFotoDetalle(fotoUrl) {
   const img = document.getElementById("detalle-img"), ph = document.getElementById("detalle-placeholder");
   if (fotoUrl) { img.src = fotoUrl; img.style.display = "block"; ph.style.display = "none"; img.onerror = () => { img.style.display = "none"; ph.style.display = "block"; }; }
   else { img.style.display = "none"; ph.style.display = "block"; }
 }
+
 function renderTallas() {
   const cont = document.getElementById("detalle-tallas"); cont.innerHTML = "";
-  if (!colorActual) return;
-  const colorData = detalleActual.colores.find(c => c.color === colorActual);
+  if (!marcaActual || !colorActual) return;
+  const marcaData = detalleActual.marcas.find(m => m.marca === marcaActual);
+  const colorData = marcaData?.colores.find(c => c.color === colorActual);
   if (!colorData) return;
   colorData.tallas.forEach(t => {
     const div = document.createElement("div");
@@ -472,12 +547,14 @@ function renderTallas() {
   });
   actualizarStockInfo();
 }
+
 function seleccionarTalla(talla, stock, idVariante) {
   tallaActual = { talla, stock, idVariante }; cantidadActual = 1;
   document.getElementById("cantidad-num").textContent = "1";
   document.querySelectorAll(".talla-opcion").forEach(el => el.classList.toggle("activa", el.textContent.trim() === talla));
   actualizarStockInfo(); actualizarBtnAgregar();
 }
+
 function actualizarStockInfo() {
   const info = document.getElementById("detalle-stock-info");
   if (!tallaActual) { info.textContent = ""; return; }
@@ -495,7 +572,17 @@ function agregarAlCarrito() {
   if (!tallaActual) return;
   const yaExiste = carrito.find(i => i.id_variante === tallaActual.idVariante);
   if (yaExiste) { yaExiste.cantidad = Math.min(tallaActual.stock, yaExiste.cantidad + cantidadActual); }
-  else { carrito.push({ id_variante: tallaActual.idVariante, estilo: detalleActual.nombre, color: colorActual, talla: tallaActual.talla, cantidad: cantidadActual, precio: detalleActual.precio }); }
+  else {
+    carrito.push({
+      id_variante: tallaActual.idVariante,
+      estilo: detalleActual.nombre,
+      marca: marcaActual,
+      color: colorActual,
+      talla: tallaActual.talla,
+      cantidad: cantidadActual,
+      precio: detalleActual.precio
+    });
+  }
   actualizarContadorCarrito();
   mostrarToast(`${detalleActual.nombre} agregado al pedido`);
   volverCatalogo();
@@ -525,10 +612,11 @@ function renderCarrito() {
     const subtotal = item.precio * item.cantidad;
     const div = document.createElement("div"); div.className = "item-carrito";
     const puedeEditar = modoQuincena !== "cerrado";
+    const marcaTxt = item.marca ? `${item.marca} · ` : "";
     div.innerHTML = `
       <div style="flex:1">
         <p class="item-nombre">${item.estilo}</p>
-        <p class="item-variante">${item.color} · Talla ${item.talla}</p>
+        <p class="item-variante">${marcaTxt}${item.color} · Talla ${item.talla}</p>
         <div style="display:flex;align-items:center;gap:10px;margin-top:6px">
           ${puedeEditar ? `
           <div style="display:flex;align-items:center;border:1px solid var(--borde);border-radius:6px;overflow:hidden">
