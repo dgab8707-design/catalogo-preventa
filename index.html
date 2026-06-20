@@ -254,7 +254,7 @@
   <div id="drawer-contenido" style="display:flex;flex-direction:column;flex:1;min-height:0">
     <div class="drawer-items" id="drawer-items"></div>
     <div class="drawer-footer">
-      <div class="total-row"><span>Total</span><span class="total-monto" id="total-monto">₡0</span></div>
+      <div class="total-row"><span>Total</span><span class="total-monto" id="total-monto">$0</span></div>
       <div class="id-drawer">
         <input type="text" id="input-nombre" placeholder="Tu nombre" autocomplete="name">
         <div class="pais-selector">
@@ -324,7 +324,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbxJrHye4SfyOMBvHWq6T5c4GVOAcJ3sFMkiOIe-GNLkj9bBsX7tY3fPIUfGEDG9K0vkAg/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbx_QYvFvdWbS0DUT_ZMgh3WnOrnPnfkvsbYNC6QAVWqVVF0PAzGDB8dV5op17kx8KGIXQ/exec";
 
 let COLOR_MAP = {
   "rosa":"#F4C0D1","azul":"#B5D4F4","verde":"#C0DD97","menta":"#9FE1CB",
@@ -427,7 +427,7 @@ function renderCatalogo() {
     const masColores = coloresPreview.length > 3 ? `<span class="mas-colores">+${coloresPreview.length - 3}</span>` : "";
     const dotsHTML = coloresVisibles.map(c => `<div class="color-dot" style="background:${colorHex(c.color)}"></div>`).join("") + masColores;
 
-    const precioFmt = `₡${Number(estilo.precio).toLocaleString("es-CR")}`;
+    const precioFmt = `$${Number(estilo.precio).toLocaleString("en-US")}`;
     const fotoPortada = estilo.foto_portada || coloresPreview[0]?.foto_url || "";
     card.innerHTML = `
       <div class="producto-img-placeholder">
@@ -445,7 +445,7 @@ function renderCatalogo() {
 function abrirDetalle(estilo) {
   detalleActual = estilo; marcaActual = null; colorActual = null; tallaActual = null; cantidadActual = 1;
   document.getElementById("detalle-nombre").textContent = estilo.nombre;
-  document.getElementById("detalle-precio").textContent = `₡${Number(estilo.precio).toLocaleString("es-CR")}`;
+  document.getElementById("detalle-precio").textContent = `$${Number(estilo.precio).toLocaleString("en-US")}`;
   document.getElementById("cantidad-num").textContent = "1";
 
   // Mostrar selector de marca solo si hay más de una marca disponible
@@ -605,7 +605,7 @@ function renderCarrito() {
   const cont = document.getElementById("drawer-items"); cont.innerHTML = "";
   if (carrito.length === 0) {
     cont.innerHTML = `<div class="carrito-vacio">Tu pedido está vacío.<br>Elegí algo del catálogo.</div>`;
-    document.getElementById("total-monto").textContent = "₡0";
+    document.getElementById("total-monto").textContent = "$0";
     document.getElementById("btn-confirmar").disabled = true; return;
   }
   carrito.forEach((item, idx) => {
@@ -624,14 +624,14 @@ function renderCarrito() {
             <span style="width:28px;text-align:center;font-size:13px;font-weight:500;border-left:1px solid var(--borde);border-right:1px solid var(--borde);line-height:28px">${item.cantidad}</span>
             <button onclick="cambiarCantidadCarrito(${idx},1)" style="width:28px;height:28px;background:none;border:none;font-size:16px;cursor:pointer;color:var(--gris)">+</button>
           </div>` : `<span style="font-size:13px;color:var(--gris)">x${item.cantidad}</span>`}
-          <p style="font-size:13px">₡${subtotal.toLocaleString("es-CR")}</p>
+          <p style="font-size:13px">$${subtotal.toLocaleString("en-US")}</p>
         </div>
       </div>
       ${puedeEditar ? `<button class="btn-quitar" onclick="quitarItem(${idx})" style="margin-left:8px">×</button>` : ""}`;
     cont.appendChild(div);
   });
   const total = carrito.reduce((s,i) => s + i.precio * i.cantidad, 0);
-  document.getElementById("total-monto").textContent = `₡${total.toLocaleString("es-CR")}`;
+  document.getElementById("total-monto").textContent = `$${total.toLocaleString("en-US")}`;
   document.getElementById("btn-confirmar").disabled = modoQuincena === "cerrado";
 }
 function cambiarCantidadCarrito(idx, delta) {
@@ -928,7 +928,7 @@ function renderHistorial(pedidos, total, wa, fechaLimite) {
           <p style="font-size:12px;color:var(--gris);margin-bottom:4px">${item.color} · Talla ${item.talla} · x${item.cantidad}</p>
           <div style="display:flex;align-items:center;gap:8px">
             <span style="font-size:11px;background:${estadoBg};color:${estadoFg};border-radius:20px;padding:2px 8px">${item.estado}</span>
-            <span style="font-size:13px;color:var(--oscuro)">₡${Number(item.subtotal).toLocaleString("es-CR")}</span>
+            <span style="font-size:13px;color:var(--oscuro)">$${Number(item.subtotal).toLocaleString("en-US")}</span>
           </div>
         </div>
         ${cancelable ? `
@@ -941,7 +941,7 @@ function renderHistorial(pedidos, total, wa, fechaLimite) {
     cont.appendChild(seccion);
   });
   const totalPendiente = pedidos.filter(p => p.estado === "pendiente").reduce((s,p) => s + Number(p.subtotal), 0);
-  document.getElementById("hist-total").textContent = `₡${totalPendiente.toLocaleString("es-CR")}`;
+  document.getElementById("hist-total").textContent = `$${totalPendiente.toLocaleString("en-US")}`;
 }
 
 async function cancelarItem(idPedido, idVariante, nombreItem, wa, cant) {
