@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Admin — Colección</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rosa:    #D4537E;
+    --rosa-l:  #FBEAF0;
+    --verde:   #2D6A4F;
+    --verde-l: #D8F3DC;
+    --crema:   #FAF8F4;
+    --oscuro:  #1C1917;
+    --gris:    #78716C;
+    --borde:   #E7E5E0;
+    --blanco:  #FFFFFF;
+    --radio:   12px;
+    --naranja: #B45309;
+    --naranja-l: #FEF3C7;
+    --rojo:    #E24B4A;
+    --rojo-l:  #FBEAEA;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--crema); color: var(--oscuro); min-height: 100vh; }
+
+  header { background: var(--blanco); border-bottom: 1px solid var(--borde); padding: 0 20px; position: sticky; top: 0; z-index: 100; }
+  .header-inner { max-width: 880px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 60px; }
+  .brand h1 { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 400; }
+  .brand p { font-size: 11px; color: var(--gris); margin-top: 1px; }
+
+  nav.tabs { background: var(--blanco); border-bottom: 1px solid var(--borde); position: sticky; top: 60px; z-index: 99; overflow-x: auto; }
+  .tabs-inner { max-width: 880px; margin: 0 auto; display: flex; }
+  .tab-btn { flex-shrink: 0; padding: 14px 20px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; color: var(--gris); background: none; border: none; cursor: pointer; border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s; white-space: nowrap; }
+  .tab-btn.activo { color: var(--rosa); border-bottom-color: var(--rosa); }
+
+  main { max-width: 880px; margin: 0 auto; padding: 24px 16px 80px; }
+  .vista { display: none; }
+  .vista.activa { display: block; animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .seccion-titulo { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 400; margin-bottom: 4px; }
+  .seccion-sub { font-size: 13px; color: var(--gris); margin-bottom: 20px; }
+
+  /* Cards / stat boxes */
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .stat-card { background: var(--blanco); border: 1px solid var(--borde); border-radius: var(--radio); padding: 16px; }
+  .stat-label { font-size: 11px; color: var(--gris); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+  .stat-valor { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 500; }
+
+  /* Buttons */
+  .btn { font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; border-radius: 8px; padding: 10px 18px; cursor: pointer; border: none; transition: opacity 0.15s, background 0.15s; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-primario { background: var(--oscuro); color: white; }
+  .btn-primario:hover:not(:disabled) { background: #2C2520; }
+  .btn-rosa { background: var(--rosa); color: white; }
+  .btn-rosa:hover:not(:disabled) { background: #BE4570; }
+  .btn-borde { background: var(--blanco); color: var(--oscuro); border: 1.5px solid var(--borde); }
+  .btn-borde:hover:not(:disabled) { border-color: #C7C4BE; }
+  .btn-peligro { background: var(--rojo-l); color: var(--rojo); border: 1.5px solid var(--rojo); }
+  .btn-peligro:hover:not(:disabled) { background: var(--rojo); color: white; }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+  /* Forms */
+  .form-grupo { margin-bottom: 14px; }
+  .form-label { font-size: 11px; font-weight: 500; color: var(--gris); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; display: block; }
+  .form-input, .form-select { width: 100%; border: 1px solid var(--borde); border-radius: 8px; padding: 10px 14px; font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; transition: border-color 0.2s; background: var(--blanco); }
+  .form-input:focus, .form-select:focus { border-color: var(--rosa); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-card { background: var(--blanco); border: 1px solid var(--borde); border-radius: var(--radio); padding: 20px; margin-bottom: 20px; }
+  .form-card-titulo { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 500; margin-bottom: 14px; }
+  .datalist-hint { font-size: 11px; color: var(--gris); margin-top: 4px; }
+
+  /* Inventory table */
+  .tabla-wrap { overflow-x: auto; background: var(--blanco); border: 1px solid var(--borde); border-radius: var(--radio); }
+  table.inv-tabla { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 760px; }
+  table.inv-tabla th { text-align: left; padding: 10px 12px; background: #F8F6F2; font-size: 11px; font-weight: 600; color: var(--gris); text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--borde); white-space: nowrap; }
+  table.inv-tabla td { padding: 10px 12px; border-bottom: 1px solid var(--borde); vertical-align: middle; }
+  table.inv-tabla tr:last-child td { border-bottom: none; }
+  table.inv-tabla tr.inactivo { opacity: 0.5; }
+  .badge { display: inline-block; font-size: 11px; padding: 3px 9px; border-radius: 20px; font-weight: 500; }
+  .badge-activo { background: var(--verde-l); color: var(--verde); }
+  .badge-inactivo { background: #F1EFE8; color: var(--gris); }
+  .stock-num { font-weight: 500; }
+  .stock-bajo { color: var(--naranja); }
+  .stock-cero { color: var(--rojo); }
+  .input-mini { width: 64px; border: 1px solid var(--borde); border-radius: 6px; padding: 5px 8px; font-size: 12px; font-family: 'DM Sans', sans-serif; }
+  .fila-acciones { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+
+  .filtros-bar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+  .filtros-bar input[type="text"] { flex: 1; min-width: 180px; }
+
+  /* Toggle switch */
+  .toggle { position: relative; width: 38px; height: 22px; flex-shrink: 0; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: var(--borde); border-radius: 22px; transition: background 0.2s; }
+  .toggle-slider:before { content: ""; position: absolute; height: 16px; width: 16px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: transform 0.2s; }
+  .toggle input:checked + .toggle-slider { background: var(--verde); }
+  .toggle input:checked + .toggle-slider:before { transform: translateX(16px); }
+
+  /* Reset section */
+  .modo-switch { display: flex; border: 1px solid var(--borde); border-radius: 10px; overflow: hidden; margin-bottom: 20px; width: fit-content; }
+  .modo-btn { padding: 10px 20px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; border: none; cursor: pointer; background: var(--blanco); color: var(--gris); }
+  .modo-btn.activo { background: var(--oscuro); color: white; }
+  .aviso-box { border-radius: 10px; padding: 14px; font-size: 13px; margin-bottom: 16px; display: none; }
+  .aviso-box.visible { display: block; }
+  .aviso-info { background: var(--rosa-l); color: #9D3A5C; }
+  .aviso-activo { background: var(--verde-l); color: #1B4332; }
+
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--oscuro); color: white; padding: 10px 20px; border-radius: 50px; font-size: 13px; opacity: 0; transition: opacity 0.2s, transform 0.2s; z-index: 300; white-space: nowrap; max-width: 90vw; text-align: center; }
+  .toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.error { background: var(--rojo); }
+
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--gris); font-size: 14px; }
+  .spinner { width: 24px; height: 24px; border: 2px solid var(--borde); border-top-color: var(--rosa); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 10px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 600px) {
+    .form-row { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <h1>Panel Admin</h1>
+      <p>Colección · Drole</p>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <div class="tabs-inner">
+    <button class="tab-btn activo" data-vista="resumen" onclick="cambiarVista('resumen')">Resumen</button>
+    <button class="tab-btn" data-vista="inventario" onclick="cambiarVista('inventario')">Inventario</button>
+    <button class="tab-btn" data-vista="agregar" onclick="cambiarVista('agregar')">Agregar producto</button>
+    <button class="tab-btn" data-vista="quincena" onclick="cambiarVista('quincena')">Quincena</button>
+  </div>
+</nav>
+
+<main>
+  <!-- ═══════════ VISTA: RESUMEN ═══════════ -->
+  <div class="vista activa" id="vista-resumen">
+    <p class="seccion-titulo">Resumen de la quincena</p>
+    <p class="seccion-sub">Estado actual de pedidos y actividad.</p>
+    <div id="resumen-cargando" class="empty-state"><div class="spinner"></div>Cargando resumen...</div>
+    <div id="resumen-contenido" style="display:none">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <p class="stat-label">Artículos pedidos</p>
+          <p class="stat-valor" id="stat-items">0</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Total en ventas</p>
+          <p class="stat-valor" id="stat-ventas">₡0</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Clientes activos</p>
+          <p class="stat-valor" id="stat-clientes">0</p>
+        </div>
+      </div>
+      <button class="btn btn-borde" onclick="cargarResumen()">↻ Actualizar</button>
+    </div>
+  </div>
+
+  <!-- ═══════════ VISTA: INVENTARIO ═══════════ -->
+  <div class="vista" id="vista-inventario">
+    <p class="seccion-titulo">Inventario</p>
+    <p class="seccion-sub">Reabastecé stock, activá o desactivá variantes y actualizá fotos.</p>
+    <div class="filtros-bar">
+      <input type="text" id="inv-buscar" class="form-input" placeholder="Buscar por estilo, marca o color..." oninput="filtrarInventario()">
+      <button class="btn btn-borde btn-sm" onclick="cargarInventario()">↻ Recargar</button>
+    </div>
+    <div id="inv-cargando" class="empty-state"><div class="spinner"></div>Cargando inventario...</div>
+    <div id="inv-tabla-wrap" class="tabla-wrap" style="display:none">
+      <table class="inv-tabla">
+        <thead>
+          <tr>
+            <th>Estilo</th>
+            <th>Marca</th>
+            <th>Color</th>
+            <th>Talla</th>
+            <th>Precio</th>
+            <th>Stock</th>
+            <th>Activo</th>
+            <th>Reabastecer</th>
+            <th>Fotos</th>
+          </tr>
+        </thead>
+        <tbody id="inv-tabla-body"></tbody>
+      </table>
+    </div>
+    <div id="inv-vacio" class="empty-state" style="display:none">No hay productos en el inventario todavía.</div>
+  </div>
+
+  <!-- ═══════════ VISTA: AGREGAR PRODUCTO ═══════════ -->
+  <div class="vista" id="vista-agregar">
+    <p class="seccion-titulo">Agregar producto nuevo</p>
+    <p class="seccion-sub">Creá una variante nueva. Si escribís un valor que no existe (estilo, marca, color o talla), se agrega automáticamente a la lista para la próxima vez.</p>
+
+    <div class="form-card">
+      <p class="form-card-titulo">Datos del producto</p>
+
+      <div class="form-row">
+        <div class="form-grupo">
+          <label class="form-label">Estilo</label>
+          <input type="text" id="f-estilo" class="form-input" list="lista-estilos" placeholder="Ej. Vestido Luna">
+          <datalist id="lista-estilos"></datalist>
+        </div>
+        <div class="form-grupo">
+          <label class="form-label">Marca</label>
+          <input type="text" id="f-marca" class="form-input" list="lista-marcas" placeholder="Ej. Drole">
+          <datalist id="lista-marcas"></datalist>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-grupo">
+          <label class="form-label">Color</label>
+          <input type="text" id="f-color" class="form-input" list="lista-colores" placeholder="Ej. Azul-escolar">
+          <datalist id="lista-colores"></datalist>
+        </div>
+        <div class="form-grupo">
+          <label class="form-label">Talla</label>
+          <input type="text" id="f-talla" class="form-input" list="lista-tallas" placeholder="Ej. M">
+          <datalist id="lista-tallas"></datalist>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-grupo">
+          <label class="form-label">Precio (₡)</label>
+          <input type="number" id="f-precio" class="form-input" placeholder="0" min="0">
+        </div>
+        <div class="form-grupo">
+          <label class="form-label">Stock inicial</label>
+          <input type="number" id="f-stock" class="form-input" placeholder="0" min="0">
+        </div>
+      </div>
+
+      <div class="form-grupo">
+        <label class="form-label">URL Drive — foto del color</label>
+        <input type="text" id="f-foto-color" class="form-input" placeholder="https://drive.google.com/...">
+        <p class="datalist-hint">Pegá el link para compartir de Google Drive. Se convierte automáticamente.</p>
+      </div>
+
+      <div class="form-grupo">
+        <label class="form-label">URL Drive — foto de portada (opcional)</label>
+        <input type="text" id="f-foto-portada" class="form-input" placeholder="https://drive.google.com/...">
+        <p class="datalist-hint">Solo necesaria si esta variante representa la portada del estilo en el catálogo.</p>
+      </div>
+
+      <p id="f-error" style="color:var(--rojo);font-size:13px;margin-bottom:10px;display:none"></p>
+      <button class="btn btn-rosa" id="f-btn-agregar" onclick="agregarProducto()">Agregar al inventario</button>
+    </div>
+  </div>
+
+  <!-- ═══════════ VISTA: QUINCENA ═══════════ -->
+  <div class="vista" id="vista-quincena">
+    <p class="seccion-titulo">Configuración de quincena</p>
+    <p class="seccion-sub">Fechas de cierre, entrega y reglas de cancelación.</p>
+
+    <div class="form-card">
+      <p class="form-card-titulo">Fechas y reglas</p>
+      <div class="form-grupo">
+        <label class="form-label">Fecha y hora de cierre de pedidos</label>
+        <input type="text" id="cfg-fecha-cierre" class="form-input" placeholder="2026-06-15 23:59">
+      </div>
+      <div class="form-grupo">
+        <label class="form-label">Día de entrega (texto libre)</label>
+        <input type="text" id="cfg-dia-entrega" class="form-input" placeholder="viernes 19 de junio">
+      </div>
+      <div class="form-row">
+        <div class="form-grupo">
+          <label class="form-label">Horas de congelamiento antes del cierre</label>
+          <input type="number" id="cfg-horas-congelamiento" class="form-input" min="0">
+        </div>
+        <div class="form-grupo">
+          <label class="form-label">Límite de cancelaciones por día</label>
+          <input type="number" id="cfg-limite-cancelaciones" class="form-input" min="0">
+        </div>
+      </div>
+      <button class="btn btn-primario" id="cfg-btn-guardar" onclick="guardarConfig()">Guardar configuración</button>
+      <p id="cfg-msg" style="font-size:13px;margin-top:10px;display:none"></p>
+    </div>
+
+    <div class="form-card">
+      <p class="form-card-titulo">Generar Pedidos y Empacado (Reset)</p>
+      <p style="font-size:13px;color:var(--gris);margin-bottom:16px">
+        Archiva los pedidos actuales, crea las hojas <strong>Pedidos_fecha</strong> y <strong>Empacado_fecha</strong> ordenadas por ID de cliente, y limpia la hoja Pedidos para la siguiente quincena. El stock disponible <strong>no se modifica</strong>.
+      </p>
+
+      <div class="modo-switch">
+        <button class="modo-btn activo" id="modo-btn-manual" onclick="cambiarModoReset('manual')">Manual</button>
+        <button class="modo-btn" id="modo-btn-auto" onclick="cambiarModoReset('auto')">Automático</button>
+      </div>
+
+      <div id="reset-manual-wrap">
+        <p style="font-size:13px;color:var(--gris);margin-bottom:14px">Ejecutá el reset cuando estés lista. Esta acción no se puede deshacer.</p>
+        <button class="btn btn-peligro" id="btn-reset-manual" onclick="ejecutarResetManual()">Generar Pedidos y Empacado ahora</button>
+      </div>
+
+      <div id="reset-auto-wrap" style="display:none">
+        <div class="aviso-box" id="aviso-trigger-estado"></div>
+        <div class="form-grupo">
+          <label class="form-label">Fecha y hora del reset automático</label>
+          <input type="datetime-local" id="cfg-fecha-trigger" class="form-input">
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-primario" id="btn-programar-trigger" onclick="programarTrigger()">Programar reset automático</button>
+          <button class="btn btn-borde" id="btn-cancelar-trigger" onclick="cancelarTrigger()" style="display:none">Desactivar reset automático</button>
+        </div>
+      </div>
+
+      <p id="reset-msg" style="font-size:13px;margin-top:14px;display:none"></p>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbzvuRqgwHuvSupfgFZYlpKvYZAopCch3-N6fB6_cSFJNRZi0KvWDXbYscwzW91G4e976w/exec";
+
+// ════════════════════════════════════════════════════════
+// NAVEGACIÓN DE TABS
+// ════════════════════════════════════════════════════════
+function cambiarVista(vista) {
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("activo", b.dataset.vista === vista));
+  document.querySelectorAll(".vista").forEach(v => v.classList.toggle("activa", v.id === `vista-${vista}`));
+  if (vista === "resumen")     cargarResumen();
+  if (vista === "inventario")  cargarInventario();
+  if (vista === "agregar")     cargarOpciones();
+  if (vista === "quincena")    { cargarConfig(); cargarEstadoTrigger(); }
+}
+
+function mostrarToast(msg, esError) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.toggle("error", !!esError);
+  t.classList.add("visible");
+  setTimeout(() => t.classList.remove("visible"), 3500);
+}
+
+function formatoColones(n) { return `₡${Number(n || 0).toLocaleString("es-CR")}`; }
+
+// ════════════════════════════════════════════════════════
+// RESUMEN
+// ════════════════════════════════════════════════════════
+async function cargarResumen() {
+  document.getElementById("resumen-cargando").style.display = "block";
+  document.getElementById("resumen-contenido").style.display = "none";
+  try {
+    const res = await fetch(`${API_URL}?action=admin_resumen`);
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || "Error");
+    document.getElementById("stat-items").textContent = data.total_items_pedidos;
+    document.getElementById("stat-ventas").textContent = formatoColones(data.total_ventas);
+    document.getElementById("stat-clientes").textContent = data.clientes_activos;
+    document.getElementById("resumen-cargando").style.display = "none";
+    document.getElementById("resumen-contenido").style.display = "block";
+  } catch (err) {
+    document.getElementById("resumen-cargando").innerHTML = "No se pudo cargar el resumen.";
+    mostrarToast("Error al cargar el resumen", true);
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// INVENTARIO
+// ════════════════════════════════════════════════════════
+let inventarioCache = [];
+
+async function cargarInventario() {
+  document.getElementById("inv-cargando").style.display = "block";
+  document.getElementById("inv-tabla-wrap").style.display = "none";
+  document.getElementById("inv-vacio").style.display = "none";
+  try {
+    const res = await fetch(`${API_URL}?action=admin_inventario`);
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || "Error");
+    inventarioCache = data.items;
+    document.getElementById("inv-cargando").style.display = "none";
+    if (inventarioCache.length === 0) {
+      document.getElementById("inv-vacio").style.display = "block";
+    } else {
+      document.getElementById("inv-tabla-wrap").style.display = "block";
+      renderInventario(inventarioCache);
+    }
+  } catch (err) {
+    document.getElementById("inv-cargando").innerHTML = "No se pudo cargar el inventario.";
+    mostrarToast("Error al cargar el inventario", true);
+  }
+}
+
+function filtrarInventario() {
+  const q = document.getElementById("inv-buscar").value.trim().toLowerCase();
+  if (!q) { renderInventario(inventarioCache); return; }
+  const filtrado = inventarioCache.filter(item =>
+    (item.estilo || "").toLowerCase().includes(q) ||
+    (item.marca  || "").toLowerCase().includes(q) ||
+    (item.color  || "").toLowerCase().includes(q)
+  );
+  renderInventario(filtrado);
+}
+
+function renderInventario(items) {
+  const tbody = document.getElementById("inv-tabla-body");
+  tbody.innerHTML = "";
+  items.forEach(item => {
+    const stock = Number(item.stock_disponible);
+    let stockClass = "";
+    if (stock === 0) stockClass = "stock-cero";
+    else if (stock <= 5) stockClass = "stock-bajo";
+
+    const tr = document.createElement("tr");
+    tr.className = item.activo ? "" : "inactivo";
+    tr.innerHTML = `
+      <td>${item.estilo}</td>
+      <td>${item.marca || "—"}</td>
+      <td>${item.color}</td>
+      <td>${item.talla}</td>
+      <td>${formatoColones(item.precio)}</td>
+      <td><span class="stock-num ${stockClass}">${stock}</span></td>
+      <td>
+        <label class="toggle">
+          <input type="checkbox" ${item.activo ? "checked" : ""} onchange="toggleActivo('${item.id_variante}', this)">
+          <span class="toggle-slider"></span>
+        </label>
+      </td>
+      <td>
+        <div class="fila-acciones">
+          <input type="number" class="input-mini" id="reab-${item.id_variante}" placeholder="+0" min="1">
+          <button class="btn btn-borde btn-sm" onclick="reabastecer('${item.id_variante}')">Sumar</button>
+        </div>
+      </td>
+      <td>
+        <button class="btn btn-borde btn-sm" onclick="abrirEdicionFotos('${item.id_variante}', '${(item.foto_color_url||'').replace(/'/g,"\\'")}', '${(item.foto_portada_url||'').replace(/'/g,"\\'")}')">Editar</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+async function toggleActivo(idVariante, checkbox) {
+  checkbox.disabled = true;
+  try {
+    const params = new URLSearchParams({ action: "admin_toggle_activo", id_variante: idVariante });
+    const data = await (await fetch(`${API_URL}?${params}`)).json();
+    if (!data.ok) throw new Error(data.error || "Error");
+    mostrarToast(data.activo ? "Variante activada" : "Variante desactivada");
+    const item = inventarioCache.find(i => i.id_variante === idVariante);
+    if (item) item.activo = data.activo;
+    filtrarInventario();
+  } catch (err) {
+    mostrarToast(err.message || "No se pudo actualizar", true);
+    checkbox.checked = !checkbox.checked;
+  } finally {
+    checkbox.disabled = false;
+  }
+}
+
+async function reabastecer(idVariante) {
+  const input = document.getElementById(`reab-${idVariante}`);
+  const cantidad = Number(input.value);
+  if (!cantidad || cantidad <= 0) { mostrarToast("Ingresá una cantidad válida", true); return; }
+  try {
+    const params = new URLSearchParams({ action: "admin_reabastecer", id_variante: idVariante, cantidad: String(cantidad) });
+    const data = await (await fetch(`${API_URL}?${params}`)).json();
+    if (!data.ok) throw new Error(data.error || "Error");
+    mostrarToast(data.mensaje);
+    input.value = "";
+    const item = inventarioCache.find(i => i.id_variante === idVariante);
+    if (item) item.stock_disponible = data.stock_nuevo;
+    filtrarInventario();
+  } catch (err) {
+    mostrarToast(err.message || "No se pudo reabastecer", true);
+  }
+}
+
+function abrirEdicionFotos(idVariante, fotoColorActual, fotoPortadaActual) {
+  const nuevoColor = prompt("URL Drive — foto del color:", fotoColorActual || "");
+  if (nuevoColor === null) return;
+  const nuevoPortada = prompt("URL Drive — foto de portada (dejar igual si no aplica):", fotoPortadaActual || "");
+  if (nuevoPortada === null) return;
+  actualizarFotos(idVariante, nuevoColor, nuevoPortada);
+}
+
+async function actualizarFotos(idVariante, fotoColorUrl, fotoPortadaUrl) {
+  try {
+    const params = new URLSearchParams({
+      action: "admin_actualizar_fotos",
+      id_variante: idVariante,
+      foto_color_url: fotoColorUrl || "",
+      foto_portada_url: fotoPortadaUrl || "",
+    });
+    const data = await (await fetch(`${API_URL}?${params}`)).json();
+    if (!data.ok) throw new Error(data.error || "Error");
+    mostrarToast("Fotos actualizadas");
+    const item = inventarioCache.find(i => i.id_variante === idVariante);
+    if (item) { item.foto_color_url = fotoColorUrl; item.foto_portada_url = fotoPortadaUrl; }
+  } catch (err) {
+    mostrarToast(err.message || "No se pudieron actualizar las fotos", true);
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// AGREGAR PRODUCTO
+// ════════════════════════════════════════════════════════
+async function cargarOpciones() {
+  try {
+    const res = await fetch(`${API_URL}?action=admin_opciones`);
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || "Error");
+    llenarDatalist("lista-estilos", data.opciones.Estilo);
+    llenarDatalist("lista-marcas",  data.opciones.Marca);
+    llenarDatalist("lista-colores", data.opciones.Color);
+    llenarDatalist("lista-tallas",  data.opciones.Talla);
+  } catch (err) {
+    mostrarToast("No se pudieron cargar las opciones existentes", true);
+  }
+}
+
+function llenarDatalist(id, valores) {
+  const dl = document.getElementById(id);
+  dl.innerHTML = "";
+  (valores || []).forEach(v => {
+    const opt = document.createElement("option");
+    opt.value = v;
+    dl.appendChild(opt);
+  });
+}
+
+function mostrarErrorForm(msg) {
+  const el = document.getElementById("f-error");
+  el.textContent = msg;
+  el.style.display = "block";
+}
+
+async function agregarProducto() {
+  document.getElementById("f-error").style.display = "none";
+
+  const estilo = document.getElementById("f-estilo").value.trim();
+  const marca  = document.getElementById("f-marca").value.trim();
+  const color  = document.getElementById("f-color").value.trim();
+  const talla  = document.getElementById("f-talla").value.trim();
+  const precio = document.getElementById("f-precio").value.trim();
+  const stock  = document.getElementById("f-stock").value.trim();
+  const fotoColor   = document.getElementById("f-foto-color").value.trim();
+  const fotoPortada = document.getElementById("f-foto-portada").value.trim();
+
+  if (!estilo || !marca || !color || !talla) { mostrarErrorForm("Completá estilo, marca, color y talla."); return; }
+  if (!precio || Number(precio) <= 0) { mostrarErrorForm("Ingresá un precio válido."); return; }
+
+  const btn = document.getElementById("f-btn-agregar");
+  btn.disabled = true; btn.textContent = "Agregando...";
+  try {
+    const params = new URLSearchParams({
+      action: "admin_agregar_producto",
+      estilo, marca, color, talla,
+      precio, stock: stock || "0",
+      foto_color_url: fotoColor,
+      foto_portada_url: fotoPortada,
+    });
+    const data = await (await fetch(`${API_URL}?${params}`)).json();
+    if (!data.ok) throw new Error(data.error || "No se pudo agregar el producto");
+    mostrarToast(`Producto agregado: ${data.id_variante}`);
+    // Limpiar formulario (mantenemos estilo y marca por si se agregan más tallas/colores seguidas)
+    document.getElementById("f-color").value = "";
+    document.getElementById("f-talla").value = "";
+    document.getElementById("f-stock").value = "";
+    document.getElementById("f-foto-color").value = "";
+    document.getElementById("f-foto-portada").value = "";
+    cargarOpciones();
+  } catch (err) {
+    mostrarErrorForm(err.message || "No se pudo agregar el producto");
+  } finally {
+    btn.disabled = false; btn.textContent = "Agregar al inventario";
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// QUINCENA — CONFIG
+// ════════════════════════════════════════════════════════
+async function cargarConfig() {
+  try {
+    const res = await fetch(`${API_URL}?action=admin_config_get`);
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || "Error");
+    const c = data.config;
+    document.getElementById("cfg-fecha-cierre").value          = c["Fecha_cierre_pedidos"] || "";
+    document.getElementById("cfg-dia-entrega").value           = c["Dia_entrega"] || "";
+    document.getElementById("cfg-horas-congelamiento").value   = c["Horas_congelamiento"] || "";
+    document.getElementById("cfg-limite-cancelaciones").value  = c["Limite_cancelaciones_dia"] || "";
+  } catch (err) {
+    mostrarToast("No se pudo cargar la configuración", true);
+  }
+}
+
+async function guardarConfig() {
+  const campos = [
+    ["Fecha_cierre_pedidos",     document.getElementById("cfg-fecha-cierre").value.trim()],
+    ["Dia_entrega",              document.getElementById("cfg-dia-entrega").value.trim()],
+    ["Horas_congelamiento",      document.getElementById("cfg-horas-congelamiento").value.trim()],
+    ["Limite_cancelaciones_dia", document.getElementById("cfg-limite-cancelaciones").value.trim()],
+  ];
+  const btn = document.getElementById("cfg-btn-guardar");
+  btn.disabled = true; btn.textContent = "Guardando...";
+  const msgEl = document.getElementById("cfg-msg");
+  try {
+    for (const [campo, valor] of campos) {
+      if (!valor) continue;
+      const params = new URLSearchParams({ action: "admin_config_set", campo, valor });
+      const data = await (await fetch(`${API_URL}?${params}`)).json();
+      if (!data.ok) throw new Error(data.error || `No se pudo guardar ${campo}`);
+    }
+    msgEl.textContent = "Configuración guardada correctamente.";
+    msgEl.style.color = "var(--verde)";
+    msgEl.style.display = "block";
+    mostrarToast("Configuración guardada");
+  } catch (err) {
+    msgEl.textContent = err.message || "Ocurrió un error al guardar.";
+    msgEl.style.color = "var(--rojo)";
+    msgEl.style.display = "block";
+  } finally {
+    btn.disabled = false; btn.textContent = "Guardar configuración";
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// QUINCENA — RESET MANUAL / AUTOMÁTICO
+// ════════════════════════════════════════════════════════
+function cambiarModoReset(modo) {
+  document.getElementById("modo-btn-manual").classList.toggle("activo", modo === "manual");
+  document.getElementById("modo-btn-auto").classList.toggle("activo", modo === "auto");
+  document.getElementById("reset-manual-wrap").style.display = modo === "manual" ? "block" : "none";
+  document.getElementById("reset-auto-wrap").style.display   = modo === "auto"   ? "block" : "none";
+}
+
+async function ejecutarResetManual() {
+  const confirmado = confirm(
+    "¿Generar Pedidos y Empacado ahora?\n\nEsto archivará todos los pedidos actuales, creará las hojas de empacado ordenadas, y limpiará la hoja de Pedidos para la nueva quincena.\n\nEsta acción no se puede deshacer."
+  );
+  if (!confirmado) return;
+
+  const btn = document.getElementById("btn-reset-manual");
+  btn.disabled = true; btn.textContent = "Generando...";
+  const msgEl = document.getElementById("reset-msg");
+  try {
+    const data = await (await fetch(`${API_URL}?action=admin_reset_manual`)).json();
+    if (!data.ok) throw new Error(data.error || "Error al ejecutar el reset");
+    msgEl.textContent = "Reset ejecutado correctamente. Revisá el Sheet para ver las hojas nuevas.";
+    msgEl.style.color = "var(--verde)";
+    msgEl.style.display = "block";
+    mostrarToast("Pedidos y Empacado generados correctamente");
+  } catch (err) {
+    msgEl.textContent = err.message || "Ocurrió un error al ejecutar el reset.";
+    msgEl.style.color = "var(--rojo)";
+    msgEl.style.display = "block";
+    mostrarToast("Error al ejecutar el reset", true);
+  } finally {
+    btn.disabled = false; btn.textContent = "Generar Pedidos y Empacado ahora";
+  }
+}
+
+async function cargarEstadoTrigger() {
+  const aviso = document.getElementById("aviso-trigger-estado");
+  try {
+    const res = await fetch(`${API_URL}?action=admin_estado_trigger`);
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || "Error");
+    if (data.activo) {
+      const fechaFmt = data.fecha ? new Date(data.fecha).toLocaleString("es-CR") : "fecha desconocida";
+      aviso.textContent = `⏰ Reset automático activo — programado para ${fechaFmt}`;
+      aviso.className = "aviso-box visible aviso-activo";
+      document.getElementById("btn-cancelar-trigger").style.display = "inline-block";
+    } else {
+      aviso.textContent = "No hay ningún reset automático programado actualmente.";
+      aviso.className = "aviso-box visible aviso-info";
+      document.getElementById("btn-cancelar-trigger").style.display = "none";
+    }
+  } catch (err) {
+    aviso.textContent = "No se pudo consultar el estado del reset automático.";
+    aviso.className = "aviso-box visible aviso-info";
+  }
+}
+
+async function programarTrigger() {
+  const fechaHora = document.getElementById("cfg-fecha-trigger").value;
+  if (!fechaHora) { mostrarToast("Seleccioná una fecha y hora", true); return; }
+
+  const confirmado = confirm(`¿Programar el reset automático para ${new Date(fechaHora).toLocaleString("es-CR")}?`);
+  if (!confirmado) return;
+
+  const btn = document.getElementById("btn-programar-trigger");
+  btn.disabled = true; btn.textContent = "Programando...";
+  try {
+    const params = new URLSearchParams({ action: "admin_reset_programar", fecha_hora: fechaHora });
+    const data = await (await fetch(`${API_URL}?${params}`)).json();
+    if (!data.ok) throw new Error(data.error || "Error al programar");
+    mostrarToast("Reset automático programado correctamente");
+    cargarEstadoTrigger();
+  } catch (err) {
+    mostrarToast(err.message || "No se pudo programar el reset", true);
+  } finally {
+    btn.disabled = false; btn.textContent = "Programar reset automático";
+  }
+}
+
+async function cancelarTrigger() {
+  const confirmado = confirm("¿Desactivar el reset automático? Vas a tener que ejecutarlo manualmente.");
+  if (!confirmado) return;
+
+  const btn = document.getElementById("btn-cancelar-trigger");
+  btn.disabled = true; btn.textContent = "Desactivando...";
+  try {
+    const data = await (await fetch(`${API_URL}?action=admin_reset_cancelar`)).json();
+    if (!data.ok) throw new Error(data.error || "Error al desactivar");
+    mostrarToast(data.mensaje);
+    cargarEstadoTrigger();
+  } catch (err) {
+    mostrarToast(err.message || "No se pudo desactivar", true);
+  } finally {
+    btn.disabled = false; btn.textContent = "Desactivar reset automático";
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// INICIO
+// ════════════════════════════════════════════════════════
+cargarResumen();
+</script>
+</body>
+</html>
