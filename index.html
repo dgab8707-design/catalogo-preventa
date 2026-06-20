@@ -135,6 +135,27 @@
   .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px); background: #1C1917; color: white; padding: 10px 20px; border-radius: 50px; font-size: 13px; opacity: 0; transition: opacity 0.2s, transform 0.2s; z-index: 300; white-space: nowrap; max-width: 90vw; text-align: center; }
   .toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
   .aviso-congelado { background: var(--naranja-l); border: 1px solid #D97706; border-radius: 8px; padding: 10px 14px; font-size: 12px; color: #92400E; margin-bottom: 12px; display: none; }
+
+  /* ── MODO MAYORISTA: catálogo tipo revista, sin precios ni compra directa ── */
+  body.modo-mayorista .banner,
+  body.modo-mayorista .banner-congelado,
+  body.modo-mayorista .banner-cerrado,
+  body.modo-mayorista .btn-historial,
+  body.modo-mayorista .btn-mi-pedido,
+  body.modo-mayorista .producto-precio,
+  body.modo-mayorista .detalle-precio,
+  body.modo-mayorista .cantidad-row,
+  body.modo-mayorista .btn-agregar { display: none !important; }
+
+  .botones-mayorista { display: none; flex-direction: column; gap: 10px; }
+  body.modo-mayorista .botones-mayorista { display: flex; }
+  .btn-mayorista { width: 100%; padding: 14px; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; border: none; display: flex; align-items: center; justify-content: center; gap: 8px; transition: opacity 0.18s; }
+  .btn-mayorista:hover { opacity: 0.9; }
+  .btn-mayorista:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-preguntar { background: var(--blanco); color: var(--oscuro); border: 1.5px solid var(--borde); }
+  .btn-solicitar { background: var(--verde); color: white; }
+  .btn-mayorista svg { width: 18px; height: 18px; }
+  .badge-mayorista { display: inline-block; font-size: 10px; background: var(--rosa-l); color: var(--rosa); border-radius: 20px; padding: 3px 10px; font-weight: 500; margin-bottom: 10px; letter-spacing: 0.03em; }
 </style>
 </head>
 <body>
@@ -157,12 +178,12 @@
       <p id="brand-sub" style="font-size:11px;color:var(--gris)">Primavera · Preventa</p>
     </div>
     <div style="display:flex;gap:8px;align-items:center">
-      <button class="btn-carrito" onclick="abrirHistorial()" style="padding:8px 12px">
+      <button class="btn-carrito btn-historial" onclick="abrirHistorial()" style="padding:8px 12px">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:16px;height:16px">
           <path d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/>
         </svg>
       </button>
-      <button class="btn-carrito" onclick="abrirCarrito()">
+      <button class="btn-carrito btn-mi-pedido" onclick="abrirCarrito()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
           <path d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"/>
         </svg>
@@ -244,6 +265,17 @@
       </div>
     </div>
     <button class="btn-agregar" id="btn-agregar" onclick="agregarAlCarrito()">Agregar al pedido</button>
+
+    <div class="botones-mayorista">
+      <button class="btn-mayorista btn-preguntar" id="btn-preguntar-precio" onclick="preguntarPrecio()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z"/></svg>
+        Preguntar precio
+      </button>
+      <button class="btn-mayorista btn-solicitar" id="btn-solicitar-articulo" onclick="solicitarArticulo()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16.5 12a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z"/><path d="M3.75 21h16.5M4.5 21V8.25a2.25 2.25 0 012.25-2.25h10.5A2.25 2.25 0 0119.5 8.25V21"/></svg>
+        Solicitar este artículo
+      </button>
+    </div>
   </div>
 </main>
 
@@ -325,6 +357,17 @@
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbykkbNggTWXIKV6EIsuyqqH5N230VSKIuVWlzgROtL5lSx3NUtpBMHidW4TQqoYGuN1nQ/exec";
+
+// ════════════════════════════════════════════════════════
+// MODO MAYORISTA
+// Catálogo tipo "revista" para que una revendedora comparta con
+// sus clientas finales. Sin precios, sin carrito, sin login —
+// solo navegar y solicitar por WhatsApp directo a la revendedora.
+// URL: ?modo=mayorista&rev=NUMERO_WHATSAPP_REVENDEDORA
+// ════════════════════════════════════════════════════════
+const _params = new URLSearchParams(window.location.search);
+const MODO_MAYORISTA = _params.get("modo") === "mayorista";
+const REV_WHATSAPP    = (_params.get("rev") || "").trim();
 
 let COLOR_MAP = {
   "rosa":"#F4C0D1","azul":"#B5D4F4","verde":"#C0DD97","menta":"#9FE1CB",
@@ -561,7 +604,13 @@ function actualizarStockInfo() {
   info.textContent = tallaActual.stock <= 3 ? `¡Solo quedan ${tallaActual.stock} unidades!` : `${tallaActual.stock} unidades disponibles`;
   info.className = "stock-info" + (tallaActual.stock <= 3 ? " bajo" : "");
 }
-function actualizarBtnAgregar() { document.getElementById("btn-agregar").disabled = !tallaActual; }
+function actualizarBtnAgregar() {
+  document.getElementById("btn-agregar").disabled = !tallaActual;
+  const btnPreguntar = document.getElementById("btn-preguntar-precio");
+  const btnSolicitar = document.getElementById("btn-solicitar-articulo");
+  if (btnPreguntar) btnPreguntar.disabled = !tallaActual;
+  if (btnSolicitar) btnSolicitar.disabled = !tallaActual;
+}
 function cambiarCantidad(delta) {
   if (!tallaActual) return;
   cantidadActual = Math.max(1, Math.min(tallaActual.stock, cantidadActual + delta));
@@ -587,6 +636,50 @@ function agregarAlCarrito() {
   mostrarToast(`${detalleActual.nombre} agregado al pedido`);
   volverCatalogo();
 }
+
+// ════════════════════════════════════════════════════════
+// MODO MAYORISTA — botones de WhatsApp
+// Arman un mensaje pre-escrito y abren wa.me hacia el número de
+// la revendedora (tomado de ?rev= en la URL). El cliente final
+// envía el mensaje él mismo desde su propio WhatsApp — no pasa
+// por nuestro backend en ningún momento.
+// ════════════════════════════════════════════════════════
+function datosArticuloActual() {
+  if (!detalleActual || !colorActual || !tallaActual) return null;
+  return {
+    estilo: detalleActual.nombre,
+    marca: marcaActual || "",
+    color: colorActual,
+    talla: tallaActual.talla,
+    idVariante: tallaActual.idVariante,
+  };
+}
+
+function abrirWhatsAppRevendedora(mensaje) {
+  if (!REV_WHATSAPP) {
+    mostrarToast("Este link no tiene un número de revendedora configurado.", true);
+    return;
+  }
+  const url = `https://wa.me/${REV_WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
+  window.open(url, "_blank");
+}
+
+function preguntarPrecio() {
+  const art = datosArticuloActual();
+  if (!art) { mostrarToast("Elegí color y talla primero"); return; }
+  const marcaTxt = art.marca && art.marca !== "Drole" ? `${art.marca} · ` : "";
+  const mensaje = `Hola! Quiero consultar el precio de:\n${art.estilo} - ${marcaTxt}${art.color} - Talla ${art.talla}\n(ID: ${art.idVariante})`;
+  abrirWhatsAppRevendedora(mensaje);
+}
+
+function solicitarArticulo() {
+  const art = datosArticuloActual();
+  if (!art) { mostrarToast("Elegí color y talla primero"); return; }
+  const marcaTxt = art.marca && art.marca !== "Drole" ? `${art.marca} · ` : "";
+  const mensaje = `Hola! Quiero pedir:\n${art.estilo} - ${marcaTxt}${art.color} - Talla ${art.talla}\n(ID: ${art.idVariante})`;
+  abrirWhatsAppRevendedora(mensaje);
+}
+
 function actualizarContadorCarrito() {
   const total = carrito.reduce((s,i) => s + i.cantidad, 0);
   const count = document.getElementById("carrito-count");
@@ -957,10 +1050,17 @@ async function cancelarItem(idPedido, idVariante, nombreItem, wa, cant) {
 }
 
 // ── INICIO ──
-Promise.all([cargarEstadoQuincena(), cargarColores()]).then(() => cargarCatalogo());
-const _sesionInicial = cargarSesion();
-if (_sesionInicial) { document.getElementById("pantalla-auth").style.display = "none"; aplicarSesion(); }
-else { document.getElementById("pantalla-auth").style.display = "flex"; mostrarTab("login"); }
+if (MODO_MAYORISTA) {
+  // Modo mayorista: sin banner de quincena, sin auth, sin sesión.
+  // Solo cargamos colores (para los dots) y el catálogo.
+  document.body.classList.add("modo-mayorista");
+  cargarColores().then(() => cargarCatalogo());
+} else {
+  Promise.all([cargarEstadoQuincena(), cargarColores()]).then(() => cargarCatalogo());
+  const _sesionInicial = cargarSesion();
+  if (_sesionInicial) { document.getElementById("pantalla-auth").style.display = "none"; aplicarSesion(); }
+  else { document.getElementById("pantalla-auth").style.display = "flex"; mostrarTab("login"); }
+}
 
 window.addEventListener("popstate", () => {
   if (document.getElementById("vista-detalle").classList.contains("activa")) {
