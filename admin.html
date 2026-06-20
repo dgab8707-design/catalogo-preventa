@@ -209,26 +209,26 @@
       <div class="form-row">
         <div class="form-grupo">
           <label class="form-label">Estilo</label>
-          <input type="text" id="f-estilo" class="form-input" list="lista-estilos" placeholder="Ej. Vestido Luna">
-          <datalist id="lista-estilos"></datalist>
+          <select id="f-estilo" class="form-select" onchange="manejarSelectNuevo('estilo')"></select>
+          <input type="text" id="f-estilo-nuevo" class="form-input" placeholder="Nuevo estilo..." style="display:none;margin-top:8px">
         </div>
         <div class="form-grupo">
           <label class="form-label">Marca</label>
-          <input type="text" id="f-marca" class="form-input" list="lista-marcas" placeholder="Ej. Drole">
-          <datalist id="lista-marcas"></datalist>
+          <select id="f-marca" class="form-select" onchange="manejarSelectNuevo('marca')"></select>
+          <input type="text" id="f-marca-nuevo" class="form-input" placeholder="Nueva marca..." style="display:none;margin-top:8px">
         </div>
       </div>
 
       <div class="form-row">
         <div class="form-grupo">
           <label class="form-label">Color</label>
-          <input type="text" id="f-color" class="form-input" list="lista-colores" placeholder="Ej. Azul-escolar" oninput="verificarColorNuevo()">
-          <datalist id="lista-colores"></datalist>
+          <select id="f-color" class="form-select" onchange="manejarSelectNuevo('color')"></select>
+          <input type="text" id="f-color-nuevo" class="form-input" placeholder="Nuevo color..." style="display:none;margin-top:8px">
         </div>
         <div class="form-grupo">
           <label class="form-label">Talla</label>
-          <input type="text" id="f-talla" class="form-input" list="lista-tallas" placeholder="Ej. M">
-          <datalist id="lista-tallas"></datalist>
+          <select id="f-talla" class="form-select" onchange="manejarSelectNuevo('talla')"></select>
+          <input type="text" id="f-talla-nuevo" class="form-input" placeholder="Nueva talla..." style="display:none;margin-top:8px">
         </div>
       </div>
 
@@ -238,7 +238,7 @@
           <input type="color" id="f-color-hex-picker" value="#D3D1C7" onchange="document.getElementById('f-color-hex').value=this.value" style="width:44px;height:38px;border:1px solid var(--borde);border-radius:8px;padding:2px;cursor:pointer">
           <input type="text" id="f-color-hex" class="form-input" placeholder="#D3D1C7" style="flex:1" oninput="document.getElementById('f-color-hex-picker').value=this.value">
         </div>
-        <p class="datalist-hint">Este color no existe todavía — elegí el tono que se va a mostrar como punto de color en el catálogo.</p>
+        <p class="datalist-hint">Este color es nuevo — elegí el tono que se va a mostrar como punto de color en el catálogo.</p>
       </div>
 
       <div class="form-row">
@@ -521,6 +521,7 @@ async function actualizarFotos(idVariante, fotoColorUrl, fotoPortadaUrl) {
 // AGREGAR PRODUCTO
 // ════════════════════════════════════════════════════════
 let opcionesCache = { Estilo: [], Marca: [], Color: [], Talla: [] };
+const CAMPO_A_TIPO = { estilo: "Estilo", marca: "Marca", color: "Color", talla: "Talla" };
 
 async function cargarOpciones() {
   try {
@@ -528,34 +529,70 @@ async function cargarOpciones() {
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || "Error");
     opcionesCache = data.opciones;
-    llenarDatalist("lista-estilos", data.opciones.Estilo);
-    llenarDatalist("lista-marcas",  data.opciones.Marca);
-    llenarDatalist("lista-colores", data.opciones.Color);
-    llenarDatalist("lista-tallas",  data.opciones.Talla);
+    llenarSelect("estilo");
+    llenarSelect("marca");
+    llenarSelect("color");
+    llenarSelect("talla");
   } catch (err) {
     mostrarToast("No se pudieron cargar las opciones existentes", true);
   }
 }
 
-// Muestra el selector de hex solo si el color escrito no existe
-// todavía en la lista de colores conocidos (comparación insensible
-// a mayúsculas/minúsculas).
-function verificarColorNuevo() {
-  const valor = document.getElementById("f-color").value.trim().toLowerCase();
-  const wrap  = document.getElementById("f-hex-wrap");
-  if (!valor) { wrap.style.display = "none"; return; }
-  const existe = (opcionesCache.Color || []).some(c => c.toLowerCase() === valor);
-  wrap.style.display = existe ? "none" : "block";
-}
+// Llena un <select> con las opciones existentes + la opción
+// especial "+ Agregar nueva..." al final. Mantiene el valor
+// elegido previamente si todavía existe en la lista (útil al
+// recargar opciones después de agregar un producto).
+function llenarSelect(campo) {
+  const tipo = CAMPO_A_TIPO[campo];
+  const select = document.getElementById(`f-${campo}`);
+  const valorPrevio = select.value;
+  const valores = opcionesCache[tipo] || [];
 
-function llenarDatalist(id, valores) {
-  const dl = document.getElementById(id);
-  dl.innerHTML = "";
-  (valores || []).forEach(v => {
+  select.innerHTML = "";
+  const optVacio = document.createElement("option");
+  optVacio.value = "";
+  optVacio.textContent = `Seleccioná ${tipo.toLowerCase()}...`;
+  select.appendChild(optVacio);
+
+  valores.forEach(v => {
     const opt = document.createElement("option");
     opt.value = v;
-    dl.appendChild(opt);
+    opt.textContent = v;
+    select.appendChild(opt);
   });
+
+  const optNuevo = document.createElement("option");
+  optNuevo.value = "__nuevo__";
+  optNuevo.textContent = "+ Agregar nueva...";
+  select.appendChild(optNuevo);
+
+  if (valorPrevio && valores.includes(valorPrevio)) select.value = valorPrevio;
+}
+
+// Cuando se elige "+ Agregar nueva..." en cualquiera de los 4
+// selects, muestra el campo de texto correspondiente para escribir
+// el valor nuevo. Si se elige otra cosa, oculta el campo de texto.
+// Para Color además controla si se muestra el selector de hex.
+function manejarSelectNuevo(campo) {
+  const select = document.getElementById(`f-${campo}`);
+  const inputNuevo = document.getElementById(`f-${campo}-nuevo`);
+  const esNuevo = select.value === "__nuevo__";
+  inputNuevo.style.display = esNuevo ? "block" : "none";
+  if (esNuevo) { inputNuevo.value = ""; inputNuevo.focus(); }
+
+  if (campo === "color") {
+    document.getElementById("f-hex-wrap").style.display = esNuevo ? "block" : "none";
+  }
+}
+
+// Devuelve el valor final de un campo: si está en modo "nuevo",
+// toma el texto escrito; si no, el valor elegido en el select.
+function valorFinal(campo) {
+  const select = document.getElementById(`f-${campo}`);
+  if (select.value === "__nuevo__") {
+    return document.getElementById(`f-${campo}-nuevo`).value.trim();
+  }
+  return select.value.trim();
 }
 
 function mostrarErrorForm(msg) {
@@ -567,10 +604,10 @@ function mostrarErrorForm(msg) {
 async function agregarProducto() {
   document.getElementById("f-error").style.display = "none";
 
-  const estilo = document.getElementById("f-estilo").value.trim();
-  const marca  = document.getElementById("f-marca").value.trim();
-  const color  = document.getElementById("f-color").value.trim();
-  const talla  = document.getElementById("f-talla").value.trim();
+  const estilo = valorFinal("estilo");
+  const marca  = valorFinal("marca");
+  const color  = valorFinal("color");
+  const talla  = valorFinal("talla");
   const precio = document.getElementById("f-precio").value.trim();
   const stock  = document.getElementById("f-stock").value.trim();
   const fotoColor   = document.getElementById("f-foto-color").value.trim();
@@ -599,15 +636,28 @@ async function agregarProducto() {
     const data = await (await fetch(`${API_URL}?${params}`)).json();
     if (!data.ok) throw new Error(data.error || "No se pudo agregar el producto");
     mostrarToast(`Producto agregado: ${data.id_variante}`);
-    // Limpiar formulario (mantenemos estilo y marca por si se agregan más tallas/colores seguidas)
-    document.getElementById("f-color").value = "";
-    document.getElementById("f-talla").value = "";
+
+    // Limpiar color, talla, stock y fotos (mantenemos estilo y marca
+    // por si se agregan más tallas/colores seguidas del mismo producto).
+    document.getElementById("f-color-nuevo").value = "";
+    document.getElementById("f-color-nuevo").style.display = "none";
+    document.getElementById("f-talla-nuevo").value = "";
+    document.getElementById("f-talla-nuevo").style.display = "none";
     document.getElementById("f-stock").value = "";
     document.getElementById("f-foto-color").value = "";
     document.getElementById("f-foto-portada").value = "";
     document.getElementById("f-color-hex").value = "";
     document.getElementById("f-hex-wrap").style.display = "none";
-    cargarOpciones();
+
+    // Recargar opciones (esto trae el estilo/marca/color/talla nuevos
+    // recién creados) y restaurar estilo/marca como seleccionados,
+    // dejando color/talla en blanco para la siguiente variante.
+    const estiloAnterior = estilo, marcaAnterior = marca;
+    await cargarOpciones();
+    document.getElementById("f-estilo").value = estiloAnterior;
+    document.getElementById("f-marca").value  = marcaAnterior;
+    document.getElementById("f-color").value  = "";
+    document.getElementById("f-talla").value  = "";
   } catch (err) {
     mostrarErrorForm(err.message || "No se pudo agregar el producto");
   } finally {
