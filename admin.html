@@ -177,15 +177,20 @@
     <div class="form-card">
       <p class="form-card-titulo">Cambiar portada de un estilo</p>
       <p style="font-size:13px;color:var(--gris);margin-bottom:14px">
-        Elegí un estilo y después el color que querés que aparezca como portada principal en el catálogo (por ejemplo, al sacar una colección nueva con otro color destacado).
+        Elegí un estilo y pegá la URL de la nueva foto de portada (por ejemplo, una foto combinada con los colores nuevos de la colección). Reemplaza directamente la foto de portada actual de ese estilo.
       </p>
       <div class="form-grupo">
         <label class="form-label">Estilo</label>
-        <select id="portada-estilo" class="form-select" onchange="cargarVariantesParaPortada()"></select>
+        <select id="portada-estilo" class="form-select" onchange="cargarInfoPortada()"></select>
       </div>
-      <div id="portada-variantes-wrap" style="display:none">
-        <label class="form-label">Elegí el color para la portada</label>
-        <div id="portada-variantes-lista" style="display:flex;flex-direction:column;gap:8px;margin-top:8px"></div>
+      <div id="portada-info-wrap" style="display:none">
+        <div id="portada-preview-wrap" style="margin-bottom:14px"></div>
+        <div class="form-grupo">
+          <label class="form-label">URL Drive — nueva foto de portada</label>
+          <input type="text" id="portada-url-nueva" class="form-input" placeholder="https://drive.google.com/...">
+          <p class="datalist-hint">Pegá el link para compartir de Google Drive. Se convierte automáticamente, igual que las demás fotos.</p>
+        </div>
+        <button class="btn btn-rosa" id="btn-guardar-portada" onclick="guardarNuevaPortada()">Actualizar portada</button>
       </div>
       <p id="portada-msg" style="font-size:13px;margin-top:12px;display:none"></p>
     </div>
@@ -402,7 +407,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbxYaCJWJ2ZHMZPUBOg1G54z6pvFIv6x4UGsx5v9LQ-knxTy_eh1YvXjaFvnE2vju0372A/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzod0krWHoRdud3iHb0IS-w0asgDkUFFHyEF0Mz6DfcWLi6RvKkxunEX2EqtgSKcaoqDg/exec";
 
 // ════════════════════════════════════════════════════════
 // NAVEGACIÓN DE TABS
@@ -478,7 +483,12 @@ async function cargarInventario() {
 
 // ════════════════════════════════════════════════════════
 // CAMBIAR PORTADA DE ESTILO
+// Busca en qué celda está alojada la foto de portada actual del
+// estilo elegido, y permite reemplazar directamente esa URL —
+// sin mover la portada a otro color/fila.
 // ════════════════════════════════════════════════════════
+let portadaInfoActual = null;
+
 function poblarSelectEstilosPortada() {
   const select = document.getElementById("portada-estilo");
   const valorPrevio = select.value;
@@ -495,62 +505,72 @@ function poblarSelectEstilosPortada() {
   if (valorPrevio && estilosUnicos.includes(valorPrevio)) select.value = valorPrevio;
 }
 
-async function cargarVariantesParaPortada() {
+async function cargarInfoPortada() {
   const estilo = document.getElementById("portada-estilo").value;
-  const wrap = document.getElementById("portada-variantes-wrap");
-  const lista = document.getElementById("portada-variantes-lista");
+  const wrap = document.getElementById("portada-info-wrap");
+  const previewWrap = document.getElementById("portada-preview-wrap");
   document.getElementById("portada-msg").style.display = "none";
+  document.getElementById("portada-url-nueva").value = "";
 
-  if (!estilo) { wrap.style.display = "none"; return; }
+  if (!estilo) { wrap.style.display = "none"; portadaInfoActual = null; return; }
 
-  lista.innerHTML = `<p style="font-size:13px;color:var(--gris)">Cargando colores...</p>`;
+  previewWrap.innerHTML = `<p style="font-size:13px;color:var(--gris)">Buscando portada actual...</p>`;
   wrap.style.display = "block";
 
   try {
-    const params = new URLSearchParams({ action: "admin_variantes_por_estilo", estilo });
+    const params = new URLSearchParams({ action: "admin_portada_info", estilo });
     const data = await (await fetch(`${API_URL}?${params}`)).json();
     if (!data.ok) throw new Error(data.error || "Error");
 
-    if (data.variantes.length === 0) {
-      lista.innerHTML = `<p style="font-size:13px;color:var(--gris)">Este estilo no tiene variantes cargadas.</p>`;
+    if (!data.existe) {
+      previewWrap.innerHTML = `<p style="font-size:13px;color:var(--rojo)">Este estilo no tiene variantes cargadas.</p>`;
+      portadaInfoActual = null;
       return;
     }
 
-    lista.innerHTML = "";
-    data.variantes.forEach(v => {
-      const div = document.createElement("div");
-      div.style.cssText = "display:flex;align-items:center;justify-content:space-between;border:1.5px solid var(--borde);border-radius:8px;padding:10px 14px";
-      const marcaTxt = v.marca && v.marca !== "Drole" ? `${v.marca} · ` : "";
-      div.innerHTML = `
-        <span style="font-size:13px">${marcaTxt}${v.color}${v.es_portada_actual ? ' <span class="badge badge-activo">Portada actual</span>' : ""}</span>
-        <button class="btn ${v.es_portada_actual ? "btn-borde" : "btn-rosa"} btn-sm" ${v.es_portada_actual ? "disabled" : ""} onclick="aplicarCambioPortada('${estilo.replace(/'/g, "\\'")}', '${v.id_variante}')">
-          ${v.es_portada_actual ? "Ya es portada" : "Usar como portada"}
-        </button>`;
-      lista.appendChild(div);
-    });
+    portadaInfoActual = data;
+
+    if (data.tiene_portada && data.foto_portada_actual) {
+      previewWrap.innerHTML = `
+        <p class="form-label" style="margin-bottom:8px">Portada actual</p>
+        <img src="${data.foto_portada_actual}" alt="Portada actual" style="width:100%;max-width:240px;border-radius:10px;border:1px solid var(--borde);display:block" onerror="this.style.display='none'">
+      `;
+    } else {
+      previewWrap.innerHTML = `<p style="font-size:13px;color:var(--gris)">Este estilo todavía no tiene foto de portada. Se va a guardar en la variante <strong>${data.color}</strong>.</p>`;
+    }
   } catch (err) {
-    lista.innerHTML = `<p style="font-size:13px;color:var(--rojo)">No se pudieron cargar los colores de este estilo.</p>`;
+    previewWrap.innerHTML = `<p style="font-size:13px;color:var(--rojo)">No se pudo cargar la información de portada.</p>`;
+    portadaInfoActual = null;
   }
 }
 
-async function aplicarCambioPortada(estilo, idVariante) {
-  const confirmado = confirm("¿Cambiar la portada de este estilo a este color? La portada anterior dejará de mostrarse.");
-  if (!confirmado) return;
+async function guardarNuevaPortada() {
+  if (!portadaInfoActual) { mostrarToast("Elegí un estilo primero", true); return; }
+  const urlNueva = document.getElementById("portada-url-nueva").value.trim();
+  if (!urlNueva) { mostrarToast("Pegá la URL de la nueva foto", true); return; }
 
   const msgEl = document.getElementById("portada-msg");
+  const btn = document.getElementById("btn-guardar-portada");
+  btn.disabled = true; btn.textContent = "Guardando...";
   try {
-    const params = new URLSearchParams({ action: "admin_cambiar_portada", estilo, id_variante: idVariante });
+    const params = new URLSearchParams({
+      action: "admin_portada_actualizar",
+      id_variante: portadaInfoActual.id_variante,
+      url_portada: urlNueva,
+    });
     const data = await (await fetch(`${API_URL}?${params}`)).json();
-    if (!data.ok) throw new Error(data.error || "No se pudo cambiar la portada");
+    if (!data.ok) throw new Error(data.error || "No se pudo actualizar la portada");
     mostrarToast("Portada actualizada correctamente");
     msgEl.textContent = "Listo — la nueva portada ya está activa en el catálogo.";
     msgEl.style.color = "var(--verde)";
     msgEl.style.display = "block";
-    cargarVariantesParaPortada(); // refresca para mostrar cuál quedó como portada actual
+    cargarInfoPortada(); // refresca el preview con la nueva imagen
   } catch (err) {
-    msgEl.textContent = err.message || "Ocurrió un error al cambiar la portada.";
+    msgEl.textContent = err.message || "Ocurrió un error al actualizar la portada.";
     msgEl.style.color = "var(--rojo)";
     msgEl.style.display = "block";
+  } finally {
+    btn.disabled = false; btn.textContent = "Actualizar portada";
   }
 }
 
