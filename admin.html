@@ -175,7 +175,10 @@
     <p class="seccion-sub">Reabastecé stock, activá o desactivá variantes y actualizá fotos. En "Ajustar stock" usá números positivos para entradas (ej. <strong>+10</strong> al recibir mercadería) y negativos para salidas (ej. <strong>-2</strong> por una venta en tienda física u otra vía).</p>
 
     <div class="form-card">
-      <p class="form-card-titulo">Cambiar portada de un estilo</p>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+        <p class="form-card-titulo">Cambiar portada de un estilo</p>
+        <button class="btn btn-borde btn-sm" id="btn-cerrar-portada" onclick="cerrarSeccionPortada()" style="display:none;flex-shrink:0">Cerrar</button>
+      </div>
       <p style="font-size:13px;color:var(--gris);margin-bottom:14px">
         Elegí un estilo y pegá la URL de la nueva foto de portada (por ejemplo, una foto combinada con los colores nuevos de la colección). Reemplaza directamente la foto de portada actual de ese estilo.
       </p>
@@ -196,7 +199,7 @@
     </div>
 
     <div class="filtros-bar">
-      <input type="text" id="inv-buscar" class="form-input" placeholder="Buscar por estilo, marca o color..." oninput="filtrarInventario()">
+      <input type="text" id="inv-buscar" class="form-input" placeholder="Buscar por estilo, marca, color, talla o código..." oninput="filtrarInventario()">
       <button class="btn btn-borde btn-sm" onclick="cargarInventario()">↻ Recargar</button>
     </div>
     <div id="inv-cargando" class="empty-state"><div class="spinner"></div>Cargando inventario...</div>
@@ -407,7 +410,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbzod0krWHoRdud3iHb0IS-w0asgDkUFFHyEF0Mz6DfcWLi6RvKkxunEX2EqtgSKcaoqDg/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyG2RMDRb8I4B2TJmuJBb2avpLZDndQ9BXK9FvBlpXp1bZMzRKmPCAGukdeT-cgSMgwUg/exec";
 
 // ════════════════════════════════════════════════════════
 // NAVEGACIÓN DE TABS
@@ -509,13 +512,15 @@ async function cargarInfoPortada() {
   const estilo = document.getElementById("portada-estilo").value;
   const wrap = document.getElementById("portada-info-wrap");
   const previewWrap = document.getElementById("portada-preview-wrap");
+  const btnCerrar = document.getElementById("btn-cerrar-portada");
   document.getElementById("portada-msg").style.display = "none";
   document.getElementById("portada-url-nueva").value = "";
 
-  if (!estilo) { wrap.style.display = "none"; portadaInfoActual = null; return; }
+  if (!estilo) { wrap.style.display = "none"; btnCerrar.style.display = "none"; portadaInfoActual = null; return; }
 
   previewWrap.innerHTML = `<p style="font-size:13px;color:var(--gris)">Buscando portada actual...</p>`;
   wrap.style.display = "block";
+  btnCerrar.style.display = "inline-block";
 
   try {
     const params = new URLSearchParams({ action: "admin_portada_info", estilo });
@@ -542,6 +547,14 @@ async function cargarInfoPortada() {
     previewWrap.innerHTML = `<p style="font-size:13px;color:var(--rojo)">No se pudo cargar la información de portada.</p>`;
     portadaInfoActual = null;
   }
+}
+
+function cerrarSeccionPortada() {
+  document.getElementById("portada-info-wrap").style.display = "none";
+  document.getElementById("btn-cerrar-portada").style.display = "none";
+  document.getElementById("portada-estilo").value = "";
+  document.getElementById("portada-msg").style.display = "none";
+  portadaInfoActual = null;
 }
 
 async function guardarNuevaPortada() {
@@ -578,9 +591,11 @@ function filtrarInventario() {
   const q = document.getElementById("inv-buscar").value.trim().toLowerCase();
   if (!q) { renderInventario(inventarioCache); return; }
   const filtrado = inventarioCache.filter(item =>
-    (item.estilo || "").toLowerCase().includes(q) ||
-    (item.marca  || "").toLowerCase().includes(q) ||
-    (item.color  || "").toLowerCase().includes(q)
+    (item.estilo      || "").toLowerCase().includes(q) ||
+    (item.marca       || "").toLowerCase().includes(q) ||
+    (item.color       || "").toLowerCase().includes(q) ||
+    (item.talla       || "").toLowerCase().includes(q) ||
+    (item.id_variante || "").toLowerCase().includes(q)
   );
   renderInventario(filtrado);
 }
@@ -652,7 +667,10 @@ async function ajustarStock(idVariante) {
     mostrarToast(data.mensaje);
     input.value = "";
     const item = inventarioCache.find(i => i.id_variante === idVariante);
-    if (item) item.stock_disponible = data.stock_nuevo;
+    if (item) {
+      item.stock_disponible = data.stock_nuevo;
+      item.activo = data.activo; // sincroniza el toggle visual con el estado real (auto on/off según stock)
+    }
     filtrarInventario();
   } catch (err) {
     mostrarToast(err.message || "No se pudo ajustar el stock", true);
