@@ -363,6 +363,7 @@
           <tr>
             <th>Nombre</th>
             <th>WhatsApp</th>
+            <th>PIN</th>
             <th>Registrado</th>
             <th>Acción</th>
           </tr>
@@ -990,7 +991,8 @@ function filtrarClientes() {
   if (!q) { renderClientes(clientesCache); return; }
   const filtrado = clientesCache.filter(c =>
     (c.nombre || "").toLowerCase().includes(q) ||
-    (c.wa     || "").toLowerCase().includes(q)
+    (c.wa     || "").toLowerCase().includes(q) ||
+    (String(c.pin || "")).includes(q)
   );
   renderClientes(filtrado);
 }
@@ -1003,11 +1005,19 @@ function renderClientes(clientes) {
     tr.innerHTML = `
       <td>${c.nombre || "—"}</td>
       <td>${c.wa}</td>
-      <td>${c.fecha_reg || "—"}</td>
+      <td><span style="font-family:monospace;font-weight:600;letter-spacing:0.1em;background:var(--crema);padding:3px 8px;border-radius:6px">${c.pin || "—"}</span></td>
+      <td>${formatoFechaCliente(c.fecha_reg)}</td>
       <td><button class="btn btn-borde btn-sm" onclick='abrirEditarCliente(${JSON.stringify(c).replace(/'/g, "&apos;")})'>Editar</button></td>
     `;
     tbody.appendChild(tr);
   });
+}
+
+function formatoFechaCliente(fecha) {
+  if (!fecha) return "—";
+  const d = new Date(fecha);
+  if (isNaN(d.getTime())) return fecha; // si no es una fecha parseable, mostrar tal cual
+  return d.toLocaleDateString("es-CR", { day: "numeric", month: "short", year: "numeric" });
 }
 
 let clienteEnEdicion = null;
