@@ -591,11 +591,11 @@ function filtrarInventario() {
   const q = document.getElementById("inv-buscar").value.trim().toLowerCase();
   if (!q) { renderInventario(inventarioCache); return; }
   const filtrado = inventarioCache.filter(item =>
-    (item.estilo      || "").toLowerCase().includes(q) ||
-    (item.marca       || "").toLowerCase().includes(q) ||
-    (item.color       || "").toLowerCase().includes(q) ||
-    (item.talla       || "").toLowerCase().includes(q) ||
-    (item.id_variante || "").toLowerCase().includes(q)
+    String(item.estilo      ?? "").toLowerCase().includes(q) ||
+    String(item.marca       ?? "").toLowerCase().includes(q) ||
+    String(item.color       ?? "").toLowerCase().includes(q) ||
+    String(item.talla       ?? "").toLowerCase().includes(q) ||
+    String(item.id_variante ?? "").toLowerCase().includes(q)
   );
   renderInventario(filtrado);
 }
