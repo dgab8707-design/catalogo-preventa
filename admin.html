@@ -140,6 +140,7 @@
     <button class="tab-btn" data-vista="inventario" onclick="cambiarVista('inventario')">Inventario</button>
     <button class="tab-btn" data-vista="agregar" onclick="cambiarVista('agregar')">Agregar producto</button>
     <button class="tab-btn" data-vista="quincena" onclick="cambiarVista('quincena')">Quincena</button>
+    <button class="tab-btn" data-vista="clientes" onclick="cambiarVista('clientes')">Clientes</button>
   </div>
 </nav>
 
@@ -172,6 +173,23 @@
   <div class="vista" id="vista-inventario">
     <p class="seccion-titulo">Inventario</p>
     <p class="seccion-sub">Reabastecé stock, activá o desactivá variantes y actualizá fotos. En "Ajustar stock" usá números positivos para entradas (ej. <strong>+10</strong> al recibir mercadería) y negativos para salidas (ej. <strong>-2</strong> por una venta en tienda física u otra vía).</p>
+
+    <div class="form-card">
+      <p class="form-card-titulo">Cambiar portada de un estilo</p>
+      <p style="font-size:13px;color:var(--gris);margin-bottom:14px">
+        Elegí un estilo y después el color que querés que aparezca como portada principal en el catálogo (por ejemplo, al sacar una colección nueva con otro color destacado).
+      </p>
+      <div class="form-grupo">
+        <label class="form-label">Estilo</label>
+        <select id="portada-estilo" class="form-select" onchange="cargarVariantesParaPortada()"></select>
+      </div>
+      <div id="portada-variantes-wrap" style="display:none">
+        <label class="form-label">Elegí el color para la portada</label>
+        <div id="portada-variantes-lista" style="display:flex;flex-direction:column;gap:8px;margin-top:8px"></div>
+      </div>
+      <p id="portada-msg" style="font-size:13px;margin-top:12px;display:none"></p>
+    </div>
+
     <div class="filtros-bar">
       <input type="text" id="inv-buscar" class="form-input" placeholder="Buscar por estilo, marca o color..." oninput="filtrarInventario()">
       <button class="btn btn-borde btn-sm" onclick="cargarInventario()">↻ Recargar</button>
@@ -329,12 +347,61 @@
       <p id="reset-msg" style="font-size:13px;margin-top:14px;display:none"></p>
     </div>
   </div>
+
+  <!-- ═══════════ VISTA: CLIENTES ═══════════ -->
+  <div class="vista" id="vista-clientes">
+    <p class="seccion-titulo">Clientes</p>
+    <p class="seccion-sub">Corregí nombre, número de WhatsApp o PIN cuando una clienta lo necesite.</p>
+    <div class="filtros-bar">
+      <input type="text" id="cli-buscar" class="form-input" placeholder="Buscar por nombre o WhatsApp..." oninput="filtrarClientes()">
+      <button class="btn btn-borde btn-sm" onclick="cargarClientes()">↻ Recargar</button>
+    </div>
+    <div id="cli-cargando" class="empty-state"><div class="spinner"></div>Cargando clientes...</div>
+    <div id="cli-tabla-wrap" class="tabla-wrap" style="display:none">
+      <table class="inv-tabla">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>WhatsApp</th>
+            <th>Registrado</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody id="cli-tabla-body"></tbody>
+      </table>
+    </div>
+    <div id="cli-vacio" class="empty-state" style="display:none">No hay clientes registrados todavía.</div>
+  </div>
 </main>
+
+<!-- ═══════════ MODAL: EDITAR CLIENTE ═══════════ -->
+<div class="overlay" id="overlay-editar-cliente" onclick="cerrarEditarCliente()" style="display:none"></div>
+<div class="form-card" id="modal-editar-cliente" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:301;width:90%;max-width:380px;margin:0">
+  <p class="form-card-titulo">Editar cliente</p>
+  <div class="form-grupo">
+    <label class="form-label">Nombre</label>
+    <input type="text" id="edit-cli-nombre" class="form-input">
+  </div>
+  <div class="form-grupo">
+    <label class="form-label">WhatsApp (con código de país, sin +)</label>
+    <input type="text" id="edit-cli-wa" class="form-input" placeholder="50688887777">
+    <p class="datalist-hint">Si cambiás el número, los pedidos ya registrados con el número anterior no se actualizan automáticamente.</p>
+  </div>
+  <div class="form-grupo">
+    <label class="form-label">Nuevo PIN (dejar vacío para no cambiarlo)</label>
+    <input type="text" id="edit-cli-pin" class="form-input" maxlength="4" inputmode="numeric" placeholder="••••">
+  </div>
+  <p id="edit-cli-error" style="color:var(--rojo);font-size:13px;margin-bottom:10px;display:none"></p>
+  <div style="display:flex;gap:10px">
+    <button class="btn btn-borde" style="flex:1" onclick="cerrarEditarCliente()">Cancelar</button>
+    <button class="btn btn-rosa" style="flex:1" id="btn-guardar-cliente" onclick="guardarEdicionCliente()">Guardar</button>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbykkbNggTWXIKV6EIsuyqqH5N230VSKIuVWlzgROtL5lSx3NUtpBMHidW4TQqoYGuN1nQ/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxYaCJWJ2ZHMZPUBOg1G54z6pvFIv6x4UGsx5v9LQ-knxTy_eh1YvXjaFvnE2vju0372A/exec";
 
 // ════════════════════════════════════════════════════════
 // NAVEGACIÓN DE TABS
@@ -346,6 +413,7 @@ function cambiarVista(vista) {
   if (vista === "inventario")  cargarInventario();
   if (vista === "agregar")     cargarOpciones();
   if (vista === "quincena")    { cargarConfig(); cargarEstadoTrigger(); }
+  if (vista === "clientes")    cargarClientes();
 }
 
 function mostrarToast(msg, esError) {
@@ -400,9 +468,88 @@ async function cargarInventario() {
       document.getElementById("inv-tabla-wrap").style.display = "block";
       renderInventario(inventarioCache);
     }
+    poblarSelectEstilosPortada();
   } catch (err) {
     document.getElementById("inv-cargando").innerHTML = "No se pudo cargar el inventario.";
     mostrarToast("Error al cargar el inventario", true);
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// CAMBIAR PORTADA DE ESTILO
+// ════════════════════════════════════════════════════════
+function poblarSelectEstilosPortada() {
+  const select = document.getElementById("portada-estilo");
+  const valorPrevio = select.value;
+  const estilosUnicos = [...new Set(inventarioCache.map(i => i.estilo))].sort();
+
+  select.innerHTML = `<option value="">Seleccioná un estilo...</option>`;
+  estilosUnicos.forEach(e => {
+    const opt = document.createElement("option");
+    opt.value = e;
+    opt.textContent = e;
+    select.appendChild(opt);
+  });
+
+  if (valorPrevio && estilosUnicos.includes(valorPrevio)) select.value = valorPrevio;
+}
+
+async function cargarVariantesParaPortada() {
+  const estilo = document.getElementById("portada-estilo").value;
+  const wrap = document.getElementById("portada-variantes-wrap");
+  const lista = document.getElementById("portada-variantes-lista");
+  document.getElementById("portada-msg").style.display = "none";
+
+  if (!estilo) { wrap.style.display = "none"; return; }
+
+  lista.innerHTML = `<p style="font-size:13px;color:var(--gris)">Cargando colores...</p>`;
+  wrap.style.display = "block";
+
+  try {
+    const params = new URLSearchParams({ action: "admin_variantes_por_estilo", estilo });
+    const data = await (await fetch(`${API_URL}?${params}`)).json();
+    if (!data.ok) throw new Error(data.error || "Error");
+
+    if (data.variantes.length === 0) {
+      lista.innerHTML = `<p style="font-size:13px;color:var(--gris)">Este estilo no tiene variantes cargadas.</p>`;
+      return;
+    }
+
+    lista.innerHTML = "";
+    data.variantes.forEach(v => {
+      const div = document.createElement("div");
+      div.style.cssText = "display:flex;align-items:center;justify-content:space-between;border:1.5px solid var(--borde);border-radius:8px;padding:10px 14px";
+      const marcaTxt = v.marca && v.marca !== "Drole" ? `${v.marca} · ` : "";
+      div.innerHTML = `
+        <span style="font-size:13px">${marcaTxt}${v.color}${v.es_portada_actual ? ' <span class="badge badge-activo">Portada actual</span>' : ""}</span>
+        <button class="btn ${v.es_portada_actual ? "btn-borde" : "btn-rosa"} btn-sm" ${v.es_portada_actual ? "disabled" : ""} onclick="aplicarCambioPortada('${estilo.replace(/'/g, "\\'")}', '${v.id_variante}')">
+          ${v.es_portada_actual ? "Ya es portada" : "Usar como portada"}
+        </button>`;
+      lista.appendChild(div);
+    });
+  } catch (err) {
+    lista.innerHTML = `<p style="font-size:13px;color:var(--rojo)">No se pudieron cargar los colores de este estilo.</p>`;
+  }
+}
+
+async function aplicarCambioPortada(estilo, idVariante) {
+  const confirmado = confirm("¿Cambiar la portada de este estilo a este color? La portada anterior dejará de mostrarse.");
+  if (!confirmado) return;
+
+  const msgEl = document.getElementById("portada-msg");
+  try {
+    const params = new URLSearchParams({ action: "admin_cambiar_portada", estilo, id_variante: idVariante });
+    const data = await (await fetch(`${API_URL}?${params}`)).json();
+    if (!data.ok) throw new Error(data.error || "No se pudo cambiar la portada");
+    mostrarToast("Portada actualizada correctamente");
+    msgEl.textContent = "Listo — la nueva portada ya está activa en el catálogo.";
+    msgEl.style.color = "var(--verde)";
+    msgEl.style.display = "block";
+    cargarVariantesParaPortada(); // refresca para mostrar cuál quedó como portada actual
+  } catch (err) {
+    msgEl.textContent = err.message || "Ocurrió un error al cambiar la portada.";
+    msgEl.style.color = "var(--rojo)";
+    msgEl.style.display = "block";
   }
 }
 
@@ -808,6 +955,114 @@ async function cancelarTrigger() {
     mostrarToast(err.message || "No se pudo desactivar", true);
   } finally {
     btn.disabled = false; btn.textContent = "Desactivar reset automático";
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// CLIENTES
+// ════════════════════════════════════════════════════════
+let clientesCache = [];
+
+async function cargarClientes() {
+  document.getElementById("cli-cargando").style.display = "block";
+  document.getElementById("cli-tabla-wrap").style.display = "none";
+  document.getElementById("cli-vacio").style.display = "none";
+  try {
+    const res = await fetch(`${API_URL}?action=admin_clientes`);
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || "Error");
+    clientesCache = data.clientes;
+    document.getElementById("cli-cargando").style.display = "none";
+    if (clientesCache.length === 0) {
+      document.getElementById("cli-vacio").style.display = "block";
+    } else {
+      document.getElementById("cli-tabla-wrap").style.display = "block";
+      renderClientes(clientesCache);
+    }
+  } catch (err) {
+    document.getElementById("cli-cargando").innerHTML = "No se pudieron cargar los clientes.";
+    mostrarToast("Error al cargar clientes", true);
+  }
+}
+
+function filtrarClientes() {
+  const q = document.getElementById("cli-buscar").value.trim().toLowerCase();
+  if (!q) { renderClientes(clientesCache); return; }
+  const filtrado = clientesCache.filter(c =>
+    (c.nombre || "").toLowerCase().includes(q) ||
+    (c.wa     || "").toLowerCase().includes(q)
+  );
+  renderClientes(filtrado);
+}
+
+function renderClientes(clientes) {
+  const tbody = document.getElementById("cli-tabla-body");
+  tbody.innerHTML = "";
+  clientes.forEach(c => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${c.nombre || "—"}</td>
+      <td>${c.wa}</td>
+      <td>${c.fecha_reg || "—"}</td>
+      <td><button class="btn btn-borde btn-sm" onclick='abrirEditarCliente(${JSON.stringify(c).replace(/'/g, "&apos;")})'>Editar</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+let clienteEnEdicion = null;
+
+function abrirEditarCliente(cliente) {
+  clienteEnEdicion = cliente;
+  document.getElementById("edit-cli-nombre").value = cliente.nombre || "";
+  document.getElementById("edit-cli-wa").value = cliente.wa || "";
+  document.getElementById("edit-cli-pin").value = "";
+  document.getElementById("edit-cli-error").style.display = "none";
+  document.getElementById("overlay-editar-cliente").style.display = "block";
+  document.getElementById("modal-editar-cliente").style.display = "block";
+}
+
+function cerrarEditarCliente() {
+  clienteEnEdicion = null;
+  document.getElementById("overlay-editar-cliente").style.display = "none";
+  document.getElementById("modal-editar-cliente").style.display = "none";
+}
+
+async function guardarEdicionCliente() {
+  if (!clienteEnEdicion) return;
+  const errEl = document.getElementById("edit-cli-error");
+  errEl.style.display = "none";
+
+  const nombre = document.getElementById("edit-cli-nombre").value.trim();
+  const waNuevo = document.getElementById("edit-cli-wa").value.trim();
+  const pin = document.getElementById("edit-cli-pin").value.trim();
+
+  if (!nombre) { errEl.textContent = "El nombre no puede quedar vacío."; errEl.style.display = "block"; return; }
+  if (!waNuevo) { errEl.textContent = "El WhatsApp no puede quedar vacío."; errEl.style.display = "block"; return; }
+  if (pin && (pin.length !== 4 || !/^\d{4}$/.test(pin))) {
+    errEl.textContent = "El PIN debe ser de 4 dígitos.";
+    errEl.style.display = "block";
+    return;
+  }
+
+  const btn = document.getElementById("btn-guardar-cliente");
+  btn.disabled = true; btn.textContent = "Guardando...";
+  try {
+    const params = new URLSearchParams({
+      action: "admin_cliente_editar",
+      wa_actual: clienteEnEdicion.wa,
+      nombre, wa_nuevo: waNuevo, pin,
+    });
+    const data = await (await fetch(`${API_URL}?${params}`)).json();
+    if (!data.ok) throw new Error(data.error || "No se pudo actualizar el cliente");
+    mostrarToast("Cliente actualizado correctamente");
+    cerrarEditarCliente();
+    cargarClientes();
+  } catch (err) {
+    errEl.textContent = err.message || "Ocurrió un error al guardar.";
+    errEl.style.display = "block";
+  } finally {
+    btn.disabled = false; btn.textContent = "Guardar";
   }
 }
 
