@@ -281,13 +281,13 @@
       <div class="form-grupo">
         <label class="form-label">URL Drive — foto del color</label>
         <input type="text" id="f-foto-color" class="form-input" placeholder="https://drive.google.com/...">
-        <p class="datalist-hint">Pegá el link para compartir de Google Drive. Se convierte automáticamente.</p>
+        <p class="datalist-hint">Pegá el link para compartir de Google Drive. Esta foto se usa para todas las tallas de este color — si ya existe una foto para este Estilo+Color, se reemplaza.</p>
       </div>
 
       <div class="form-grupo">
-        <label class="form-label">URL Drive — foto de portada (opcional)</label>
+        <label class="form-label">URL Drive — foto de portada del estilo (opcional)</label>
         <input type="text" id="f-foto-portada" class="form-input" placeholder="https://drive.google.com/...">
-        <p class="datalist-hint">Solo necesaria si esta variante representa la portada del estilo en el catálogo.</p>
+        <p class="datalist-hint">Es la portada de todo el estilo en el catálogo, independiente del color/talla. Si ya existe una portada para este estilo, se reemplaza.</p>
       </div>
 
       <p id="f-error" style="color:var(--rojo);font-size:13px;margin-bottom:10px;display:none"></p>
@@ -410,7 +410,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbyG2RMDRb8I4B2TJmuJBb2avpLZDndQ9BXK9FvBlpXp1bZMzRKmPCAGukdeT-cgSMgwUg/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzq19GS0-PVLKOxt2zmWErDEoIqS1niTpEuWerLVOxXdkwExWyc-fPBXEUWqgN9-84MYg/exec";
 
 // ════════════════════════════════════════════════════════
 // NAVEGACIÓN DE TABS
@@ -541,7 +541,7 @@ async function cargarInfoPortada() {
         <img src="${data.foto_portada_actual}" alt="Portada actual" style="width:100%;max-width:240px;border-radius:10px;border:1px solid var(--borde);display:block" onerror="this.style.display='none'">
       `;
     } else {
-      previewWrap.innerHTML = `<p style="font-size:13px;color:var(--gris)">Este estilo todavía no tiene foto de portada. Se va a guardar en la variante <strong>${data.color}</strong>.</p>`;
+      previewWrap.innerHTML = `<p style="font-size:13px;color:var(--gris)">Este estilo todavía no tiene foto de portada.</p>`;
     }
   } catch (err) {
     previewWrap.innerHTML = `<p style="font-size:13px;color:var(--rojo)">No se pudo cargar la información de portada.</p>`;
@@ -558,7 +558,8 @@ function cerrarSeccionPortada() {
 }
 
 async function guardarNuevaPortada() {
-  if (!portadaInfoActual) { mostrarToast("Elegí un estilo primero", true); return; }
+  const estilo = document.getElementById("portada-estilo").value;
+  if (!estilo || !portadaInfoActual) { mostrarToast("Elegí un estilo primero", true); return; }
   const urlNueva = document.getElementById("portada-url-nueva").value.trim();
   if (!urlNueva) { mostrarToast("Pegá la URL de la nueva foto", true); return; }
 
@@ -568,7 +569,7 @@ async function guardarNuevaPortada() {
   try {
     const params = new URLSearchParams({
       action: "admin_portada_actualizar",
-      id_variante: portadaInfoActual.id_variante,
+      estilo,
       url_portada: urlNueva,
     });
     const data = await (await fetch(`${API_URL}?${params}`)).json();
@@ -631,7 +632,7 @@ function renderInventario(items) {
         </div>
       </td>
       <td>
-        <button class="btn btn-borde btn-sm" onclick="abrirEdicionFotos('${item.id_variante}', '${(item.foto_color_url||'').replace(/'/g,"\\'")}', '${(item.foto_portada_url||'').replace(/'/g,"\\'")}')">Editar</button>
+        <button class="btn btn-borde btn-sm" onclick="abrirEdicionFotos('${item.estilo.toString().replace(/'/g,"\\'")}', '${item.color.toString().replace(/'/g,"\\'")}', '${(item.foto_color_url||'').replace(/'/g,"\\'")}', '${(item.foto_portada_url||'').replace(/'/g,"\\'")}')">Editar</button>
       </td>
     `;
     tbody.appendChild(tr);
@@ -677,27 +678,36 @@ async function ajustarStock(idVariante) {
   }
 }
 
-function abrirEdicionFotos(idVariante, fotoColorActual, fotoPortadaActual) {
-  const nuevoColor = prompt("URL Drive — foto del color:", fotoColorActual || "");
+function abrirEdicionFotos(estilo, color, fotoColorActual, fotoPortadaActual) {
+  const nuevoColor = prompt(`URL Drive — foto del color "${color}" (afecta a TODAS las tallas de este color):`, fotoColorActual || "");
   if (nuevoColor === null) return;
-  const nuevoPortada = prompt("URL Drive — foto de portada (dejar igual si no aplica):", fotoPortadaActual || "");
+  const nuevoPortada = prompt(`URL Drive — foto de portada del estilo "${estilo}" (dejar igual si no aplica):`, fotoPortadaActual || "");
   if (nuevoPortada === null) return;
-  actualizarFotos(idVariante, nuevoColor, nuevoPortada);
+  actualizarFotos(estilo, color, nuevoColor, nuevoPortada);
 }
 
-async function actualizarFotos(idVariante, fotoColorUrl, fotoPortadaUrl) {
+async function actualizarFotos(estilo, color, fotoColorUrl, fotoPortadaUrl) {
   try {
     const params = new URLSearchParams({
       action: "admin_actualizar_fotos",
-      id_variante: idVariante,
+      estilo, color,
       foto_color_url: fotoColorUrl || "",
       foto_portada_url: fotoPortadaUrl || "",
     });
     const data = await (await fetch(`${API_URL}?${params}`)).json();
     if (!data.ok) throw new Error(data.error || "Error");
     mostrarToast("Fotos actualizadas");
-    const item = inventarioCache.find(i => i.id_variante === idVariante);
-    if (item) { item.foto_color_url = fotoColorUrl; item.foto_portada_url = fotoPortadaUrl; }
+    // Actualiza en caché todas las filas que compartan Estilo+Color
+    // (todas sus tallas), ya que la foto ahora es una sola por color.
+    inventarioCache.forEach(item => {
+      if (item.estilo === estilo && item.color === color && fotoColorUrl) {
+        item.foto_color_url = fotoColorUrl;
+      }
+      if (item.estilo === estilo && fotoPortadaUrl) {
+        item.foto_portada_url = fotoPortadaUrl;
+      }
+    });
+    filtrarInventario();
   } catch (err) {
     mostrarToast(err.message || "No se pudieron actualizar las fotos", true);
   }
