@@ -491,20 +491,55 @@ function limpiarBusqueda() {
 // ════════════════════════════════════════════════════════
 async function toggleQR() {
   if (qrActivo) { cerrarQR(); return; }
-  const wrap = document.getElementById("qr-reader-wrap");
+
+  // Asegurar que cualquier stream previo esté cerrado
+  if (qrStream) {
+    qrStream.getTracks().forEach(t => t.stop());
+    qrStream = null;
+  }
+
+  const wrap  = document.getElementById("qr-reader-wrap");
   const video = document.getElementById("qr-video");
+
   try {
-    qrStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: "environment" }
-    });
+    // Constraints optimizadas para móvil: cámara trasera, alta resolución, autofocus
+    const constraints = {
+      video: {
+        facingMode: { ideal: "environment" },
+        width:      { ideal: 1280 },
+        height:     { ideal: 720 },
+        focusMode:  { ideal: "continuous" },
+      }
+    };
+
+    qrStream = await navigator.mediaDevices.getUserMedia(constraints);
     video.srcObject = qrStream;
-    await video.play();
+
+    // Esperar a que el video esté listo antes de escanear
+    await new Promise(resolve => {
+      video.onloadedmetadata = () => { video.play(); resolve(); };
+    });
+
     wrap.classList.add("activo");
     qrActivo = true;
     document.getElementById("btn-abrir-qr").style.display = "none";
-    escanearFrame();
+
+    // Pequeña pausa para que la cámara enfoque antes de escanear
+    setTimeout(escanearFrame, 500);
+
   } catch (err) {
-    toast("No se pudo acceder a la cámara. Revisá los permisos.", "error");
+    // Fallback: intentar con constraints mínimas
+    try {
+      qrStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+      video.srcObject = qrStream;
+      video.play();
+      wrap.classList.add("activo");
+      qrActivo = true;
+      document.getElementById("btn-abrir-qr").style.display = "none";
+      setTimeout(escanearFrame, 800);
+    } catch (err2) {
+      toast("No se pudo acceder a la cámara. Revisá los permisos en el navegador.", "error");
+    }
   }
 }
 
@@ -512,27 +547,33 @@ function escanearFrame() {
   if (!qrActivo) return;
   const video  = document.getElementById("qr-video");
   const canvas = document.getElementById("qr-canvas");
-  if (video.readyState === video.HAVE_ENOUGH_DATA) {
+
+  if (video.readyState === video.HAVE_ENOUGH_DATA && video.videoWidth > 0) {
     canvas.height = video.videoHeight;
     canvas.width  = video.videoWidth;
-    const ctx  = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d");
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const img  = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const code = jsQR(img.data, img.width, img.height, { inversionAttempts: "dontInvert" });
-    if (code && code.data) {
+    const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+    // Intentar con ambas inversiones para mayor compatibilidad
+    const code = jsQR(img.data, img.width, img.height, { inversionAttempts: "attemptBoth" });
+    if (code && code.data && code.data.trim()) {
       manejarQRLeido(code.data.trim());
       return;
     }
   }
-  qrAnimFrame = requestAnimationFrame(escanearFrame);
+  // Escanear cada 150ms en vez de cada frame — reduce carga en CPU del celular
+  qrAnimFrame = setTimeout(escanearFrame, 150);
 }
 
 function cerrarQR() {
   if (!qrActivo) return;
+  clearTimeout(qrAnimFrame);
   cancelAnimationFrame(qrAnimFrame);
   const video = document.getElementById("qr-video");
   if (qrStream) { qrStream.getTracks().forEach(t => t.stop()); qrStream = null; }
   video.srcObject = null;
+  video.onloadedmetadata = null;
   document.getElementById("qr-reader-wrap").classList.remove("activo");
   document.getElementById("btn-abrir-qr").style.display = "flex";
   qrActivo = false;
