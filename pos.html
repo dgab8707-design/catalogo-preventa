@@ -488,11 +488,17 @@ function limpiarBusqueda() {
 
 // ════════════════════════════════════════════════════════
 // LECTOR QR CON CÁMARA
+// Usa BarcodeDetector (nativo Android Chrome) con fallback a jsQR
 // ════════════════════════════════════════════════════════
+const usarBarcodeDetector = ("BarcodeDetector" in window);
+let barcodeDetector = null;
+if (usarBarcodeDetector) {
+  barcodeDetector = new BarcodeDetector({ formats: ["qr_code"] });
+}
+
 async function toggleQR() {
   if (qrActivo) { cerrarQR(); return; }
 
-  // Asegurar que cualquier stream previo esté cerrado
   if (qrStream) {
     qrStream.getTracks().forEach(t => t.stop());
     qrStream = null;
@@ -502,20 +508,15 @@ async function toggleQR() {
   const video = document.getElementById("qr-video");
 
   try {
-    // Constraints optimizadas para móvil: cámara trasera, alta resolución, autofocus
-    const constraints = {
+    qrStream = await navigator.mediaDevices.getUserMedia({
       video: {
         facingMode: { ideal: "environment" },
         width:      { ideal: 1280 },
         height:     { ideal: 720 },
-        focusMode:  { ideal: "continuous" },
       }
-    };
-
-    qrStream = await navigator.mediaDevices.getUserMedia(constraints);
+    });
     video.srcObject = qrStream;
 
-    // Esperar a que el video esté listo antes de escanear
     await new Promise(resolve => {
       video.onloadedmetadata = () => { video.play(); resolve(); };
     });
@@ -524,13 +525,15 @@ async function toggleQR() {
     qrActivo = true;
     document.getElementById("btn-abrir-qr").style.display = "none";
 
-    // Pequeña pausa para que la cámara enfoque antes de escanear
-    setTimeout(escanearFrame, 500);
+    // Mostrar qué motor se usa (ayuda a depurar)
+    const motor = usarBarcodeDetector ? "BarcodeDetector" : "jsQR";
+    document.querySelector(".qr-hint").textContent = `Apuntá al QR del producto · ${motor}`;
+
+    setTimeout(escanearFrame, 600);
 
   } catch (err) {
-    // Fallback: intentar con constraints mínimas
     try {
-      qrStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+      qrStream = await navigator.mediaDevices.getUserMedia({ video: true });
       video.srcObject = qrStream;
       video.play();
       wrap.classList.add("activo");
@@ -538,44 +541,59 @@ async function toggleQR() {
       document.getElementById("btn-abrir-qr").style.display = "none";
       setTimeout(escanearFrame, 800);
     } catch (err2) {
-      toast("No se pudo acceder a la cámara. Revisá los permisos en el navegador.", "error");
+      toast("No se pudo acceder a la cámara. Revisá los permisos.", "error");
     }
   }
 }
 
-function escanearFrame() {
+async function escanearFrame() {
   if (!qrActivo) return;
-  const video  = document.getElementById("qr-video");
-  const canvas = document.getElementById("qr-canvas");
+  const video = document.getElementById("qr-video");
 
-  if (video.readyState === video.HAVE_ENOUGH_DATA && video.videoWidth > 0) {
-    canvas.height = video.videoHeight;
-    canvas.width  = video.videoWidth;
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
-    // Intentar con ambas inversiones para mayor compatibilidad
-    const code = jsQR(img.data, img.width, img.height, { inversionAttempts: "attemptBoth" });
-    if (code && code.data && code.data.trim()) {
-      manejarQRLeido(code.data.trim());
-      return;
-    }
+  if (video.readyState !== video.HAVE_ENOUGH_DATA || video.videoWidth === 0) {
+    qrAnimFrame = setTimeout(escanearFrame, 200);
+    return;
   }
-  // Escanear cada 150ms en vez de cada frame — reduce carga en CPU del celular
-  qrAnimFrame = setTimeout(escanearFrame, 150);
+
+  try {
+    if (usarBarcodeDetector && barcodeDetector) {
+      // ── Método 1: BarcodeDetector nativo (Android Chrome 83+) ──
+      const codes = await barcodeDetector.detect(video);
+      if (codes.length > 0 && codes[0].rawValue) {
+        manejarQRLeido(codes[0].rawValue.trim());
+        return;
+      }
+    } else {
+      // ── Método 2: jsQR como fallback ──
+      const canvas = document.getElementById("qr-canvas");
+      canvas.height = video.videoHeight;
+      canvas.width  = video.videoWidth;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const img  = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(img.data, img.width, img.height, { inversionAttempts: "attemptBoth" });
+      if (code && code.data && code.data.trim()) {
+        manejarQRLeido(code.data.trim());
+        return;
+      }
+    }
+  } catch (e) {
+    // Error puntual de detección — continuar escaneando
+  }
+
+  qrAnimFrame = setTimeout(escanearFrame, 200);
 }
 
 function cerrarQR() {
   if (!qrActivo) return;
   clearTimeout(qrAnimFrame);
-  cancelAnimationFrame(qrAnimFrame);
   const video = document.getElementById("qr-video");
   if (qrStream) { qrStream.getTracks().forEach(t => t.stop()); qrStream = null; }
   video.srcObject = null;
   video.onloadedmetadata = null;
   document.getElementById("qr-reader-wrap").classList.remove("activo");
   document.getElementById("btn-abrir-qr").style.display = "flex";
+  document.querySelector(".qr-hint").textContent = "Apuntá al código QR del producto";
   qrActivo = false;
 }
 
