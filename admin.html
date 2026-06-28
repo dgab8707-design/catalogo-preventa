@@ -6,6 +6,8 @@
 <title>Panel Admin — Colección</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<!-- QRCode.js para generar QR en el cliente, sin backend extra -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   :root {
     --rosa:    #D4537E;
@@ -22,6 +24,8 @@
     --naranja-l: #FEF3C7;
     --rojo:    #E24B4A;
     --rojo-l:  #FBEAEA;
+    --azul:    #2196F3;
+    --azul-l:  #E3F2FD;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'DM Sans', sans-serif; background: var(--crema); color: var(--oscuro); min-height: 100vh; }
@@ -30,6 +34,9 @@
   .header-inner { max-width: 880px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 60px; }
   .brand h1 { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 400; }
   .brand p { font-size: 11px; color: var(--gris); margin-top: 1px; }
+  .btn-pos { display: flex; align-items: center; gap: 6px; background: var(--oscuro); color: white; border: none; border-radius: 8px; padding: 8px 14px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; text-decoration: none; transition: background 0.15s; }
+  .btn-pos:hover { background: #2C2520; }
+  .btn-pos svg { width: 15px; height: 15px; }
 
   nav.tabs { background: var(--blanco); border-bottom: 1px solid var(--borde); position: sticky; top: 60px; z-index: 99; overflow-x: auto; }
   .tabs-inner { max-width: 880px; margin: 0 auto; display: flex; }
@@ -44,13 +51,13 @@
   .seccion-titulo { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 400; margin-bottom: 4px; }
   .seccion-sub { font-size: 13px; color: var(--gris); margin-bottom: 20px; }
 
-  /* Cards / stat boxes */
   .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px; }
   .stat-card { background: var(--blanco); border: 1px solid var(--borde); border-radius: var(--radio); padding: 16px; }
   .stat-label { font-size: 11px; color: var(--gris); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
   .stat-valor { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 500; }
+  .stat-card.destacado { border-color: var(--azul); background: var(--azul-l); }
+  .stat-card.destacado .stat-label { color: var(--azul); }
 
-  /* Buttons */
   .btn { font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; border-radius: 8px; padding: 10px 18px; cursor: pointer; border: none; transition: opacity 0.15s, background 0.15s; }
   .btn:disabled { opacity: 0.5; cursor: not-allowed; }
   .btn-primario { background: var(--oscuro); color: white; }
@@ -61,9 +68,10 @@
   .btn-borde:hover:not(:disabled) { border-color: #C7C4BE; }
   .btn-peligro { background: var(--rojo-l); color: var(--rojo); border: 1.5px solid var(--rojo); }
   .btn-peligro:hover:not(:disabled) { background: var(--rojo); color: white; }
+  .btn-azul { background: var(--azul); color: white; }
+  .btn-azul:hover:not(:disabled) { background: #1976D2; }
   .btn-sm { padding: 6px 12px; font-size: 12px; }
 
-  /* Forms */
   .form-grupo { margin-bottom: 14px; }
   .form-label { font-size: 11px; font-weight: 500; color: var(--gris); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; display: block; }
   .form-input, .form-select { width: 100%; border: 1px solid var(--borde); border-radius: 8px; padding: 10px 14px; font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; transition: border-color 0.2s; background: var(--blanco); }
@@ -73,9 +81,8 @@
   .form-card-titulo { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 500; margin-bottom: 14px; }
   .datalist-hint { font-size: 11px; color: var(--gris); margin-top: 4px; }
 
-  /* Inventory table */
   .tabla-wrap { overflow-x: auto; background: var(--blanco); border: 1px solid var(--borde); border-radius: var(--radio); }
-  table.inv-tabla { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 760px; }
+  table.inv-tabla { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 820px; }
   table.inv-tabla th { text-align: left; padding: 10px 12px; background: #F8F6F2; font-size: 11px; font-weight: 600; color: var(--gris); text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--borde); white-space: nowrap; }
   table.inv-tabla td { padding: 10px 12px; border-bottom: 1px solid var(--borde); vertical-align: middle; }
   table.inv-tabla tr:last-child td { border-bottom: none; }
@@ -92,7 +99,6 @@
   .filtros-bar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
   .filtros-bar input[type="text"] { flex: 1; min-width: 180px; }
 
-  /* Toggle switch */
   .toggle { position: relative; display: inline-block; width: 38px; height: 22px; flex-shrink: 0; }
   .toggle input { opacity: 0; width: 0; height: 0; }
   .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: var(--borde); border-radius: 22px; transition: background 0.2s; }
@@ -100,7 +106,6 @@
   .toggle input:checked + .toggle-slider { background: var(--verde); }
   .toggle input:checked + .toggle-slider:before { transform: translateX(16px); }
 
-  /* Reset section */
   .modo-switch { display: flex; border: 1px solid var(--borde); border-radius: 10px; overflow: hidden; margin-bottom: 20px; width: fit-content; }
   .modo-btn { padding: 10px 20px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; border: none; cursor: pointer; background: var(--blanco); color: var(--gris); }
   .modo-btn.activo { background: var(--oscuro); color: white; }
@@ -109,13 +114,51 @@
   .aviso-info { background: var(--rosa-l); color: #9D3A5C; }
   .aviso-activo { background: var(--verde-l); color: #1B4332; }
 
-  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--oscuro); color: white; padding: 10px 20px; border-radius: 50px; font-size: 13px; opacity: 0; transition: opacity 0.2s, transform 0.2s; z-index: 300; white-space: nowrap; max-width: 90vw; text-align: center; }
+  /* Overlay genérico */
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 299; }
+  .overlay.activo { display: block; }
+
+  /* Modal base */
+  .modal {
+    display: none; position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 301; width: 92%; max-width: 420px; margin: 0;
+    background: var(--blanco); border: 1px solid var(--borde);
+    border-radius: var(--radio); padding: 24px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    animation: popIn 0.18s ease;
+  }
+  .modal.activo { display: block; }
+  @keyframes popIn { from { opacity:0; transform:translate(-50%,-52%); } to { opacity:1; transform:translate(-50%,-50%); } }
+  .modal-titulo { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 500; margin-bottom: 16px; }
+
+  /* Modal QR */
+  .modal-qr { max-width: 340px; text-align: center; }
+  .modal-qr .modal-titulo { margin-bottom: 4px; }
+  .qr-subtitulo { font-size: 12px; color: var(--gris); margin-bottom: 16px; }
+  #qr-canvas-wrap { display: flex; justify-content: center; margin-bottom: 16px; }
+  #qr-canvas-wrap canvas, #qr-canvas-wrap img { border-radius: 8px; border: 1px solid var(--borde); }
+  .qr-id-badge { background: var(--crema); border: 1px solid var(--borde); border-radius: 8px; padding: 8px 14px; font-size: 11px; color: var(--gris); font-family: monospace; letter-spacing: 0.04em; margin-bottom: 16px; word-break: break-all; }
+
+  /* PIN display */
+  .pin-dots { display: flex; justify-content: center; gap: 10px; margin: 16px 0 4px; }
+  .pin-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--borde); transition: background 0.15s; }
+  .pin-dot.activo { background: var(--oscuro); }
+  .pin-input-hidden { position: absolute; opacity: 0; width: 0; height: 0; }
+  .pin-teclado { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-top: 12px; }
+  .pin-key { padding: 14px; background: var(--crema); border: 1px solid var(--borde); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 18px; font-weight: 500; cursor: pointer; transition: background 0.12s; }
+  .pin-key:hover { background: #EDEBE6; }
+  .pin-key.borrar { font-size: 14px; color: var(--gris); }
+
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--oscuro); color: white; padding: 10px 20px; border-radius: 50px; font-size: 13px; opacity: 0; transition: opacity 0.2s, transform 0.2s; z-index: 400; white-space: nowrap; max-width: 90vw; text-align: center; }
   .toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
   .toast.error { background: var(--rojo); }
 
   .empty-state { text-align: center; padding: 40px 20px; color: var(--gris); font-size: 14px; }
   .spinner { width: 24px; height: 24px; border: 2px solid var(--borde); border-top-color: var(--rosa); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 10px; }
   @keyframes spin { to { transform: rotate(360deg); } }
+
+  .cabecera-clientes { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
 
   @media (max-width: 600px) {
     .form-row { grid-template-columns: 1fr; }
@@ -131,24 +174,32 @@
       <h1>Panel Admin</h1>
       <p>Colección · Drole</p>
     </div>
+    <!-- Acceso directo al POS -->
+    <a href="pos.html" target="_blank" class="btn-pos">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+      </svg>
+      Abrir Caja
+    </a>
   </div>
 </header>
 
 <nav class="tabs">
   <div class="tabs-inner">
-    <button class="tab-btn activo" data-vista="resumen" onclick="cambiarVista('resumen')">Resumen</button>
-    <button class="tab-btn" data-vista="inventario" onclick="cambiarVista('inventario')">Inventario</button>
-    <button class="tab-btn" data-vista="agregar" onclick="cambiarVista('agregar')">Agregar producto</button>
-    <button class="tab-btn" data-vista="quincena" onclick="cambiarVista('quincena')">Quincena</button>
-    <button class="tab-btn" data-vista="clientes" onclick="cambiarVista('clientes')">Clientes</button>
+    <button class="tab-btn activo" data-vista="resumen"    onclick="cambiarVista('resumen')">Resumen</button>
+    <button class="tab-btn"        data-vista="inventario" onclick="cambiarVista('inventario')">Inventario</button>
+    <button class="tab-btn"        data-vista="agregar"    onclick="cambiarVista('agregar')">Agregar producto</button>
+    <button class="tab-btn"        data-vista="quincena"   onclick="cambiarVista('quincena')">Quincena</button>
+    <button class="tab-btn"        data-vista="clientes"   onclick="cambiarVista('clientes')">Clientes</button>
   </div>
 </nav>
 
 <main>
+
   <!-- ═══════════ VISTA: RESUMEN ═══════════ -->
   <div class="vista activa" id="vista-resumen">
     <p class="seccion-titulo">Resumen de la quincena</p>
-    <p class="seccion-sub">Estado actual de pedidos y actividad.</p>
+    <p class="seccion-sub">Estado actual de pedidos, actividad y ventas directas del día.</p>
     <div id="resumen-cargando" class="empty-state"><div class="spinner"></div>Cargando resumen...</div>
     <div id="resumen-contenido" style="display:none">
       <div class="stats-grid">
@@ -157,31 +208,36 @@
           <p class="stat-valor" id="stat-items">0</p>
         </div>
         <div class="stat-card">
-          <p class="stat-label">Total en ventas</p>
+          <p class="stat-label">Total preventa</p>
           <p class="stat-valor" id="stat-ventas">$0</p>
         </div>
         <div class="stat-card">
           <p class="stat-label">Clientes activos</p>
           <p class="stat-valor" id="stat-clientes">0</p>
         </div>
+        <div class="stat-card destacado">
+          <p class="stat-label">Ventas directas hoy</p>
+          <p class="stat-valor" id="stat-vd-hoy">$0</p>
+        </div>
       </div>
-      <button class="btn btn-borde" onclick="cargarResumen()">↻ Actualizar</button>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-borde" onclick="cargarResumen()">↻ Actualizar</button>
+        <a href="pos.html" target="_blank" class="btn btn-azul" style="text-decoration:none">🛒 Abrir Caja / POS</a>
+      </div>
     </div>
   </div>
 
   <!-- ═══════════ VISTA: INVENTARIO ═══════════ -->
   <div class="vista" id="vista-inventario">
     <p class="seccion-titulo">Inventario</p>
-    <p class="seccion-sub">Reabastecé stock, activá o desactivá variantes y actualizá fotos. En "Ajustar stock" usá números positivos para entradas (ej. <strong>+10</strong> al recibir mercadería) y negativos para salidas (ej. <strong>-2</strong> por una venta en tienda física u otra vía).</p>
+    <p class="seccion-sub">Reabastecé stock, activá o desactivá variantes, actualizá fotos y generá QR para el punto de venta. En "Ajustar stock" usá números positivos para entradas y negativos para salidas.</p>
 
     <div class="form-card">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
         <p class="form-card-titulo">Cambiar portada de un estilo</p>
         <button class="btn btn-borde btn-sm" id="btn-cerrar-portada" onclick="cerrarSeccionPortada()" style="display:none;flex-shrink:0">Cerrar</button>
       </div>
-      <p style="font-size:13px;color:var(--gris);margin-bottom:14px">
-        Elegí un estilo y pegá la URL de la nueva foto de portada (por ejemplo, una foto combinada con los colores nuevos de la colección). Reemplaza directamente la foto de portada actual de ese estilo.
-      </p>
+      <p style="font-size:13px;color:var(--gris);margin-bottom:14px">Elegí un estilo y pegá la URL de la nueva foto de portada.</p>
       <div class="form-grupo">
         <label class="form-label">Estilo</label>
         <select id="portada-estilo" class="form-select" onchange="cargarInfoPortada()"></select>
@@ -191,7 +247,7 @@
         <div class="form-grupo">
           <label class="form-label">URL Drive — nueva foto de portada</label>
           <input type="text" id="portada-url-nueva" class="form-input" placeholder="https://drive.google.com/...">
-          <p class="datalist-hint">Pegá el link para compartir de Google Drive. Se convierte automáticamente, igual que las demás fotos.</p>
+          <p class="datalist-hint">Pegá el link para compartir de Google Drive.</p>
         </div>
         <button class="btn btn-rosa" id="btn-guardar-portada" onclick="guardarNuevaPortada()">Actualizar portada</button>
       </div>
@@ -216,6 +272,7 @@
             <th>Activo</th>
             <th>Ajustar stock</th>
             <th>Fotos</th>
+            <th>QR</th>
           </tr>
         </thead>
         <tbody id="inv-tabla-body"></tbody>
@@ -227,11 +284,10 @@
   <!-- ═══════════ VISTA: AGREGAR PRODUCTO ═══════════ -->
   <div class="vista" id="vista-agregar">
     <p class="seccion-titulo">Agregar producto nuevo</p>
-    <p class="seccion-sub">Creá una variante nueva. Si escribís un valor que no existe (estilo, marca, color o talla), se agrega automáticamente a la lista para la próxima vez.</p>
+    <p class="seccion-sub">Creá una variante nueva. Si escribís un valor que no existe, se agrega automáticamente a la lista.</p>
 
     <div class="form-card">
       <p class="form-card-titulo">Datos del producto</p>
-
       <div class="form-row">
         <div class="form-grupo">
           <label class="form-label">Estilo</label>
@@ -244,7 +300,6 @@
           <input type="text" id="f-marca-nuevo" class="form-input" placeholder="Nueva marca..." style="display:none;margin-top:8px">
         </div>
       </div>
-
       <div class="form-row">
         <div class="form-grupo">
           <label class="form-label">Color</label>
@@ -257,16 +312,14 @@
           <input type="text" id="f-talla-nuevo" class="form-input" placeholder="Nueva talla..." style="display:none;margin-top:8px">
         </div>
       </div>
-
       <div class="form-grupo" id="f-hex-wrap" style="display:none">
         <label class="form-label">Color para el catálogo (nuevo)</label>
         <div style="display:flex;gap:10px;align-items:center">
           <input type="color" id="f-color-hex-picker" value="#D3D1C7" onchange="document.getElementById('f-color-hex').value=this.value" style="width:44px;height:38px;border:1px solid var(--borde);border-radius:8px;padding:2px;cursor:pointer">
           <input type="text" id="f-color-hex" class="form-input" placeholder="#D3D1C7" style="flex:1" oninput="document.getElementById('f-color-hex-picker').value=this.value">
         </div>
-        <p class="datalist-hint">Este color es nuevo — elegí el tono que se va a mostrar como punto de color en el catálogo.</p>
+        <p class="datalist-hint">Color nuevo — elegí el tono que se va a mostrar en el catálogo.</p>
       </div>
-
       <div class="form-row">
         <div class="form-grupo">
           <label class="form-label">Precio ($)</label>
@@ -277,19 +330,15 @@
           <input type="number" id="f-stock" class="form-input" placeholder="0" min="0">
         </div>
       </div>
-
       <div class="form-grupo">
         <label class="form-label">URL Drive — foto del color</label>
         <input type="text" id="f-foto-color" class="form-input" placeholder="https://drive.google.com/...">
-        <p class="datalist-hint">Pegá el link para compartir de Google Drive. Esta foto se usa para todas las tallas de este color — si ya existe una foto para este Estilo+Color, se reemplaza.</p>
+        <p class="datalist-hint">Afecta a todas las tallas de este color.</p>
       </div>
-
       <div class="form-grupo">
         <label class="form-label">URL Drive — foto de portada del estilo (opcional)</label>
         <input type="text" id="f-foto-portada" class="form-input" placeholder="https://drive.google.com/...">
-        <p class="datalist-hint">Es la portada de todo el estilo en el catálogo, independiente del color/talla. Si ya existe una portada para este estilo, se reemplaza.</p>
       </div>
-
       <p id="f-error" style="color:var(--rojo);font-size:13px;margin-bottom:10px;display:none"></p>
       <button class="btn btn-rosa" id="f-btn-agregar" onclick="agregarProducto()">Agregar al inventario</button>
     </div>
@@ -299,7 +348,6 @@
   <div class="vista" id="vista-quincena">
     <p class="seccion-titulo">Configuración de quincena</p>
     <p class="seccion-sub">Fechas de cierre, entrega y reglas de cancelación.</p>
-
     <div class="form-card">
       <p class="form-card-titulo">Fechas y reglas</p>
       <div class="form-grupo">
@@ -326,20 +374,15 @@
 
     <div class="form-card">
       <p class="form-card-titulo">Generar Pedidos y Empacado (Reset)</p>
-      <p style="font-size:13px;color:var(--gris);margin-bottom:16px">
-        Archiva los pedidos actuales, crea las hojas <strong>Pedidos_fecha</strong> y <strong>Empacado_fecha</strong> ordenadas por ID de cliente, y limpia la hoja Pedidos para la siguiente quincena. El stock disponible <strong>no se modifica</strong>.
-      </p>
-
+      <p style="font-size:13px;color:var(--gris);margin-bottom:16px">Archiva los pedidos actuales, crea las hojas <strong>Pedidos_fecha</strong> y <strong>Empacado_fecha</strong> ordenadas por ID de cliente, y limpia la hoja Pedidos para la siguiente quincena. El stock disponible <strong>no se modifica</strong>.</p>
       <div class="modo-switch">
         <button class="modo-btn activo" id="modo-btn-manual" onclick="cambiarModoReset('manual')">Manual</button>
         <button class="modo-btn" id="modo-btn-auto" onclick="cambiarModoReset('auto')">Automático</button>
       </div>
-
       <div id="reset-manual-wrap">
         <p style="font-size:13px;color:var(--gris);margin-bottom:14px">Ejecutá el reset cuando estés lista. Esta acción no se puede deshacer.</p>
         <button class="btn btn-peligro" id="btn-reset-manual" onclick="ejecutarResetManual()">Generar Pedidos y Empacado ahora</button>
       </div>
-
       <div id="reset-auto-wrap" style="display:none">
         <div class="aviso-box" id="aviso-trigger-estado"></div>
         <div class="form-grupo">
@@ -351,15 +394,19 @@
           <button class="btn btn-borde" id="btn-cancelar-trigger" onclick="cancelarTrigger()" style="display:none">Desactivar reset automático</button>
         </div>
       </div>
-
       <p id="reset-msg" style="font-size:13px;margin-top:14px;display:none"></p>
     </div>
   </div>
 
   <!-- ═══════════ VISTA: CLIENTES ═══════════ -->
   <div class="vista" id="vista-clientes">
-    <p class="seccion-titulo">Clientes</p>
-    <p class="seccion-sub">Corregí nombre, número de WhatsApp o PIN cuando una clienta lo necesite.</p>
+    <div class="cabecera-clientes">
+      <div>
+        <p class="seccion-titulo" style="margin-bottom:0">Clientes</p>
+        <p class="seccion-sub" style="margin-bottom:0">Gestioná cuentas y creá clientes para el punto de venta.</p>
+      </div>
+      <button class="btn btn-azul" onclick="abrirModalCrearCliente()">+ Nuevo cliente</button>
+    </div>
     <div class="filtros-bar">
       <input type="text" id="cli-buscar" class="form-input" placeholder="Buscar por nombre o WhatsApp..." oninput="filtrarClientes()">
       <button class="btn btn-borde btn-sm" onclick="cargarClientes()">↻ Recargar</button>
@@ -381,12 +428,15 @@
     </div>
     <div id="cli-vacio" class="empty-state" style="display:none">No hay clientes registrados todavía.</div>
   </div>
+
 </main>
 
+<!-- ═══════════ OVERLAY GLOBAL ═══════════ -->
+<div class="overlay" id="overlay-global" onclick="cerrarTodosModales()"></div>
+
 <!-- ═══════════ MODAL: EDITAR CLIENTE ═══════════ -->
-<div class="overlay" id="overlay-editar-cliente" onclick="cerrarEditarCliente()" style="display:none"></div>
-<div class="form-card" id="modal-editar-cliente" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:301;width:90%;max-width:380px;margin:0">
-  <p class="form-card-titulo">Editar cliente</p>
+<div class="modal" id="modal-editar-cliente">
+  <p class="modal-titulo">Editar cliente</p>
   <div class="form-grupo">
     <label class="form-label">Nombre</label>
     <input type="text" id="edit-cli-nombre" class="form-input">
@@ -394,7 +444,7 @@
   <div class="form-grupo">
     <label class="form-label">WhatsApp (con código de país, sin +)</label>
     <input type="text" id="edit-cli-wa" class="form-input" placeholder="50688887777">
-    <p class="datalist-hint">Si cambiás el número, los pedidos ya registrados con el número anterior no se actualizan automáticamente.</p>
+    <p class="datalist-hint">Si cambiás el número, los pedidos ya registrados no se actualizan automáticamente.</p>
   </div>
   <div class="form-grupo">
     <label class="form-label">Nuevo PIN (dejar vacío para no cambiarlo)</label>
@@ -402,27 +452,96 @@
   </div>
   <p id="edit-cli-error" style="color:var(--rojo);font-size:13px;margin-bottom:10px;display:none"></p>
   <div style="display:flex;gap:10px">
-    <button class="btn btn-borde" style="flex:1" onclick="cerrarEditarCliente()">Cancelar</button>
+    <button class="btn btn-borde" style="flex:1" onclick="cerrarTodosModales()">Cancelar</button>
     <button class="btn btn-rosa" style="flex:1" id="btn-guardar-cliente" onclick="guardarEdicionCliente()">Guardar</button>
+  </div>
+</div>
+
+<!-- ═══════════ MODAL: CREAR CLIENTE (PIN 6 dígitos) ═══════════ -->
+<div class="modal" id="modal-crear-cliente">
+  <p class="modal-titulo">Nuevo cliente</p>
+  <div class="form-grupo">
+    <label class="form-label">Nombre completo</label>
+    <input type="text" id="nuevo-cli-nombre" class="form-input" placeholder="Nombre del cliente">
+  </div>
+  <div class="form-grupo">
+    <label class="form-label">WhatsApp</label>
+    <div style="display:flex;gap:8px">
+      <select id="nuevo-cli-pais" class="form-select" style="width:130px;flex-shrink:0">
+        <option value="506">🇨🇷 +506</option>
+        <option value="507">🇵🇦 +507</option>
+        <option value="1">🇺🇸 +1</option>
+        <option value="52">🇲🇽 +52</option>
+        <option value="57">🇨🇴 +57</option>
+        <option value="34">🇪🇸 +34</option>
+      </select>
+      <input type="tel" id="nuevo-cli-wa" class="form-input" placeholder="Número sin código de país">
+    </div>
+  </div>
+  <div class="form-grupo">
+    <label class="form-label" style="text-align:center;display:block">PIN de 6 dígitos</label>
+    <!-- Teclado visual PIN -->
+    <div style="position:relative;display:flex;justify-content:center" onclick="document.getElementById('nuevo-cli-pin-hidden').focus()">
+      <div class="pin-dots" id="pin-dots-nuevo">
+        <div class="pin-dot" id="dot-0"></div>
+        <div class="pin-dot" id="dot-1"></div>
+        <div class="pin-dot" id="dot-2"></div>
+        <div class="pin-dot" id="dot-3"></div>
+        <div class="pin-dot" id="dot-4"></div>
+        <div class="pin-dot" id="dot-5"></div>
+      </div>
+      <input type="tel" id="nuevo-cli-pin-hidden" class="pin-input-hidden" maxlength="6" inputmode="numeric" oninput="actualizarDotsPIN()" autocomplete="off">
+    </div>
+    <div class="pin-teclado">
+      <button type="button" class="pin-key" onclick="presionarTeclaPIN('1')">1</button>
+      <button type="button" class="pin-key" onclick="presionarTeclaPIN('2')">2</button>
+      <button type="button" class="pin-key" onclick="presionarTeclaPIN('3')">3</button>
+      <button type="button" class="pin-key" onclick="presionarTeclaPIN('4')">4</button>
+      <button type="button" class="pin-key" onclick="presionarTeclaPIN('5')">5</button>
+      <button type="button" class="pin-key" onclick="presionarTeclaPIN('6')">6</button>
+      <button type="button" class="pin-key" onclick="presionarTeclaPIN('7')">7</button>
+      <button type="button" class="pin-key" onclick="presionarTeclaPIN('8')">8</button>
+      <button type="button" class="pin-key" onclick="presionarTeclaPIN('9')">9</button>
+      <button type="button" class="pin-key" onclick="presionarTeclaPIN('0')" style="grid-column:2">0</button>
+      <button type="button" class="pin-key borrar" onclick="borrarTeclaPIN()">⌫</button>
+    </div>
+    <p class="datalist-hint" style="text-align:center;margin-top:10px">Este PIN permite al cliente iniciar sesión en el catálogo.</p>
+  </div>
+  <p id="nuevo-cli-error" style="color:var(--rojo);font-size:13px;margin-bottom:10px;display:none"></p>
+  <div style="display:flex;gap:10px">
+    <button class="btn btn-borde" style="flex:1" onclick="cerrarTodosModales()">Cancelar</button>
+    <button class="btn btn-azul" style="flex:1" id="btn-confirmar-crear-cliente" onclick="confirmarCrearCliente()">Crear cliente</button>
+  </div>
+</div>
+
+<!-- ═══════════ MODAL: QR DE VARIANTE ═══════════ -->
+<div class="modal modal-qr" id="modal-qr">
+  <p class="modal-titulo" id="qr-titulo">—</p>
+  <p class="qr-subtitulo" id="qr-subtitulo">—</p>
+  <div id="qr-canvas-wrap"></div>
+  <div class="qr-id-badge" id="qr-id-badge">—</div>
+  <div style="display:flex;gap:8px;justify-content:center">
+    <button class="btn btn-borde btn-sm" onclick="imprimirQR()">🖨 Imprimir</button>
+    <button class="btn btn-borde btn-sm" onclick="cerrarTodosModales()">Cerrar</button>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbzyC203kawRv1fhoYMpZw7mjZ2k3AqQmTpKXemnpHA-z-0tDmcnMqqvhnu5M1HaPDRAHA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbydJdKxEYKW9nB9iaFbKISMn30QPC-hlCAq24P_VFiY_GQySXEiVjEsv09eSm_tK5mbjw/exec";
 
 // ════════════════════════════════════════════════════════
-// NAVEGACIÓN DE TABS
+// UTILIDADES GENERALES
 // ════════════════════════════════════════════════════════
 function cambiarVista(vista) {
   document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("activo", b.dataset.vista === vista));
   document.querySelectorAll(".vista").forEach(v => v.classList.toggle("activa", v.id === `vista-${vista}`));
-  if (vista === "resumen")     cargarResumen();
-  if (vista === "inventario")  cargarInventario();
-  if (vista === "agregar")     cargarOpciones();
-  if (vista === "quincena")    { cargarConfig(); cargarEstadoTrigger(); }
-  if (vista === "clientes")    cargarClientes();
+  if (vista === "resumen")    cargarResumen();
+  if (vista === "inventario") cargarInventario();
+  if (vista === "agregar")    cargarOpciones();
+  if (vista === "quincena")   { cargarConfig(); cargarEstadoTrigger(); }
+  if (vista === "clientes")   cargarClientes();
 }
 
 function mostrarToast(msg, esError) {
@@ -435,6 +554,16 @@ function mostrarToast(msg, esError) {
 
 function formatoDolares(n) { return `$${Number(n || 0).toLocaleString("en-US")}`; }
 
+// ── Overlay / modales ──
+function abrirModal(id) {
+  document.getElementById("overlay-global").classList.add("activo");
+  document.getElementById(id).classList.add("activo");
+}
+function cerrarTodosModales() {
+  document.getElementById("overlay-global").classList.remove("activo");
+  document.querySelectorAll(".modal").forEach(m => m.classList.remove("activo"));
+}
+
 // ════════════════════════════════════════════════════════
 // RESUMEN
 // ════════════════════════════════════════════════════════
@@ -442,13 +571,12 @@ async function cargarResumen() {
   document.getElementById("resumen-cargando").style.display = "block";
   document.getElementById("resumen-contenido").style.display = "none";
   try {
-    const res = await fetch(`${API_URL}?action=admin_resumen`);
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error || "Error");
-    document.getElementById("stat-items").textContent = data.total_items_pedidos;
-    document.getElementById("stat-ventas").textContent = formatoDolares(data.total_ventas);
+    const data = await api("admin_resumen");
+    document.getElementById("stat-items").textContent    = data.total_items_pedidos;
+    document.getElementById("stat-ventas").textContent   = formatoDolares(data.total_ventas);
     document.getElementById("stat-clientes").textContent = data.clientes_activos;
-    document.getElementById("resumen-cargando").style.display = "none";
+    document.getElementById("stat-vd-hoy").textContent   = formatoDolares(data.ventas_directas_hoy || 0);
+    document.getElementById("resumen-cargando").style.display  = "none";
     document.getElementById("resumen-contenido").style.display = "block";
   } catch (err) {
     document.getElementById("resumen-cargando").innerHTML = "No se pudo cargar el resumen.";
@@ -457,18 +585,27 @@ async function cargarResumen() {
 }
 
 // ════════════════════════════════════════════════════════
+// HELPER: fetch a la API
+// ════════════════════════════════════════════════════════
+async function api(action, params = {}) {
+  const p = new URLSearchParams({ action, ...params });
+  const res = await fetch(`${API_URL}?${p}`);
+  const data = await res.json();
+  if (!data.ok) throw new Error(data.error || "Error desconocido");
+  return data;
+}
+
+// ════════════════════════════════════════════════════════
 // INVENTARIO
 // ════════════════════════════════════════════════════════
 let inventarioCache = [];
 
 async function cargarInventario() {
-  document.getElementById("inv-cargando").style.display = "block";
+  document.getElementById("inv-cargando").style.display  = "block";
   document.getElementById("inv-tabla-wrap").style.display = "none";
-  document.getElementById("inv-vacio").style.display = "none";
+  document.getElementById("inv-vacio").style.display      = "none";
   try {
-    const res = await fetch(`${API_URL}?action=admin_inventario`);
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error || "Error");
+    const data = await api("admin_inventario");
     inventarioCache = data.items;
     document.getElementById("inv-cargando").style.display = "none";
     if (inventarioCache.length === 0) {
@@ -484,65 +621,39 @@ async function cargarInventario() {
   }
 }
 
-// ════════════════════════════════════════════════════════
-// CAMBIAR PORTADA DE ESTILO
-// Busca en qué celda está alojada la foto de portada actual del
-// estilo elegido, y permite reemplazar directamente esa URL —
-// sin mover la portada a otro color/fila.
-// ════════════════════════════════════════════════════════
 let portadaInfoActual = null;
 
 function poblarSelectEstilosPortada() {
   const select = document.getElementById("portada-estilo");
   const valorPrevio = select.value;
   const estilosUnicos = [...new Set(inventarioCache.map(i => i.estilo))].sort();
-
   select.innerHTML = `<option value="">Seleccioná un estilo...</option>`;
   estilosUnicos.forEach(e => {
     const opt = document.createElement("option");
-    opt.value = e;
-    opt.textContent = e;
+    opt.value = e; opt.textContent = e;
     select.appendChild(opt);
   });
-
   if (valorPrevio && estilosUnicos.includes(valorPrevio)) select.value = valorPrevio;
 }
 
 async function cargarInfoPortada() {
-  const estilo = document.getElementById("portada-estilo").value;
-  const wrap = document.getElementById("portada-info-wrap");
+  const estilo     = document.getElementById("portada-estilo").value;
+  const wrap       = document.getElementById("portada-info-wrap");
   const previewWrap = document.getElementById("portada-preview-wrap");
-  const btnCerrar = document.getElementById("btn-cerrar-portada");
+  const btnCerrar  = document.getElementById("btn-cerrar-portada");
   document.getElementById("portada-msg").style.display = "none";
   document.getElementById("portada-url-nueva").value = "";
-
   if (!estilo) { wrap.style.display = "none"; btnCerrar.style.display = "none"; portadaInfoActual = null; return; }
-
   previewWrap.innerHTML = `<p style="font-size:13px;color:var(--gris)">Buscando portada actual...</p>`;
-  wrap.style.display = "block";
+  wrap.style.display    = "block";
   btnCerrar.style.display = "inline-block";
-
   try {
-    const params = new URLSearchParams({ action: "admin_portada_info", estilo });
-    const data = await (await fetch(`${API_URL}?${params}`)).json();
-    if (!data.ok) throw new Error(data.error || "Error");
-
-    if (!data.existe) {
-      previewWrap.innerHTML = `<p style="font-size:13px;color:var(--rojo)">Este estilo no tiene variantes cargadas.</p>`;
-      portadaInfoActual = null;
-      return;
-    }
-
+    const data = await api("admin_portada_info", { estilo });
+    if (!data.existe) { previewWrap.innerHTML = `<p style="font-size:13px;color:var(--rojo)">Este estilo no tiene variantes.</p>`; portadaInfoActual = null; return; }
     portadaInfoActual = data;
-
-    if (data.tiene_portada && data.foto_portada_actual) {
-      previewWrap.innerHTML = `
-        <p class="form-label" style="margin-bottom:8px">Portada actual</p>
-        <img src="${data.foto_portada_actual}" alt="Portada actual" style="width:100%;max-width:240px;border-radius:10px;border:1px solid var(--borde);display:block" onerror="this.style.display='none'">
-      `;
-    } else {
-      previewWrap.innerHTML = `<p style="font-size:13px;color:var(--gris)">Este estilo todavía no tiene foto de portada.</p>`;
-    }
+    previewWrap.innerHTML = data.tiene_portada && data.foto_portada_actual
+      ? `<p class="form-label" style="margin-bottom:8px">Portada actual</p><img src="${data.foto_portada_actual}" style="width:100%;max-width:240px;border-radius:10px;border:1px solid var(--borde);display:block" onerror="this.style.display='none'">`
+      : `<p style="font-size:13px;color:var(--gris)">Este estilo todavía no tiene foto de portada.</p>`;
   } catch (err) {
     previewWrap.innerHTML = `<p style="font-size:13px;color:var(--rojo)">No se pudo cargar la información de portada.</p>`;
     portadaInfoActual = null;
@@ -558,47 +669,32 @@ function cerrarSeccionPortada() {
 }
 
 async function guardarNuevaPortada() {
-  const estilo = document.getElementById("portada-estilo").value;
-  if (!estilo || !portadaInfoActual) { mostrarToast("Elegí un estilo primero", true); return; }
+  const estilo   = document.getElementById("portada-estilo").value;
   const urlNueva = document.getElementById("portada-url-nueva").value.trim();
+  if (!estilo || !portadaInfoActual) { mostrarToast("Elegí un estilo primero", true); return; }
   if (!urlNueva) { mostrarToast("Pegá la URL de la nueva foto", true); return; }
-
-  const msgEl = document.getElementById("portada-msg");
   const btn = document.getElementById("btn-guardar-portada");
   btn.disabled = true; btn.textContent = "Guardando...";
   try {
-    const params = new URLSearchParams({
-      action: "admin_portada_actualizar",
-      estilo,
-      url_portada: urlNueva,
-    });
-    const data = await (await fetch(`${API_URL}?${params}`)).json();
-    if (!data.ok) throw new Error(data.error || "No se pudo actualizar la portada");
+    await api("admin_portada_actualizar", { estilo, url_portada: urlNueva });
     mostrarToast("Portada actualizada correctamente");
-    msgEl.textContent = "Listo — la nueva portada ya está activa en el catálogo.";
-    msgEl.style.color = "var(--verde)";
-    msgEl.style.display = "block";
-    cargarInfoPortada(); // refresca el preview con la nueva imagen
+    const msgEl = document.getElementById("portada-msg");
+    msgEl.textContent = "Listo — la nueva portada ya está activa.";
+    msgEl.style.color = "var(--verde)"; msgEl.style.display = "block";
+    cargarInfoPortada();
   } catch (err) {
-    msgEl.textContent = err.message || "Ocurrió un error al actualizar la portada.";
-    msgEl.style.color = "var(--rojo)";
-    msgEl.style.display = "block";
-  } finally {
-    btn.disabled = false; btn.textContent = "Actualizar portada";
-  }
+    const msgEl = document.getElementById("portada-msg");
+    msgEl.textContent = err.message; msgEl.style.color = "var(--rojo)"; msgEl.style.display = "block";
+  } finally { btn.disabled = false; btn.textContent = "Actualizar portada"; }
 }
 
 function filtrarInventario() {
   const q = document.getElementById("inv-buscar").value.trim().toLowerCase();
   if (!q) { renderInventario(inventarioCache); return; }
-  const filtrado = inventarioCache.filter(item =>
-    String(item.estilo      ?? "").toLowerCase().includes(q) ||
-    String(item.marca       ?? "").toLowerCase().includes(q) ||
-    String(item.color       ?? "").toLowerCase().includes(q) ||
-    String(item.talla       ?? "").toLowerCase().includes(q) ||
-    String(item.id_variante ?? "").toLowerCase().includes(q)
-  );
-  renderInventario(filtrado);
+  renderInventario(inventarioCache.filter(item =>
+    [item.estilo, item.marca, item.color, item.talla, item.id_variante]
+      .some(v => String(v ?? "").toLowerCase().includes(q))
+  ));
 }
 
 function renderInventario(items) {
@@ -606,9 +702,12 @@ function renderInventario(items) {
   tbody.innerHTML = "";
   items.forEach(item => {
     const stock = Number(item.stock_disponible);
-    let stockClass = "";
-    if (stock === 0) stockClass = "stock-cero";
-    else if (stock <= 5) stockClass = "stock-bajo";
+    const stockClass = stock === 0 ? "stock-cero" : stock <= 5 ? "stock-bajo" : "";
+    const idEsc = item.id_variante.replace(/'/g, "\\'");
+    const estiloEsc = item.estilo.replace(/'/g, "\\'");
+    const colorEsc  = item.color.replace(/'/g, "\\'");
+    const fcuEsc    = (item.foto_color_url   || "").replace(/'/g, "\\'");
+    const fpuEsc    = (item.foto_portada_url || "").replace(/'/g, "\\'");
 
     const tr = document.createElement("tr");
     tr.className = item.activo ? "" : "inactivo";
@@ -621,18 +720,21 @@ function renderInventario(items) {
       <td><span class="stock-num ${stockClass}">${stock}</span></td>
       <td>
         <label class="toggle">
-          <input type="checkbox" ${item.activo ? "checked" : ""} onchange="toggleActivo('${item.id_variante}', this)">
+          <input type="checkbox" ${item.activo ? "checked" : ""} onchange="toggleActivo('${idEsc}', this)">
           <span class="toggle-slider"></span>
         </label>
       </td>
       <td>
         <div class="fila-acciones">
           <input type="number" class="input-mini" id="ajuste-${item.id_variante}" placeholder="±0">
-          <button class="btn btn-borde btn-sm" onclick="ajustarStock('${item.id_variante}')">Aplicar</button>
+          <button class="btn btn-borde btn-sm" onclick="ajustarStock('${idEsc}')">Aplicar</button>
         </div>
       </td>
       <td>
-        <button class="btn btn-borde btn-sm" onclick="abrirEdicionFotos('${item.estilo.toString().replace(/'/g,"\\'")}', '${item.color.toString().replace(/'/g,"\\'")}', '${(item.foto_color_url||'').replace(/'/g,"\\'")}', '${(item.foto_portada_url||'').replace(/'/g,"\\'")}')">Editar</button>
+        <button class="btn btn-borde btn-sm" onclick="abrirEdicionFotos('${estiloEsc}','${colorEsc}','${fcuEsc}','${fpuEsc}')">Editar</button>
+      </td>
+      <td>
+        <button class="btn btn-azul btn-sm" onclick="abrirQR('${idEsc}','${estiloEsc}','${colorEsc}','${item.talla.replace(/'/g,"\\'")}')">QR</button>
       </td>
     `;
     tbody.appendChild(tr);
@@ -642,9 +744,7 @@ function renderInventario(items) {
 async function toggleActivo(idVariante, checkbox) {
   checkbox.disabled = true;
   try {
-    const params = new URLSearchParams({ action: "admin_toggle_activo", id_variante: idVariante });
-    const data = await (await fetch(`${API_URL}?${params}`)).json();
-    if (!data.ok) throw new Error(data.error || "Error");
+    const data = await api("admin_toggle_activo", { id_variante: idVariante });
     mostrarToast(data.activo ? "Variante activada" : "Variante desactivada");
     const item = inventarioCache.find(i => i.id_variante === idVariante);
     if (item) item.activo = data.activo;
@@ -652,65 +752,99 @@ async function toggleActivo(idVariante, checkbox) {
   } catch (err) {
     mostrarToast(err.message || "No se pudo actualizar", true);
     checkbox.checked = !checkbox.checked;
-  } finally {
-    checkbox.disabled = false;
-  }
+  } finally { checkbox.disabled = false; }
 }
 
 async function ajustarStock(idVariante) {
-  const input = document.getElementById(`ajuste-${idVariante}`);
+  const input    = document.getElementById(`ajuste-${idVariante}`);
   const cantidad = Number(input.value);
-  if (!cantidad || cantidad === 0) { mostrarToast("Ingresá una cantidad distinta de cero (ej. +10 o -2)", true); return; }
+  if (!cantidad) { mostrarToast("Ingresá una cantidad distinta de cero", true); return; }
   try {
-    const params = new URLSearchParams({ action: "admin_ajustar_stock", id_variante: idVariante, cantidad: String(cantidad) });
-    const data = await (await fetch(`${API_URL}?${params}`)).json();
-    if (!data.ok) throw new Error(data.error || "Error");
+    const data = await api("admin_ajustar_stock", { id_variante: idVariante, cantidad: String(cantidad) });
     mostrarToast(data.mensaje);
     input.value = "";
     const item = inventarioCache.find(i => i.id_variante === idVariante);
-    if (item) {
-      item.stock_disponible = data.stock_nuevo;
-      item.activo = data.activo; // sincroniza el toggle visual con el estado real (auto on/off según stock)
-    }
+    if (item) { item.stock_disponible = data.stock_nuevo; item.activo = data.activo; }
     filtrarInventario();
-  } catch (err) {
-    mostrarToast(err.message || "No se pudo ajustar el stock", true);
-  }
+  } catch (err) { mostrarToast(err.message || "No se pudo ajustar el stock", true); }
 }
 
 function abrirEdicionFotos(estilo, color, fotoColorActual, fotoPortadaActual) {
-  const nuevoColor = prompt(`URL Drive — foto del color "${color}" (afecta a TODAS las tallas de este color):`, fotoColorActual || "");
+  const nuevoColor   = prompt(`URL Drive — foto del color "${color}" (afecta a TODAS las tallas de este color):`, fotoColorActual || "");
   if (nuevoColor === null) return;
-  const nuevoPortada = prompt(`URL Drive — foto de portada del estilo "${estilo}" (dejar igual si no aplica):`, fotoPortadaActual || "");
+  const nuevoPortada = prompt(`URL Drive — foto de portada del estilo "${estilo}":`, fotoPortadaActual || "");
   if (nuevoPortada === null) return;
   actualizarFotos(estilo, color, nuevoColor, nuevoPortada);
 }
 
 async function actualizarFotos(estilo, color, fotoColorUrl, fotoPortadaUrl) {
   try {
-    const params = new URLSearchParams({
-      action: "admin_actualizar_fotos",
-      estilo, color,
-      foto_color_url: fotoColorUrl || "",
-      foto_portada_url: fotoPortadaUrl || "",
-    });
-    const data = await (await fetch(`${API_URL}?${params}`)).json();
-    if (!data.ok) throw new Error(data.error || "Error");
+    await api("admin_actualizar_fotos", { estilo, color, foto_color_url: fotoColorUrl || "", foto_portada_url: fotoPortadaUrl || "" });
     mostrarToast("Fotos actualizadas");
-    // Actualiza en caché todas las filas que compartan Estilo+Color
-    // (todas sus tallas), ya que la foto ahora es una sola por color.
     inventarioCache.forEach(item => {
-      if (item.estilo === estilo && item.color === color && fotoColorUrl) {
-        item.foto_color_url = fotoColorUrl;
-      }
-      if (item.estilo === estilo && fotoPortadaUrl) {
-        item.foto_portada_url = fotoPortadaUrl;
-      }
+      if (item.estilo === estilo && item.color === color && fotoColorUrl) item.foto_color_url = fotoColorUrl;
+      if (item.estilo === estilo && fotoPortadaUrl) item.foto_portada_url = fotoPortadaUrl;
     });
     filtrarInventario();
-  } catch (err) {
-    mostrarToast(err.message || "No se pudieron actualizar las fotos", true);
+  } catch (err) { mostrarToast(err.message || "No se pudieron actualizar las fotos", true); }
+}
+
+// ════════════════════════════════════════════════════════
+// QR — genera y muestra el código QR de una variante
+// ════════════════════════════════════════════════════════
+let qrInstance = null;
+
+function abrirQR(idVariante, estilo, color, talla) {
+  document.getElementById("qr-titulo").textContent    = estilo;
+  document.getElementById("qr-subtitulo").textContent = `${color} · Talla ${talla}`;
+  document.getElementById("qr-id-badge").textContent  = idVariante;
+
+  const wrap = document.getElementById("qr-canvas-wrap");
+  wrap.innerHTML = ""; // limpiar QR anterior
+
+  // QRCode.js genera el canvas directamente en el div
+  qrInstance = new QRCode(wrap, {
+    text:          idVariante,
+    width:         200,
+    height:        200,
+    colorDark:     "#1C1917",
+    colorLight:    "#FFFFFF",
+    correctLevel:  QRCode.CorrectLevel.M,
+  });
+
+  abrirModal("modal-qr");
+}
+
+function imprimirQR() {
+  const wrap    = document.getElementById("qr-canvas-wrap");
+  const canvas  = wrap.querySelector("canvas") || wrap.querySelector("img");
+  const titulo  = document.getElementById("qr-titulo").textContent;
+  const sub     = document.getElementById("qr-subtitulo").textContent;
+  const idBadge = document.getElementById("qr-id-badge").textContent;
+
+  // Obtener imagen del QR (canvas → dataURL, o img src)
+  let imgSrc = "";
+  if (canvas && canvas.tagName === "CANVAS") {
+    imgSrc = canvas.toDataURL("image/png");
+  } else if (canvas && canvas.tagName === "IMG") {
+    imgSrc = canvas.src;
   }
+
+  const win = window.open("", "_blank");
+  win.document.write(`<!DOCTYPE html><html><head><title>QR ${idBadge}</title>
+  <style>
+    body { font-family: 'DM Sans', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background: #fff; }
+    h2 { font-size: 18px; margin: 0 0 4px; }
+    p  { font-size: 13px; color: #78716C; margin: 0 0 12px; }
+    img { width: 200px; height: 200px; border: 1px solid #E7E5E0; border-radius: 8px; margin-bottom: 12px; }
+    code { font-size: 11px; background: #FAF8F4; border: 1px solid #E7E5E0; border-radius: 6px; padding: 4px 10px; }
+  </style></head><body>
+  <h2>${titulo}</h2><p>${sub}</p>
+  <img src="${imgSrc}">
+  <code>${idBadge}</code>
+  <script>window.onload = () => window.print();<\/script>
+  </body></html>`);
+  win.document.close();
 }
 
 // ════════════════════════════════════════════════════════
@@ -721,162 +855,85 @@ const CAMPO_A_TIPO = { estilo: "Estilo", marca: "Marca", color: "Color", talla: 
 
 async function cargarOpciones() {
   try {
-    const res = await fetch(`${API_URL}?action=admin_opciones`);
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error || "Error");
+    const data = await api("admin_opciones");
     opcionesCache = data.opciones;
-    llenarSelect("estilo");
-    llenarSelect("marca");
-    llenarSelect("color");
-    llenarSelect("talla");
-  } catch (err) {
-    mostrarToast("No se pudieron cargar las opciones existentes", true);
-  }
+    ["estilo","marca","color","talla"].forEach(llenarSelect);
+  } catch (err) { mostrarToast("No se pudieron cargar las opciones", true); }
 }
 
-// Llena un <select> con las opciones existentes + la opción
-// especial "+ Agregar nueva..." al final. Mantiene el valor
-// elegido previamente si todavía existe en la lista (útil al
-// recargar opciones después de agregar un producto).
 function llenarSelect(campo) {
-  const tipo = CAMPO_A_TIPO[campo];
-  const select = document.getElementById(`f-${campo}`);
-  const valorPrevio = select.value;
-  const valores = opcionesCache[tipo] || [];
-
-  select.innerHTML = "";
-  const optVacio = document.createElement("option");
-  optVacio.value = "";
-  optVacio.textContent = `Seleccioná ${tipo.toLowerCase()}...`;
-  select.appendChild(optVacio);
-
-  valores.forEach(v => {
-    const opt = document.createElement("option");
-    opt.value = v;
-    opt.textContent = v;
-    select.appendChild(opt);
-  });
-
-  const optNuevo = document.createElement("option");
-  optNuevo.value = "__nuevo__";
-  optNuevo.textContent = "+ Agregar nueva...";
-  select.appendChild(optNuevo);
-
-  if (valorPrevio && valores.includes(valorPrevio)) select.value = valorPrevio;
+  const tipo      = CAMPO_A_TIPO[campo];
+  const select    = document.getElementById(`f-${campo}`);
+  const valorPrev = select.value;
+  const valores   = opcionesCache[tipo] || [];
+  select.innerHTML = `<option value="">Seleccioná ${tipo.toLowerCase()}...</option>`;
+  valores.forEach(v => { const o = document.createElement("option"); o.value = v; o.textContent = v; select.appendChild(o); });
+  const optN = document.createElement("option"); optN.value = "__nuevo__"; optN.textContent = "+ Agregar nueva..."; select.appendChild(optN);
+  if (valorPrev && valores.includes(valorPrev)) select.value = valorPrev;
 }
 
-// Cuando se elige "+ Agregar nueva..." en cualquiera de los 4
-// selects, muestra el campo de texto correspondiente para escribir
-// el valor nuevo. Si se elige otra cosa, oculta el campo de texto.
-// Para Color además controla si se muestra el selector de hex.
 function manejarSelectNuevo(campo) {
-  const select = document.getElementById(`f-${campo}`);
+  const select    = document.getElementById(`f-${campo}`);
   const inputNuevo = document.getElementById(`f-${campo}-nuevo`);
-  const esNuevo = select.value === "__nuevo__";
+  const esNuevo   = select.value === "__nuevo__";
   inputNuevo.style.display = esNuevo ? "block" : "none";
   if (esNuevo) { inputNuevo.value = ""; inputNuevo.focus(); }
-
-  if (campo === "color") {
-    document.getElementById("f-hex-wrap").style.display = esNuevo ? "block" : "none";
-  }
+  if (campo === "color") document.getElementById("f-hex-wrap").style.display = esNuevo ? "block" : "none";
 }
 
-// Devuelve el valor final de un campo: si está en modo "nuevo",
-// toma el texto escrito; si no, el valor elegido en el select.
 function valorFinal(campo) {
   const select = document.getElementById(`f-${campo}`);
-  if (select.value === "__nuevo__") {
-    return document.getElementById(`f-${campo}-nuevo`).value.trim();
-  }
-  return select.value.trim();
-}
-
-function mostrarErrorForm(msg) {
-  const el = document.getElementById("f-error");
-  el.textContent = msg;
-  el.style.display = "block";
+  return select.value === "__nuevo__" ? document.getElementById(`f-${campo}-nuevo`).value.trim() : select.value.trim();
 }
 
 async function agregarProducto() {
   document.getElementById("f-error").style.display = "none";
-
-  const estilo = valorFinal("estilo");
-  const marca  = valorFinal("marca");
-  const color  = valorFinal("color");
-  const talla  = valorFinal("talla");
+  const estilo = valorFinal("estilo"), marca = valorFinal("marca");
+  const color  = valorFinal("color"),  talla = valorFinal("talla");
   const precio = document.getElementById("f-precio").value.trim();
   const stock  = document.getElementById("f-stock").value.trim();
   const fotoColor   = document.getElementById("f-foto-color").value.trim();
   const fotoPortada = document.getElementById("f-foto-portada").value.trim();
-  const colorHexVisible = document.getElementById("f-hex-wrap").style.display !== "none";
-  const colorHex = colorHexVisible ? document.getElementById("f-color-hex").value.trim() : "";
+  const hexVisible  = document.getElementById("f-hex-wrap").style.display !== "none";
+  const colorHex    = hexVisible ? document.getElementById("f-color-hex").value.trim() : "";
 
-  if (!estilo || !marca || !color || !talla) { mostrarErrorForm("Completá estilo, marca, color y talla."); return; }
-  if (!precio || Number(precio) <= 0) { mostrarErrorForm("Ingresá un precio válido."); return; }
-  if (colorHexVisible && colorHex && !/^#[0-9A-Fa-f]{6}$/.test(colorHex)) {
-    mostrarErrorForm("El código de color debe tener el formato #RRGGBB.");
-    return;
-  }
+  if (!estilo || !marca || !color || !talla) { mostrarError("f-error","Completá estilo, marca, color y talla."); return; }
+  if (!precio || Number(precio) <= 0)        { mostrarError("f-error","Ingresá un precio válido."); return; }
+  if (hexVisible && colorHex && !/^#[0-9A-Fa-f]{6}$/.test(colorHex)) { mostrarError("f-error","El código de color debe tener el formato #RRGGBB."); return; }
 
   const btn = document.getElementById("f-btn-agregar");
   btn.disabled = true; btn.textContent = "Agregando...";
   try {
-    const params = new URLSearchParams({
-      action: "admin_agregar_producto",
-      estilo, marca, color, talla,
-      precio, stock: stock || "0",
-      foto_color_url: fotoColor,
-      foto_portada_url: fotoPortada,
-      color_hex: colorHex,
-    });
-    const data = await (await fetch(`${API_URL}?${params}`)).json();
-    if (!data.ok) throw new Error(data.error || "No se pudo agregar el producto");
+    const data = await api("admin_agregar_producto", { estilo, marca, color, talla, precio, stock: stock || "0", foto_color_url: fotoColor, foto_portada_url: fotoPortada, color_hex: colorHex });
     mostrarToast(`Producto agregado: ${data.id_variante}`);
-
-    // Limpiar color, talla, stock y fotos (mantenemos estilo y marca
-    // por si se agregan más tallas/colores seguidas del mismo producto).
-    document.getElementById("f-color-nuevo").value = "";
-    document.getElementById("f-color-nuevo").style.display = "none";
-    document.getElementById("f-talla-nuevo").value = "";
-    document.getElementById("f-talla-nuevo").style.display = "none";
-    document.getElementById("f-stock").value = "";
-    document.getElementById("f-foto-color").value = "";
-    document.getElementById("f-foto-portada").value = "";
-    document.getElementById("f-color-hex").value = "";
+    // Limpiar campos secundarios
+    ["f-color-nuevo","f-talla-nuevo"].forEach(id => { const el = document.getElementById(id); el.value = ""; el.style.display = "none"; });
+    ["f-stock","f-foto-color","f-foto-portada","f-color-hex"].forEach(id => document.getElementById(id).value = "");
     document.getElementById("f-hex-wrap").style.display = "none";
-
-    // Recargar opciones (esto trae el estilo/marca/color/talla nuevos
-    // recién creados) y restaurar estilo/marca como seleccionados,
-    // dejando color/talla en blanco para la siguiente variante.
-    const estiloAnterior = estilo, marcaAnterior = marca;
+    const estiloAnt = estilo, marcaAnt = marca;
     await cargarOpciones();
-    document.getElementById("f-estilo").value = estiloAnterior;
-    document.getElementById("f-marca").value  = marcaAnterior;
+    document.getElementById("f-estilo").value = estiloAnt;
+    document.getElementById("f-marca").value  = marcaAnt;
     document.getElementById("f-color").value  = "";
     document.getElementById("f-talla").value  = "";
-  } catch (err) {
-    mostrarErrorForm(err.message || "No se pudo agregar el producto");
-  } finally {
-    btn.disabled = false; btn.textContent = "Agregar al inventario";
-  }
+  } catch (err) { mostrarError("f-error", err.message || "No se pudo agregar el producto"); }
+  finally { btn.disabled = false; btn.textContent = "Agregar al inventario"; }
 }
+
+function mostrarError(id, msg) { const el = document.getElementById(id); el.textContent = msg; el.style.display = "block"; }
 
 // ════════════════════════════════════════════════════════
 // QUINCENA — CONFIG
 // ════════════════════════════════════════════════════════
 async function cargarConfig() {
   try {
-    const res = await fetch(`${API_URL}?action=admin_config_get`);
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error || "Error");
+    const data = await api("admin_config_get");
     const c = data.config;
-    document.getElementById("cfg-fecha-cierre").value          = c["Fecha_cierre_pedidos"] || "";
-    document.getElementById("cfg-dia-entrega").value           = c["Dia_entrega"] || "";
-    document.getElementById("cfg-horas-congelamiento").value   = c["Horas_congelamiento"] || "";
-    document.getElementById("cfg-limite-cancelaciones").value  = c["Limite_cancelaciones_dia"] || "";
-  } catch (err) {
-    mostrarToast("No se pudo cargar la configuración", true);
-  }
+    document.getElementById("cfg-fecha-cierre").value         = c["Fecha_cierre_pedidos"]    || "";
+    document.getElementById("cfg-dia-entrega").value          = c["Dia_entrega"]             || "";
+    document.getElementById("cfg-horas-congelamiento").value  = c["Horas_congelamiento"]     || "";
+    document.getElementById("cfg-limite-cancelaciones").value = c["Limite_cancelaciones_dia"]|| "";
+  } catch (err) { mostrarToast("No se pudo cargar la configuración", true); }
 }
 
 async function guardarConfig() {
@@ -886,140 +943,106 @@ async function guardarConfig() {
     ["Horas_congelamiento",      document.getElementById("cfg-horas-congelamiento").value.trim()],
     ["Limite_cancelaciones_dia", document.getElementById("cfg-limite-cancelaciones").value.trim()],
   ];
-  const btn = document.getElementById("cfg-btn-guardar");
-  btn.disabled = true; btn.textContent = "Guardando...";
+  const btn   = document.getElementById("cfg-btn-guardar");
   const msgEl = document.getElementById("cfg-msg");
+  btn.disabled = true; btn.textContent = "Guardando...";
   try {
     for (const [campo, valor] of campos) {
       if (!valor) continue;
-      const params = new URLSearchParams({ action: "admin_config_set", campo, valor });
-      const data = await (await fetch(`${API_URL}?${params}`)).json();
-      if (!data.ok) throw new Error(data.error || `No se pudo guardar ${campo}`);
+      await api("admin_config_set", { campo, valor });
     }
     msgEl.textContent = "Configuración guardada correctamente.";
-    msgEl.style.color = "var(--verde)";
-    msgEl.style.display = "block";
+    msgEl.style.color = "var(--verde)"; msgEl.style.display = "block";
     mostrarToast("Configuración guardada");
   } catch (err) {
-    msgEl.textContent = err.message || "Ocurrió un error al guardar.";
-    msgEl.style.color = "var(--rojo)";
-    msgEl.style.display = "block";
-  } finally {
-    btn.disabled = false; btn.textContent = "Guardar configuración";
-  }
+    msgEl.textContent = err.message; msgEl.style.color = "var(--rojo)"; msgEl.style.display = "block";
+  } finally { btn.disabled = false; btn.textContent = "Guardar configuración"; }
 }
 
 // ════════════════════════════════════════════════════════
-// QUINCENA — RESET MANUAL / AUTOMÁTICO
+// QUINCENA — RESET
 // ════════════════════════════════════════════════════════
 function cambiarModoReset(modo) {
   document.getElementById("modo-btn-manual").classList.toggle("activo", modo === "manual");
-  document.getElementById("modo-btn-auto").classList.toggle("activo", modo === "auto");
+  document.getElementById("modo-btn-auto").classList.toggle("activo",   modo === "auto");
   document.getElementById("reset-manual-wrap").style.display = modo === "manual" ? "block" : "none";
   document.getElementById("reset-auto-wrap").style.display   = modo === "auto"   ? "block" : "none";
 }
 
 async function ejecutarResetManual() {
-  const confirmado = confirm(
-    "¿Generar Pedidos y Empacado ahora?\n\nEsto archivará todos los pedidos actuales, creará las hojas de empacado ordenadas, y limpiará la hoja de Pedidos para la nueva quincena.\n\nEsta acción no se puede deshacer."
-  );
-  if (!confirmado) return;
-
-  const btn = document.getElementById("btn-reset-manual");
-  btn.disabled = true; btn.textContent = "Generando...";
+  if (!confirm("¿Generar Pedidos y Empacado ahora?\n\nEsto archivará los pedidos actuales y limpiará la hoja para la nueva quincena.\n\nEsta acción no se puede deshacer.")) return;
+  const btn   = document.getElementById("btn-reset-manual");
   const msgEl = document.getElementById("reset-msg");
+  btn.disabled = true; btn.textContent = "Generando...";
   try {
-    const data = await (await fetch(`${API_URL}?action=admin_reset_manual`)).json();
-    if (!data.ok) throw new Error(data.error || "Error al ejecutar el reset");
-    msgEl.textContent = "Reset ejecutado correctamente. Revisá el Sheet para ver las hojas nuevas.";
-    msgEl.style.color = "var(--verde)";
-    msgEl.style.display = "block";
+    await api("admin_reset_manual");
+    msgEl.textContent = "Reset ejecutado. Revisá el Sheet para ver las hojas nuevas.";
+    msgEl.style.color = "var(--verde)"; msgEl.style.display = "block";
     mostrarToast("Pedidos y Empacado generados correctamente");
   } catch (err) {
-    msgEl.textContent = err.message || "Ocurrió un error al ejecutar el reset.";
-    msgEl.style.color = "var(--rojo)";
-    msgEl.style.display = "block";
+    msgEl.textContent = err.message; msgEl.style.color = "var(--rojo)"; msgEl.style.display = "block";
     mostrarToast("Error al ejecutar el reset", true);
-  } finally {
-    btn.disabled = false; btn.textContent = "Generar Pedidos y Empacado ahora";
-  }
+  } finally { btn.disabled = false; btn.textContent = "Generar Pedidos y Empacado ahora"; }
 }
 
 async function cargarEstadoTrigger() {
   const aviso = document.getElementById("aviso-trigger-estado");
   try {
-    const res = await fetch(`${API_URL}?action=admin_estado_trigger`);
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error || "Error");
+    const data = await api("admin_estado_trigger");
     if (data.activo) {
-      const fechaFmt = data.fecha ? new Date(data.fecha).toLocaleString("en-US") : "fecha desconocida";
+      const fechaFmt = data.fecha ? new Date(data.fecha).toLocaleString("es-CR") : "fecha desconocida";
       aviso.textContent = `⏰ Reset automático activo — programado para ${fechaFmt}`;
-      aviso.className = "aviso-box visible aviso-activo";
+      aviso.className   = "aviso-box visible aviso-activo";
       document.getElementById("btn-cancelar-trigger").style.display = "inline-block";
     } else {
       aviso.textContent = "No hay ningún reset automático programado actualmente.";
-      aviso.className = "aviso-box visible aviso-info";
+      aviso.className   = "aviso-box visible aviso-info";
       document.getElementById("btn-cancelar-trigger").style.display = "none";
     }
   } catch (err) {
     aviso.textContent = "No se pudo consultar el estado del reset automático.";
-    aviso.className = "aviso-box visible aviso-info";
+    aviso.className   = "aviso-box visible aviso-info";
   }
 }
 
 async function programarTrigger() {
   const fechaHora = document.getElementById("cfg-fecha-trigger").value;
   if (!fechaHora) { mostrarToast("Seleccioná una fecha y hora", true); return; }
-
-  const confirmado = confirm(`¿Programar el reset automático para ${new Date(fechaHora).toLocaleString("en-US")}?`);
-  if (!confirmado) return;
-
+  if (!confirm(`¿Programar el reset automático para ${new Date(fechaHora).toLocaleString("es-CR")}?`)) return;
   const btn = document.getElementById("btn-programar-trigger");
   btn.disabled = true; btn.textContent = "Programando...";
   try {
-    const params = new URLSearchParams({ action: "admin_reset_programar", fecha_hora: fechaHora });
-    const data = await (await fetch(`${API_URL}?${params}`)).json();
-    if (!data.ok) throw new Error(data.error || "Error al programar");
+    await api("admin_reset_programar", { fecha_hora: fechaHora });
     mostrarToast("Reset automático programado correctamente");
     cargarEstadoTrigger();
-  } catch (err) {
-    mostrarToast(err.message || "No se pudo programar el reset", true);
-  } finally {
-    btn.disabled = false; btn.textContent = "Programar reset automático";
-  }
+  } catch (err) { mostrarToast(err.message || "No se pudo programar el reset", true); }
+  finally { btn.disabled = false; btn.textContent = "Programar reset automático"; }
 }
 
 async function cancelarTrigger() {
-  const confirmado = confirm("¿Desactivar el reset automático? Vas a tener que ejecutarlo manualmente.");
-  if (!confirmado) return;
-
+  if (!confirm("¿Desactivar el reset automático?")) return;
   const btn = document.getElementById("btn-cancelar-trigger");
   btn.disabled = true; btn.textContent = "Desactivando...";
   try {
-    const data = await (await fetch(`${API_URL}?action=admin_reset_cancelar`)).json();
-    if (!data.ok) throw new Error(data.error || "Error al desactivar");
+    const data = await api("admin_reset_cancelar");
     mostrarToast(data.mensaje);
     cargarEstadoTrigger();
-  } catch (err) {
-    mostrarToast(err.message || "No se pudo desactivar", true);
-  } finally {
-    btn.disabled = false; btn.textContent = "Desactivar reset automático";
-  }
+  } catch (err) { mostrarToast(err.message || "No se pudo desactivar", true); }
+  finally { btn.disabled = false; btn.textContent = "Desactivar reset automático"; }
 }
 
 // ════════════════════════════════════════════════════════
 // CLIENTES
 // ════════════════════════════════════════════════════════
-let clientesCache = [];
+let clientesCache   = [];
+let clienteEnEdicion = null;
 
 async function cargarClientes() {
-  document.getElementById("cli-cargando").style.display = "block";
+  document.getElementById("cli-cargando").style.display   = "block";
   document.getElementById("cli-tabla-wrap").style.display = "none";
-  document.getElementById("cli-vacio").style.display = "none";
+  document.getElementById("cli-vacio").style.display      = "none";
   try {
-    const res = await fetch(`${API_URL}?action=admin_clientes`);
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error || "Error");
+    const data = await api("admin_clientes");
     clientesCache = data.clientes;
     document.getElementById("cli-cargando").style.display = "none";
     if (clientesCache.length === 0) {
@@ -1036,13 +1059,9 @@ async function cargarClientes() {
 
 function filtrarClientes() {
   const q = document.getElementById("cli-buscar").value.trim().toLowerCase();
-  if (!q) { renderClientes(clientesCache); return; }
-  const filtrado = clientesCache.filter(c =>
-    (c.nombre || "").toLowerCase().includes(q) ||
-    (c.wa     || "").toLowerCase().includes(q) ||
-    (String(c.pin || "")).includes(q)
-  );
-  renderClientes(filtrado);
+  renderClientes(!q ? clientesCache : clientesCache.filter(c =>
+    (c.nombre || "").toLowerCase().includes(q) || (c.wa || "").includes(q)
+  ));
 }
 
 function renderClientes(clientes) {
@@ -1050,12 +1069,16 @@ function renderClientes(clientes) {
   tbody.innerHTML = "";
   clientes.forEach(c => {
     const tr = document.createElement("tr");
+    const pinStr = String(c.pin || "");
+    const pinDisplay = pinStr.length === 6
+      ? `<span style="font-family:monospace;font-weight:600;letter-spacing:0.1em;background:var(--azul-l);color:var(--azul);padding:3px 8px;border-radius:6px">${pinStr}</span>`
+      : `<span style="font-family:monospace;font-weight:600;letter-spacing:0.1em;background:var(--crema);padding:3px 8px;border-radius:6px">${pinStr || "—"}</span>`;
     tr.innerHTML = `
       <td>${c.nombre || "—"}</td>
       <td>${c.wa}</td>
-      <td><span style="font-family:monospace;font-weight:600;letter-spacing:0.1em;background:var(--crema);padding:3px 8px;border-radius:6px">${c.pin || "—"}</span></td>
+      <td>${pinDisplay}</td>
       <td>${formatoFechaCliente(c.fecha_reg)}</td>
-      <td><button class="btn btn-borde btn-sm" onclick='abrirEditarCliente(${JSON.stringify(c).replace(/'/g, "&apos;")})'>Editar</button></td>
+      <td><button class="btn btn-borde btn-sm" onclick='abrirEditarCliente(${JSON.stringify(c).replace(/'/g,"&apos;")})'>Editar</button></td>
     `;
     tbody.appendChild(tr);
   });
@@ -1064,64 +1087,89 @@ function renderClientes(clientes) {
 function formatoFechaCliente(fecha) {
   if (!fecha) return "—";
   const d = new Date(fecha);
-  if (isNaN(d.getTime())) return fecha; // si no es una fecha parseable, mostrar tal cual
+  if (isNaN(d.getTime())) return String(fecha);
   return d.toLocaleDateString("es-CR", { day: "numeric", month: "short", year: "numeric" });
 }
-
-let clienteEnEdicion = null;
 
 function abrirEditarCliente(cliente) {
   clienteEnEdicion = cliente;
   document.getElementById("edit-cli-nombre").value = cliente.nombre || "";
-  document.getElementById("edit-cli-wa").value = cliente.wa || "";
-  document.getElementById("edit-cli-pin").value = "";
+  document.getElementById("edit-cli-wa").value     = cliente.wa    || "";
+  document.getElementById("edit-cli-pin").value    = "";
   document.getElementById("edit-cli-error").style.display = "none";
-  document.getElementById("overlay-editar-cliente").style.display = "block";
-  document.getElementById("modal-editar-cliente").style.display = "block";
-}
-
-function cerrarEditarCliente() {
-  clienteEnEdicion = null;
-  document.getElementById("overlay-editar-cliente").style.display = "none";
-  document.getElementById("modal-editar-cliente").style.display = "none";
+  abrirModal("modal-editar-cliente");
 }
 
 async function guardarEdicionCliente() {
   if (!clienteEnEdicion) return;
-  const errEl = document.getElementById("edit-cli-error");
+  const errEl    = document.getElementById("edit-cli-error");
   errEl.style.display = "none";
-
-  const nombre = document.getElementById("edit-cli-nombre").value.trim();
-  const waNuevo = document.getElementById("edit-cli-wa").value.trim();
-  const pin = document.getElementById("edit-cli-pin").value.trim();
-
-  if (!nombre) { errEl.textContent = "El nombre no puede quedar vacío."; errEl.style.display = "block"; return; }
-  if (!waNuevo) { errEl.textContent = "El WhatsApp no puede quedar vacío."; errEl.style.display = "block"; return; }
-  if (pin && (pin.length !== 4 || !/^\d{4}$/.test(pin))) {
-    errEl.textContent = "El PIN debe ser de 4 dígitos.";
-    errEl.style.display = "block";
-    return;
-  }
-
+  const nombre   = document.getElementById("edit-cli-nombre").value.trim();
+  const waNuevo  = document.getElementById("edit-cli-wa").value.trim();
+  const pin      = document.getElementById("edit-cli-pin").value.trim();
+  if (!nombre) { mostrarError("edit-cli-error","El nombre no puede quedar vacío."); return; }
+  if (!waNuevo) { mostrarError("edit-cli-error","El WhatsApp no puede quedar vacío."); return; }
+  if (pin && (pin.length !== 4 || !/^\d{4}$/.test(pin))) { mostrarError("edit-cli-error","El PIN debe ser de 4 dígitos."); return; }
   const btn = document.getElementById("btn-guardar-cliente");
   btn.disabled = true; btn.textContent = "Guardando...";
   try {
-    const params = new URLSearchParams({
-      action: "admin_cliente_editar",
-      wa_actual: clienteEnEdicion.wa,
-      nombre, wa_nuevo: waNuevo, pin,
-    });
-    const data = await (await fetch(`${API_URL}?${params}`)).json();
-    if (!data.ok) throw new Error(data.error || "No se pudo actualizar el cliente");
+    await api("admin_cliente_editar", { wa_actual: clienteEnEdicion.wa, nombre, wa_nuevo: waNuevo, pin });
     mostrarToast("Cliente actualizado correctamente");
-    cerrarEditarCliente();
+    cerrarTodosModales();
     cargarClientes();
-  } catch (err) {
-    errEl.textContent = err.message || "Ocurrió un error al guardar.";
-    errEl.style.display = "block";
-  } finally {
-    btn.disabled = false; btn.textContent = "Guardar";
+  } catch (err) { mostrarError("edit-cli-error", err.message || "Ocurrió un error al guardar."); }
+  finally { btn.disabled = false; btn.textContent = "Guardar"; }
+}
+
+// ── Crear cliente con PIN 6 dígitos ──
+function abrirModalCrearCliente() {
+  document.getElementById("nuevo-cli-nombre").value = "";
+  document.getElementById("nuevo-cli-wa").value     = "";
+  document.getElementById("nuevo-cli-pin-hidden").value = "";
+  document.getElementById("nuevo-cli-error").style.display = "none";
+  actualizarDotsPIN();
+  abrirModal("modal-crear-cliente");
+  setTimeout(() => document.getElementById("nuevo-cli-nombre").focus(), 150);
+}
+
+function presionarTeclaPIN(digito) {
+  const inp = document.getElementById("nuevo-cli-pin-hidden");
+  if (inp.value.length < 6) { inp.value += digito; actualizarDotsPIN(); }
+}
+
+function borrarTeclaPIN() {
+  const inp = document.getElementById("nuevo-cli-pin-hidden");
+  inp.value = inp.value.slice(0, -1);
+  actualizarDotsPIN();
+}
+
+function actualizarDotsPIN() {
+  const val = document.getElementById("nuevo-cli-pin-hidden").value;
+  for (let i = 0; i < 6; i++) {
+    document.getElementById(`dot-${i}`).classList.toggle("activo", i < val.length);
   }
+}
+
+async function confirmarCrearCliente() {
+  document.getElementById("nuevo-cli-error").style.display = "none";
+  const nombre     = document.getElementById("nuevo-cli-nombre").value.trim();
+  const wa         = document.getElementById("nuevo-cli-wa").value.trim();
+  const codigoPais = document.getElementById("nuevo-cli-pais").value;
+  const pin        = document.getElementById("nuevo-cli-pin-hidden").value;
+
+  if (!nombre) { mostrarError("nuevo-cli-error","El nombre es obligatorio."); return; }
+  if (!wa)     { mostrarError("nuevo-cli-error","El WhatsApp es obligatorio."); return; }
+  if (pin.length !== 6) { mostrarError("nuevo-cli-error","El PIN debe tener exactamente 6 dígitos."); return; }
+
+  const btn = document.getElementById("btn-confirmar-crear-cliente");
+  btn.disabled = true; btn.textContent = "Creando...";
+  try {
+    const data = await api("admin_crear_cliente", { nombre, wa, codigo_pais: codigoPais, pin });
+    mostrarToast(`Cliente "${data.nombre}" creado correctamente`);
+    cerrarTodosModales();
+    cargarClientes();
+  } catch (err) { mostrarError("nuevo-cli-error", err.message || "No se pudo crear el cliente."); }
+  finally { btn.disabled = false; btn.textContent = "Crear cliente"; }
 }
 
 // ════════════════════════════════════════════════════════
