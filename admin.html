@@ -703,9 +703,9 @@ function renderInventario(items) {
   items.forEach(item => {
     const stock = Number(item.stock_disponible);
     const stockClass = stock === 0 ? "stock-cero" : stock <= 5 ? "stock-bajo" : "";
-    const idEsc = item.id_variante.replace(/'/g, "\\'");
-    const estiloEsc = item.estilo.replace(/'/g, "\\'");
-    const colorEsc  = item.color.replace(/'/g, "\\'");
+    const idEsc     = String(item.id_variante).replace(/'/g, "\\'");
+    const estiloEsc = String(item.estilo).replace(/'/g, "\\'");
+    const colorEsc  = String(item.color).replace(/'/g, "\\'");
     const fcuEsc    = (item.foto_color_url   || "").replace(/'/g, "\\'");
     const fpuEsc    = (item.foto_portada_url || "").replace(/'/g, "\\'");
 
