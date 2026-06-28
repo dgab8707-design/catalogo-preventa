@@ -581,18 +581,35 @@ function cerrarQR() {
 
 async function manejarQRLeido(idVariante) {
   cerrarQR();
-  toast(`QR leído: ${idVariante}`);
-  // Buscar la variante por ID exacto
+
+  // Limpiar el ID — quitar espacios y caracteres invisibles
+  idVariante = idVariante.trim().replace(/[\r\n\t]/g, "");
+  toast(`Buscando: ${idVariante}`);
+
+  // Comparación flexible: ignorar mayúsculas/minúsculas
+  const normalizar = s => String(s).toUpperCase().replace(/\s/g, "");
+  const idNorm = normalizar(idVariante);
+
   try {
-    const data = await api("admin_buscar_variante", { q: idVariante });
-    const variante = data.variantes.find(v => v.id_variante === idVariante);
+    // Buscar con la parte numérica inicial del ID (ej: "300" de "300-DROLE-AZULESCOLAR-M")
+    const q = idVariante.split("-")[0] || idVariante;
+    const data = await api("admin_buscar_variante", { q });
+
+    let variante = data.variantes.find(v => normalizar(v.id_variante) === idNorm);
+
+    // Si no encontró, segundo intento con el ID completo como query
+    if (!variante) {
+      const data2 = await api("admin_buscar_variante", { q: idVariante });
+      variante = data2.variantes.find(v => normalizar(v.id_variante) === idNorm);
+    }
+
     if (variante) {
       agregarAlTicket(variante);
     } else {
-      toast(`Variante no encontrada: ${idVariante}`, "error");
+      toast(`Producto no encontrado: ${idVariante}`, "error");
     }
   } catch (err) {
-    toast("Error al buscar la variante escaneada", "error");
+    toast("Error al buscar el producto escaneado", "error");
   }
 }
 
